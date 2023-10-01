@@ -1,0 +1,76 @@
+[datasets]
+mz_start = 200
+mz_end = 1600
+element_list = [
+    "K",
+    "F",
+    "S",
+    "N",
+    "C",
+    "As",
+    "P",
+    "I",
+    "O",
+    "Cl",
+    "H",
+    "Br",
+    "Ho",
+    "Na",
+    "Al",
+    'Fe',
+    'Cu',
+]
+repeat = 1
+feature_list = [
+    "a2-a1",
+    "b_2",
+    "b_1",
+    "a1",
+    "a2",
+    "a2-a0",
+]
+paths = [
+    [
+        "F:/XinBackup/source_data/datasets/NPAtlas_download.json",
+        "mol_formula",
+    ],
+]
+
+[model_data]
+data_weight = 2
+noise_data_weight = 1
+use_noise_data = "False"
+use_add_fe_data = "True"
+use_hydroisomer_data='True'
+
+[model_construct]
+train_batch = 1000
+val_batch = 1000
+dense1 = 4000
+dense1_drop = 0.5
+dense2 = 1000
+dense2_drop = 0.3
+dense3 = 250
+classes = 4
+epochs = 10
+
+
+[model_construct_class_weight]
+base_weight = {0 = 50, 1 = 50, 2 = 10}
+sub_weight = {0 = 5, 1 = 5, 2 = 5, 3 = 5, 4 = 5, 5 = 5, 6 = 1}
+hydroisomer_weight = {0 = 10, 1 = 10}
+
+
+[asari]
+min_prominence_threshold = 0.33
+mz_tolerance_ppm =10
+min_intensity = 5000
+min_timepoints =5
+min_peak_height = 5000
+
+[mzml]
+min_intensity = 100
+
+[visualization]
+path = "C:\\Users\\Administrator\\Desktop\\training_result\\edited_test\\"
+
