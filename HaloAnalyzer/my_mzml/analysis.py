@@ -69,18 +69,24 @@ class analysis_by_asari:
         querys = querys.astype('float32')
         clf = tf.keras.models.load_model(self.model_path)
         res = clf.predict(querys)
-        res = tf.math.argmax(res,1).numpy()
-        #将res结果转为字符，保存到new_df_filted中的class列
-        res = ["'"+str(i)+"'" for i in res]
-        df['class'] = res
+        base = tf.math.argmax(res[0],1).numpy()
+        sub = tf.math.argmax(res[1],1).numpy()
+        hydro = tf.math.argmax(res[2],1).numpy()
+        #将base,sub,hydro结果转为字符，保存到new_df_filted中的class列
+        base = ["'"+str(i)+"'" for i in base]
+        sub = ["'"+str(i)+"'" for i in sub]
+        hydro = ["'"+str(i)+"'" for i in hydro]
+        df['base_class'] = base
+        df['sub_class'] = sub
+        df['hydro_class'] = hydro
 
         #保存到csv文件
         df.to_csv(self.save_target,index=False)
 
                         
     def asari_workflow(self):
-        self.find_peak()
-        self.get_tic()
+
+        self.get_mzml_data()
         self.add_label()
 
 
