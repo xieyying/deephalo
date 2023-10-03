@@ -79,17 +79,17 @@ def formula_sub_clf(formula_dict):
         group_type = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
-            group_type = 1
+            group_type = 0
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
-            group_type = 2            
+            group_type = 0            
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
-            group_type = 3
+            group_type = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
-            group_type = 4
+            group_type = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
-            group_type = 5
+            group_type = 2
     else:
-        group_type = 6
+        group_type = 3
     return group_type
 
 def formula_element_clf(formula_dict,element):
@@ -126,30 +126,30 @@ def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3
     if a1_mz>0.1:
         a1_a0 = a1_mz - a0_mz
     else:
-        a1_a0 = -1
+        a1_a0 = 0
     if a2_mz>0.1:
         a2_a0 = a2_mz - a0_mz
         a2_a1 = a2_mz - a1_mz
     else:
-        a2_a0 = -1
-        a2_a1 = -1
+        a2_a0 = 0
+        a2_a1 = 0
     
     if a3_mz>0.1:
         a3_a0 = a3_mz - a0_mz
         a3_a1 = a3_mz - a1_mz
         a3_a2 = a3_mz - a2_mz
     else:
-        a3_a0 = -1
-        a3_a1 = -1
-        a3_a2 = -1
+        a3_a0 = 0
+        a3_a1 = 0
+        a3_a2 = 0
     
     if b_1_mz<0.1:
-        a0_b1 = -1
+        a0_b1 = 0
     else:
         a0_b1 = a0_mz-b_1_mz
 
     if b_2_mz<0.1:
-        b1_b2 = -1
+        b1_b2 = 0
     else:
         b1_b2 = b_1_mz-b_2_mz
     
@@ -386,7 +386,10 @@ if __name__ == '__main__':
     # print(b)
     f='C6H12O6'
     #b_2_mz,b_1_mz,a_0_mz,a_1_mz,a_2_mz,a_3_mz,b_2_int/100,b_1_int/100,a_0_int/100,a_1_int/100,a_2_int/100,a_3_int/100
-    fm_isos =Formula(f).spectrum(min_intensity=1).dataframe()
-    print(fm_isos)
-    print(Isotope_simulation(f))
+    # fm_isos =Formula(f).spectrum(min_intensity=1).dataframe()
+    # print(fm_isos)
+    print(Formula(f).spectrum(min_intensity=1).dataframe())
+    # print(get_hydroisomer_isotopes(f,0.2))
+    print(get_dehydroisomer_isotopes(f,0.2))
+
 

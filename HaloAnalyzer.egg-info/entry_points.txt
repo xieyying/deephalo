@@ -1,0 +1,2 @@
+[console_scripts]
+halo = HaloAnalyzer.commond_line:main
