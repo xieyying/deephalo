@@ -32,12 +32,11 @@ class pick_halo_ann(base):
         def get_compiled_model():
             input = keras.Input(shape=(6,), name="mass_features")
             share = layers.Dense(4000, activation="relu")(input)
-            share = layers.Dense(2000, activation="relu")(share)
             share = layers.Dropout(0.5)(share)
             share = layers.Dense(1000, activation="relu")(share)
-            share = layers.Dropout(0.5,name='share')(share)
+            share = layers.Dropout(0.3,name='share')(share)
 
-            x = layers.Dense(1000, activation="relu")(share)
+            x = layers.Dense(500, activation="relu")(share)
             clf_base_output = layers.Dense(3,activation='softmax', name="base")(x)
 
             y = layers.Concatenate()([share, clf_base_output])
