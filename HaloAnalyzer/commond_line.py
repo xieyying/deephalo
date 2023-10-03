@@ -8,7 +8,7 @@ import importlib_resources
 __version__ = '0.1.0'
 
 def main():
-    print("\n\n~~~~~~~ Hello from HaloAnalyzer (%s) ~~~~~~~~~\n" %__version__)
+    print("\n\nHaloAnalyzer (%s) \n" %__version__)
     #命令行参数设置
     parser = argparse.ArgumentParser(description='HALOAnalyzer: a tool for metabolomics data analysis.')
 

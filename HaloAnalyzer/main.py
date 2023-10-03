@@ -22,7 +22,7 @@ def pipeline_dataset():
     data.creat_hydroisomer_data()
     data.creat_dehydroisomer_data()
     data.creat_classify_data_with_nose(para.repeat)
-    # data.data_statistics_customized()
+    data.data_statistics_customized()
 
 #Model Pipeline
 def pipeline_model():

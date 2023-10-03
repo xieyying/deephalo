@@ -37,12 +37,12 @@ class pick_halo_ann(base):
             share = layers.Dense(1000, activation="relu")(share)
             share = layers.Dropout(0.5,name='share')(share)
 
-            x = layers.Dense(500, activation="relu")(share)
+            x = layers.Dense(1000, activation="relu")(share)
             clf_base_output = layers.Dense(3,activation='softmax', name="base")(x)
 
             y = layers.Concatenate()([share, clf_base_output])
             y = layers.Dense(500, activation="relu")(y)
-            clf_sub_output = layers.Dense(7,activation='softmax', name="sub")(y)
+            clf_sub_output = layers.Dense(4,activation='softmax', name="sub")(y)
 
             z2 = layers.Concatenate()([share, clf_base_output, clf_sub_output])
             z2 = layers.Dense(500, activation="relu")(z2)

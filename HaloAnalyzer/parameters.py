@@ -6,6 +6,7 @@ class run_parameters:
         file_path = importlib_resources.files('HaloAnalyzer') / 'config.toml'
         with open(file_path,'rb') as f:
             config = tomli.load(f)
+
         self.config = config
         #dataset参数
         self.elements_list = config['datasets']['element_list']
