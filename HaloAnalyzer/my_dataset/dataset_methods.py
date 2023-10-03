@@ -113,7 +113,12 @@ def formula_groups_clf(formula,optional_param=None):
     #判断是否可训练
     is_train = formula_trainable_clf(formula_dict)
     #判断clf1的group
-    group = formula_base_clf(formula_dict)
+    if optional_param == 'dehydro':
+        group = 0
+    elif optional_param == 'hydro':
+        group = 0
+    else:
+        group = formula_base_clf(formula_dict)
     #判断clf2的sub_group
     sub_group = formula_sub_clf(formula_dict)
 
