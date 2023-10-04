@@ -15,10 +15,15 @@ class run_parameters:
         self.datasets = config['datasets']['paths']
         self.mz_start = config['datasets']['mz_start']
         self.mz_end = config['datasets']['mz_end']
+        self.rates = config['datasets']['rates']
         #model_data参数
         self.data_weight = config['model_data']['data_weight']
         self.noise_data_weight = config['model_data']['noise_data_weight']
+        self.add_fe_weight = config['model_data']['add_fe_weight']
+        self.hydroisomer_weight = config['model_data']['hydroisomer_weight']
         self.use_noise_data = config['model_data']['use_noise_data']
+        self.use_add_fe_data = config['model_data']['use_add_fe_data']
+        self.use_hydroisomer_data = config['model_data']['use_hydroisomer_data']
         #model_construct参数
         self.train_batch = config['model_construct']['train_batch']
         self.val_batch = config['model_construct']['val_batch']

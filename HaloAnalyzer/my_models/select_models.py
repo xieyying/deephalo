@@ -11,10 +11,12 @@ class my_model:
                  train_batch:int,
                  val_batch:int,
                  parameters:dict,
-                 dataset:str=[r'./train_dataset/selected_data.csv',r'./train_dataset/selected_data_with_noise.csv',r'.\train_dataset\selected_add_Fe_data.csv',r'.\train_dataset\selected_hydroisomer_data.csv'],
+                 dataset:str=[r'./train_dataset/selected_data.csv',r'./train_dataset/selected_data_with_noise.csv',r'./train_dataset\selected_add_Fe_data.csv',r'./train_dataset\selected_hydroisomer_data.csv'],
                  save_to_file = True,
                  data_weight = 2,
                  noise_data_weight = 1,
+                 add_fe_weight = 1,
+                 hydroisomer_weight = 1,
                  use_noise_data='True',
                  use_add_fe_data='True',
                  use_hydroisomer_data='True') -> None:
@@ -26,5 +28,17 @@ class my_model:
         self.dataset = dataset
         self.save = save_to_file
         if method == 'ann':
-            self.model = pick_halo_ann(features = self.dataset_features,train_batch=self.train_batch,val_batch=self.val_batch,parameters=self.modle_para,dataset=self.dataset,data_weight=data_weight,noise_data_weight=noise_data_weight,save=self.save,use_noise_data= use_noise_data,use_add_fe_data=use_add_fe_data,use_hydroisomer_data=use_hydroisomer_data)
+            self.model = pick_halo_ann(features = self.dataset_features,
+                                       train_batch=self.train_batch,
+                                       val_batch=self.val_batch,
+                                       parameters=self.modle_para,
+                                       dataset=self.dataset,
+                                       data_weight=data_weight,
+                                       noise_data_weight=noise_data_weight,
+                                       add_fe_weight=add_fe_weight,
+                                       hydroisomer_weight=hydroisomer_weight,
+                                       save=self.save,
+                                       use_noise_data= use_noise_data,
+                                       use_add_fe_data=use_add_fe_data,
+                                       use_hydroisomer_data=use_hydroisomer_data)
 

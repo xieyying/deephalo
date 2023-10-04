@@ -71,16 +71,16 @@ class analysis_by_asari:
         res = clf.predict(querys)
         base = tf.math.argmax(res[0],1).numpy()
         sub = tf.math.argmax(res[1],1).numpy()
-        hydro = tf.math.argmax(res[2],1).numpy()
+        # hydro = tf.math.argmax(res[2],1).numpy()
         #将base,sub,hydro结果转为字符，保存到new_df_filted中的class列
         base = ["'"+str(i)+"'" for i in base]
         sub = ["'"+str(i)+"'" for i in sub]
         #将hydro转为字符，0变为'hyro',1变为'non-hydro'
-        hydro = ["'hydro'" if i==0 else "'non-hydro'" for i in hydro]
+        # hydro = ["'hydro'" if i==0 else "'non-hydro'" for i in hydro]
         # hydro = ["'"+str(i)+"'" for i in hydro]
         df['base_class'] = base
         df['sub_class'] = sub
-        df['hydro_class'] = hydro
+        # df['hydro_class'] = hydro
 
         #保存到csv文件
         df.to_csv(self.save_target,index=False)

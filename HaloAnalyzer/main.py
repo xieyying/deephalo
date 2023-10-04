@@ -19,8 +19,8 @@ def pipeline_dataset():
     data.filt(para.mz_start,para.mz_end,para.elements_list)
     data.creat_classify_data(para.repeat)
     data.creat_add_Fe_data()
-    data.creat_hydroisomer_data()
-    data.creat_dehydroisomer_data()
+    data.creat_hydroisomer_data(rates=para.rates)
+    data.creat_dehydroisomer_data(rates=para.rates)
     data.creat_classify_data_with_nose(para.repeat)
     data.data_statistics_customized()
 
@@ -43,7 +43,12 @@ def pipeline_model():
             features=para.features_list,
             data_weight=para.data_weight,
             noise_data_weight=para.noise_data_weight,
-            use_noise_data=para.use_noise_data)
+            add_fe_weight=para.add_fe_weight,
+            hydroisomer_weight=para.hydroisomer_weight,
+            use_noise_data=para.use_noise_data,
+            use_add_fe_data=para.use_add_fe_data,
+            use_hydroisomer_data=para.use_hydroisomer_data,
+            )
 
     a.model.show_CM(pre_trained=False)
 

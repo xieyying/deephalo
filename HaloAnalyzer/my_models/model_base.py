@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
 
 class base:
     def __init__(self,features,train_batch,val_batch,parameters,dataset,
@@ -10,6 +9,7 @@ class base:
                  add_fe_weight = 1,
                  hydroisomer_weight = 1,
                  save = True,use_noise_data='True',use_add_fe_data='True',use_hydroisomer_data='True'):
+        self.input_shape = len(features)
         self.use_noise_data = use_noise_data
         self.use_add_fe_data = use_add_fe_data
         self.use_hydroisomer_data = use_hydroisomer_data
@@ -40,7 +40,7 @@ class base:
         features.append('weight')
         features.append('formula')
         features.append('sub_group_type')
-        features.append('hydro_group')
+        # features.append('hydro_group')
         
         data_v= self.features_data[features]
         
@@ -52,8 +52,8 @@ class base:
         val_sub_group = val.pop('sub_group_type')
 
 
-        train_hydro_group = train.pop('hydro_group')
-        val_hydro_group = val.pop('hydro_group')
+        # train_hydro_group = train.pop('hydro_group')
+        # val_hydro_group = val.pop('hydro_group')
         train_weight = train.pop('weight')
         val_weight = val.pop('weight')
         train_formula = train.pop('formula')
@@ -62,8 +62,8 @@ class base:
         self.X_test = val.values
         self.X_train_sub_group = train_sub_group.values
         self.X_test_sub_group = val_sub_group.values
-        self.X_train_hydro_group = train_hydro_group.values
-        self.X_test_hydro_group = val_hydro_group.values
+        # self.X_train_hydro_group = train_hydro_group.values
+        # self.X_test_hydro_group = val_hydro_group.values
         self.X_train_weight = train_weight.values
         self.X_test_weight = val_weight.values
         self.Y_train = train_target.values

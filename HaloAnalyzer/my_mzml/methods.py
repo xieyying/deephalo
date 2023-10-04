@@ -3,7 +3,7 @@ from asari.peaks import *
 from asari.default_parameters import PARAMETERS
 import pymzml
 import pandas as pd
-
+from ..my_dataset.dataset_methods import mass_spectrum_calc_2
 def judge_charge(a):
     b = []
     for i in a:
@@ -245,16 +245,29 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
                                 mz_b1_b2 = mz_m1 - mz_m2
                         
                         a0_norm = mz_max/2000
+                        #mass_spectrum_calc2
+                        new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(mz_m2,mz_m1,mz_max,mz_p1,mz_p2,mz_p3,ints_m2,ints_m1,intensity_max,ints_p1,ints_p2,ints_p3)
+
                         #将new_item存入df2
                         df2 = pd.concat([df2,pd.DataFrame([[i,scan,rt,mz_max,intensity_max,
-                                                            is_iso,mz_charge_list,ints_charge_list,Charge,
-                                                            mz_m2,ints_m2,mz_m1,ints_m1,mz_p1,ints_p1,mz_p2,ints_p2,
-                                                            mz_p3,ints_p3,mz_a2_a1*Charge,mz_a1_a0*Charge,a2a1,mass_d,  mz_a0_b1*Charge,mz_b1_b2*Charge,a0_norm,mz_a2_a0*Charge,mz_charge_list_calc]],
+                                                            is_iso,mz_charge_list,ints_charge_list,
+                                                            Charge,mz_m2,ints_m2,mz_m1,ints_m1,
+                                                            mz_p1,ints_p1,mz_p2,ints_p2,mz_p3,ints_p3,
+                                                            mz_a2_a1*Charge,mz_a1_a0*Charge,a2a1,mass_d, 
+                                                            mz_a0_b1*Charge,mz_b1_b2*Charge,a0_norm,mz_a2_a0*Charge,mz_charge_list_calc,
+                                                            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                                                            new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                                                            new_a2_a1*Charge,new_a2_a0*Charge]],
                                                             columns=['roi','scan','rt','mz','intensity',
                                                                         'is_iso','mz_charge_list','ints_charge_list',
                                                                         'Charge','mz_m2','b_2','mz_m1','b_1',
                                                                         'mz_p1','a1','mz_p2','a2','mz_p3','a3',
-                                                                        'a2-a1','a1-a0','a2a1','mass_d', 'a0-b1','b1-b2','a0_norm','a2-a0','charge_calc'])],ignore_index=True)
+                                                                        'a2-a1','a1-a0','a2a1','mass_d', 
+                                                                        'a0-b1','b1-b2','a0_norm','a2-a0','charge_calc',
+                                                                        'new_a0_mz','new_a1_mz','new_a2_mz','new_a3_mz',
+                                                                        'new_a0_ints','new_a1_ints','new_a2_ints','new_a3_ints',
+                                                                        'new_a2_a1','new_a2_a0'
+                                                                        ])],ignore_index=True)
                         
                 except:
                     # print(scan,i,'error')

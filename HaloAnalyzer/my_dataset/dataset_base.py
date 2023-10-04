@@ -1,6 +1,7 @@
 import pandas as pd
 from .dataset_methods import Isotope_simulation,formula_groups_clf,isos_calc,dataset_statistics_save,adding_noise_to_intensity,adding_noise_to_mass
 from .dataset_methods import mass_spectrum_calc,formula_trainable_clf,formula_base_clf,formula_element_clf,other_requirements_trainable_clf
+from .dataset_methods import mass_spectrum_calc_2
 from molmass import Formula
 from multiprocessing import Pool
 import time,os
@@ -20,11 +21,14 @@ class dataset():
         # print('去重后数据',len(self.data))
         #重置index
         self.data = self.data.reset_index(drop=True)
-        self.datalist = ['formula','group','sub_group_type','hydro_group',
+        self.datalist = ['formula','group','sub_group_type',
                          'b_2_mz','b_1_mz','a0_mz','a1_mz','a2_mz','a3_mz',
                          'b_2','b_1','a0','a1','a2','a3',
                          'a1-a0','a2-a0','a2-a1','a0-b1','b1-b2',
                          'a0_norm','a3-a0','a3-a1','a3-a2',
+                         'new_a0','new_a1','new_a2','new_a3',
+                         'new_a0_ints','new_a1_ints','new_a2_ints','new_a3_ints',
+                         'new_a2_a1','new_a2_a0'
                          ]
     
     #用于过滤数据，返回符合要求的数据
@@ -59,7 +63,7 @@ class dataset():
         i = para[0]
         formula = self.data.iloc[i]['formula']
         #根据formula判断训练标签
-        is_train,group,sub_group,hydro_group =formula_groups_clf(formula)
+        is_train,group,sub_group =formula_groups_clf(formula)
         if is_train == 0:
             return  pd.DataFrame(columns=self.datalist)
         #模拟质谱数据
@@ -67,13 +71,17 @@ class dataset():
 
         #计算质谱数据中的差值   
         a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+        new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
         #pandas.concat instead of append
         df = pd.DataFrame(
-                            [[formula,group,sub_group,hydro_group,
+                            [[formula,group,sub_group,
                             b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
                             b_2,b_1,a0,a1,a2,a3,
                             a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
-                            a0_norm,a3_a0,a3_a1,a3_a2]],
+                            a0_norm,a3_a0,a3_a1,a3_a2,
+                            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                            new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                            new_a2_a1,new_a2_a0]],
                             columns=self.datalist
                             )
     
@@ -115,7 +123,7 @@ class dataset():
         repeat_times = para[1]
         formula = self.data.iloc[i]['formula']
         #根据formula判断训练标签
-        is_train,group,sub_group,hydro_group =formula_groups_clf(formula)
+        is_train,group,sub_group =formula_groups_clf(formula)
         if is_train == 0:
             return  pd.DataFrame(columns=self.datalist)
         
@@ -131,14 +139,18 @@ class dataset():
             b_2, b_1, a0, a1, a2, a3 = map(adding_noise_to_intensity, [b_2, b_1, a0, a1, a2, a3])  
             #计算质谱数据中的差值              
             a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a_3_mz,b_2,b_1,a0,a1,a2,a3)
 
             #将结果合并为单个dataframe
             df = pd.concat([df,pd.DataFrame(
-                            [[formula,group,sub_group,hydro_group,
+                            [[formula,group,sub_group,
                             b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
                             b_2,b_1,a0,a1,a2,a3,
                             a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
-                            a0_norm,a3_a0,a3_a1,a3_a2]],
+                            a0_norm,a3_a0,a3_a1,a3_a2,
+                            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                            new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                            new_a2_a1,new_a2_a0]],
                             columns=self.datalist
                             )],ignore_index=True)
         return df
@@ -171,7 +183,7 @@ class dataset():
         i = para[0]
         formula = self.data.iloc[i]['formula']
         #根据formula判断训练标签
-        is_train,group,sub_group,hydro_group =formula_groups_clf(formula)
+        is_train,group,sub_group =formula_groups_clf(formula)
         if is_train == 0:
             return  pd.DataFrame(columns=self.datalist)
         is_iron_additive_trainable = other_requirements_trainable_clf(formula)
@@ -182,13 +194,17 @@ class dataset():
         b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,type='Fe')
         #计算质谱数据中的差值
         a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+        new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
         #pandas.concat instead of append
         df = pd.DataFrame(
-                            [[formula,group,sub_group,hydro_group,
+                            [[formula,group,sub_group,
                             b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
                             b_2,b_1,a0,a1,a2,a3,
                             a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
-                            a0_norm,a3_a0,a3_a1,a3_a2]],
+                            a0_norm,a3_a0,a3_a1,a3_a2,
+                            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                            new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                            new_a2_a1,new_a2_a0]],
                             columns=self.datalist
                             )
 
@@ -230,7 +246,7 @@ class dataset():
         rates = para[1]
         #根据formula判断训练标签
         #模拟dehydroisomer质谱数据
-        is_train,group,sub_group,hydro_group =formula_groups_clf(formula,optional_param='hydro')
+        is_train,group,sub_group =formula_groups_clf(formula,optional_param='hydro')
         if is_train == 0:
             return  pd.DataFrame(columns=self.datalist)
         other_requirements_trainable = other_requirements_trainable_clf(formula)
@@ -242,13 +258,17 @@ class dataset():
             b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,type='hydro',rate=rate)
             #计算质谱数据中的差值
             a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
             #pandas.concat instead of append
             df0 = pd.DataFrame(
-                                [[formula,group,sub_group,hydro_group,
+                                [[formula,group,sub_group,
                                 b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
                                 b_2,b_1,a0,a1,a2,a3,
                                 a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
-                                a0_norm,a3_a0,a3_a1,a3_a2]],
+                                a0_norm,a3_a0,a3_a1,a3_a2,
+                                new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                                new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                                new_a2_a1,new_a2_a0]],
                                 columns=self.datalist
                                 )
             df = pd.concat([df,df0],ignore_index=True)
@@ -261,7 +281,7 @@ class dataset():
         df = pd.DataFrame(columns=self.datalist)
         #根据formula判断训练标签
         #模拟dehydroisomer质谱数据
-        is_train,group,sub_group,hydro_group =formula_groups_clf(formula,optional_param='dehydro')
+        is_train,group,sub_group =formula_groups_clf(formula,optional_param='dehydro')
         if is_train == 0:
             return  pd.DataFrame(columns=self.datalist)
         other_requirements_trainable = other_requirements_trainable_clf(formula)
@@ -271,13 +291,17 @@ class dataset():
             b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,rate=rate,type='dehydro')
             #计算质谱数据中的差值
             a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
             #pandas.concat instead of append
             df0 = pd.DataFrame(
-                                [[formula,group,sub_group,hydro_group,
+                                [[formula,group,sub_group,
                                 b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
                                 b_2,b_1,a0,a1,a2,a3,
                                 a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
-                                a0_norm,a3_a0,a3_a1,a3_a2]],
+                                a0_norm,a3_a0,a3_a1,a3_a2,
+                                new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                                new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                                new_a2_a1,new_a2_a0]],
                                 columns=self.datalist
                                 )
             df = pd.concat([df,df0],ignore_index=True)
@@ -383,11 +407,14 @@ class datasets(dataset):
         print('去重后数据',len(self.data))
         #重置index
         self.data = self.data.reset_index(drop=True)
-        self.datalist = ['formula','group','sub_group_type','hydro_group',
+        self.datalist = ['formula','group','sub_group_type',
                          'b_2_mz','b_1_mz','a0_mz','a1_mz','a2_mz','a3_mz',
                          'b_2','b_1','a0','a1','a2','a3',
                          'a1-a0','a2-a0','a2-a1','a0-b1','b1-b2',
                          'a0_norm','a3-a0','a3-a1','a3-a2',
+                         'new_a0','new_a1','new_a2','new_a3',
+                         'new_a0_ints','new_a1_ints','new_a2_ints','new_a3_ints',
+                         'new_a2_a1','new_a2_a0'
                          ]
 if __name__ == '__main__':
     a = dataset(r'source_data/datasets/NPAtlas_download.json','mol_formula')

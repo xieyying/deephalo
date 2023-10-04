@@ -74,22 +74,27 @@ def formula_base_clf(formula_dict):
         group_type = 2
     return group_type
 
-def formula_sub_clf(formula_dict):
-    if ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        group_type = 0
-    elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
-        if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
-            group_type = 0
-        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
-            group_type = 0            
-        elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
-            group_type = 1
-        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
-            group_type = 1
-        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
-            group_type = 2
-    else:
+def formula_sub_clf(formula_dict,optional_param=None):
+    if optional_param == 'dehydro':
         group_type = 3
+    elif optional_param == 'hydro':
+        group_type = 3
+    else:
+        if ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
+            group_type = 0
+        elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
+            if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+                group_type = 0
+            elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
+                group_type = 0            
+            elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
+                group_type = 1
+            elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
+                group_type = 1
+            elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
+                group_type = 2
+        else:
+            group_type = 4
     return group_type
 
 def formula_element_clf(formula_dict,element):
@@ -98,14 +103,14 @@ def formula_element_clf(formula_dict,element):
     else:
         return 0
 
-def formula_hydro_clf(optional_param=None):
-    if optional_param == 'dehydro':
-        group_type = 0
-    elif optional_param == 'hydro':
-        group_type = 0
-    else:
-        group_type = 1
-    return group_type
+# def formula_hydro_clf(optional_param=None):
+#     if optional_param == 'dehydro':
+#         group_type = 0
+#     elif optional_param == 'hydro':
+#         group_type = 0
+#     else:
+#         group_type = 1
+#     return group_type
 
 def formula_groups_clf(formula,optional_param=None):
     #将formula列中的公式转为字典
@@ -120,11 +125,11 @@ def formula_groups_clf(formula,optional_param=None):
     else:
         group = formula_base_clf(formula_dict)
     #判断clf2的sub_group
-    sub_group = formula_sub_clf(formula_dict)
+    sub_group = formula_sub_clf(formula_dict,optional_param)
 
     #判断clf3的group
-    hydro_group = formula_hydro_clf(optional_param)
-    return is_train,group,sub_group,hydro_group
+    # hydro_group = formula_hydro_clf(optional_param)
+    return is_train,group,sub_group#,hydro_group
 
 def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
     #校正质谱数据   
@@ -160,6 +165,46 @@ def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3
     
     a0_norm = a0/2000
     return a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2
+
+def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
+    #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
+
+    if b_2_mz != 0:
+        new_a0_mz = b_2_mz
+        new_a1_mz = b_1_mz
+        new_a2_mz = a0_mz
+        new_a3_mz = a1_mz
+        new_a0_ints = b_2
+        new_a1_ints = b_1
+        new_a2_ints = a0
+        new_a3_ints = a1
+    elif b_1_mz != 0:
+        new_a0_mz = b_1_mz
+        new_a1_mz = a0_mz
+        new_a2_mz = a1_mz
+        new_a3_mz = a2_mz
+        new_a0_ints = b_1
+        new_a1_ints = a0
+        new_a2_ints = a1
+        new_a3_ints = a2
+
+    elif a0_mz != 0:
+        new_a0_mz = a0_mz
+        new_a1_mz = a1_mz
+        new_a2_mz = a2_mz
+        new_a3_mz = a3_mz
+        new_a0_ints = a0
+        new_a1_ints = a1
+        new_a2_ints = a2
+        new_a3_ints = a3
+        
+    new_a2_a1 = new_a2_mz - new_a1_mz
+    new_a2_a0 = new_a2_mz - new_a0_mz
+
+    return new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0
+
+
+ 
 
 def isos_calc(f):
     """
