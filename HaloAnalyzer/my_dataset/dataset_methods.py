@@ -176,7 +176,7 @@ def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,
         new_a3_mz = a1_mz
         new_a0_ints = b_2
         new_a1_ints = b_1
-        new_a2_ints = a0
+        new_a2_ints = 1
         new_a3_ints = a1
     elif b_1_mz != 0:
         new_a0_mz = b_1_mz
@@ -184,7 +184,7 @@ def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,
         new_a2_mz = a1_mz
         new_a3_mz = a2_mz
         new_a0_ints = b_1
-        new_a1_ints = a0
+        new_a1_ints = 1
         new_a2_ints = a1
         new_a3_ints = a2
 
@@ -193,7 +193,7 @@ def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,
         new_a1_mz = a1_mz
         new_a2_mz = a2_mz
         new_a3_mz = a3_mz
-        new_a0_ints = a0
+        new_a0_ints = 1
         new_a1_ints = a1
         new_a2_ints = a2
         new_a3_ints = a3
