@@ -16,7 +16,7 @@ class pick_halo_ann(base):
     """
     def create_Dataset(self):     
         if self.use_noise_data == 'True' or self.use_add_fe_data == 'True' or self.use_hydroisomer_data == 'True':
-            train_dataset = tf.data.Dataset.from_tensor_slices((self.X_train, (self.Y_train,self.X_train_sub_group,self.X_train_hydro_group),self.X_train_weight))
+            train_dataset = tf.data.Dataset.from_tensor_slices((self.X_train, (self.Y_train,self.X_train_sub_group,self.X_train_hydro_group)))
         else:
             train_dataset = tf.data.Dataset.from_tensor_slices((self.X_train, (self.Y_train,self.X_train_sub_group,self.X_train_hydro_group)))
         val_dataset = tf.data.Dataset.from_tensor_slices((self.X_test, (self.Y_test,self.X_test_sub_group,self.X_test_hydro_group)))
