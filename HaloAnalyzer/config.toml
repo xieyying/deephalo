@@ -54,7 +54,7 @@ classes = 7
 epochs = 10
 
 [model_construct_class_weight.base_weight]
-0 = 100
+0 = 10
 1 = 50
 2 = 50
 
