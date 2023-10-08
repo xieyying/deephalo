@@ -253,6 +253,64 @@ class dataset():
                                 )
             df = pd.concat([df,df0],ignore_index=True)
         return df
+    def simulation_hydroisomer2_data(self,para):
+        i = para[0]
+        formula = self.data.iloc[i]['formula']
+        rates = para[1]
+        #根据formula判断训练标签
+        #模拟dehydroisomer质谱数据
+        is_train,group,sub_group,hydro_group =formula_groups_clf(formula,optional_param='hydro2')
+        if is_train == 0:
+            return  pd.DataFrame(columns=self.datalist)
+        other_requirements_trainable = other_requirements_trainable_clf(formula)
+        if other_requirements_trainable == 0:
+            return  pd.DataFrame(columns=self.datalist)
+        #用一行代码创建一个空的DataFrame
+        df = pd.DataFrame(columns=self.datalist)
+        for rate in rates:
+            b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,type='hydro2',rate=rate)
+            #计算质谱数据中的差值
+            a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+            #pandas.concat instead of append
+            df0 = pd.DataFrame(
+                                [[formula,group,sub_group,hydro_group,
+                                b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
+                                b_2,b_1,a0,a1,a2,a3,
+                                a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
+                                a0_norm,a3_a0,a3_a1,a3_a2]],
+                                columns=self.datalist
+                                )
+            df = pd.concat([df,df0],ignore_index=True)
+        return df
+    def simulation_hydroisomer3_data(self,para):
+        i = para[0]
+        formula = self.data.iloc[i]['formula']
+        rates = para[1]
+        #根据formula判断训练标签
+        #模拟dehydroisomer质谱数据
+        is_train,group,sub_group,hydro_group =formula_groups_clf(formula,optional_param='hydro3')
+        if is_train == 0:
+            return  pd.DataFrame(columns=self.datalist)
+        other_requirements_trainable = other_requirements_trainable_clf(formula)
+        if other_requirements_trainable == 0:
+            return  pd.DataFrame(columns=self.datalist)
+        #用一行代码创建一个空的DataFrame
+        df = pd.DataFrame(columns=self.datalist)
+        for rate in rates:
+            b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,type='hydro3',rate=rate)
+            #计算质谱数据中的差值
+            a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+            #pandas.concat instead of append
+            df0 = pd.DataFrame(
+                                [[formula,group,sub_group,hydro_group,
+                                b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,
+                                b_2,b_1,a0,a1,a2,a3,
+                                a1_a0,a2_a0,a2_a1,a0_b1,b1_b2,
+                                a0_norm,a3_a0,a3_a1,a3_a2]],
+                                columns=self.datalist
+                                )
+            df = pd.concat([df,df0],ignore_index=True)
+        return df
     #通过分子式模拟dehydroisomer质谱数据
     def simulation_dehydroisomer_data(self,para):
         i = para[0]
@@ -284,7 +342,7 @@ class dataset():
         return df
     
     #创建hydroisomer训练数据集，使用多进程
-    def creat_hydroisomer_data(self,rates=[0.2, 0.4, 0.6, 1.0, 1/0.6, 1/0.4, 1/0.2]):
+    def creat_hydroisomer_data(self,rates=[0.33,0.66]):
         #开始计时
         time_start = time.time()
         #创建进程池
@@ -311,7 +369,63 @@ class dataset():
 
         df.to_csv(r'./train_dataset/selected_hydroisomer_data.csv',index=False)
         print('训练数据(hydroisomer)', len(df))
-    
+
+    def creat_hydroisomer2_data(self,rates=[0.99]):
+        #开始计时
+        time_start = time.time()
+        #创建进程池
+        pool = Pool()
+        #使用多进程的方式map simulation_data
+        result = pool.map(self.simulation_hydroisomer2_data,[(i,rates) for i in self.data.index])
+        #关闭进程池
+        pool.close()
+        #结束计时
+        time_end = time.time()
+
+        print('creat_hydroisomer2_data totally cost',time_end-time_start)
+        #将result中所有df转为一个DataFrame
+        df = pd.concat(result,ignore_index=True)
+        #过滤掉group为none的数据
+        df = df[df['group'].notnull()]
+        #重置index
+        df = df.reset_index(drop=True)
+
+
+        #保存到csv文件
+        if not os.path.exists(r'./train_dataset'):
+            os.makedirs(r'./train_dataset')
+
+        df.to_csv(r'./train_dataset/selected_hydroisomer2_data.csv',index=False)
+        print('训练数据(hydroisomer)', len(df))
+
+    def creat_hydroisomer3_data(self,rates=[1.32,1.65]):
+        #开始计时
+        time_start = time.time()
+        #创建进程池
+        pool = Pool()
+        #使用多进程的方式map simulation_data
+        result = pool.map(self.simulation_hydroisomer3_data,[(i,rates) for i in self.data.index])
+        #关闭进程池
+        pool.close()
+        #结束计时
+        time_end = time.time()
+
+        print('creat_hydroisomer3_data totally cost',time_end-time_start)
+        #将result中所有df转为一个DataFrame
+        df = pd.concat(result,ignore_index=True)
+        #过滤掉group为none的数据
+        df = df[df['group'].notnull()]
+        #重置index
+        df = df.reset_index(drop=True)
+
+
+        #保存到csv文件
+        if not os.path.exists(r'./train_dataset'):
+            os.makedirs(r'./train_dataset')
+
+        df.to_csv(r'./train_dataset/selected_hydroisomer3_data.csv',index=False)
+        print('训练数据(hydroisomer)', len(df))    
+
     #创建dehydroisomer训练数据集，使用多进程
     def creat_dehydroisomer_data(self,rates=[0.2, 0.4, 0.6, 1.0, 1/0.6, 1/0.4, 1/0.2]):
         #开始计时

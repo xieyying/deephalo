@@ -20,6 +20,9 @@ def pipeline_dataset():
     data.creat_classify_data(para.repeat)
     data.creat_add_Fe_data()
     data.creat_hydroisomer_data()
+    data.creat_hydroisomer2_data()
+    data.creat_hydroisomer3_data()
+
     data.creat_dehydroisomer_data()
     data.creat_classify_data_with_nose(para.repeat)
     data.data_statistics_customized()

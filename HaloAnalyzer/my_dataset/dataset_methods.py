@@ -7,6 +7,10 @@ def Isotope_simulation(f,type=None,rate=None):
     fm = Formula(f)
     if type == 'hydro':
         fm_isos = get_hydroisomer_isotopes(f,rate,0.1).dataframe()
+    if type == 'hydro2':
+        fm_isos = get_hydroisomer_isotopes(f,rate,0.1).dataframe()
+    elif type == 'hydro3':
+        fm_isos = get_hydroisomer_isotopes(f,rate,0.1).dataframe()
     elif type == 'dehydro':
         fm_isos = get_dehydroisomer_isotopes(f,rate,0.1).dataframe()
     elif type == 'Fe':
@@ -20,7 +24,7 @@ def Isotope_simulation(f,type=None,rate=None):
     b_2_mz = 0
     b_1_mz = 0
 
-    while round(fm_isos.iloc[i]['Intensity %'],2) != 100.0:
+    while round(fm_isos.iloc[i]['Intensity %'],7) != 100.0:
         b_2_mz = b_1_mz
         b_2_int = b_1_int
         b_1_mz = fm_isos.iloc[i]['Relative mass']
@@ -74,8 +78,17 @@ def formula_base_clf(formula_dict):
         group_type = 2
     return group_type
 
-def formula_sub_clf(formula_dict):
-    if ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
+def formula_sub_clf(formula_dict,optional_param=None):
+    if optional_param == 'dehydro':
+        group_type = 0
+    elif optional_param == 'hydro':
+        group_type = 2
+    elif optional_param == 'hydro2':
+        group_type = 1
+    elif optional_param == 'hydro3':
+        group_type = 0
+
+    elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
         group_type = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
@@ -98,13 +111,40 @@ def formula_element_clf(formula_dict,element):
     else:
         return 0
 
-def formula_hydro_clf(optional_param=None):
+# def formula_hydro_clf(optional_param=None):
+#     if optional_param == 'dehydro':
+#         group_type = 0
+#     elif optional_param == 'hydro':
+#         group_type = 0
+#     else:
+#         group_type = 1
+#     return group_type
+
+def formula_hydro_clf(formula_dict,optional_param=None):
     if optional_param == 'dehydro':
         group_type = 0
     elif optional_param == 'hydro':
+        group_type = 4
+    elif optional_param == 'hydro2':
+        group_type = 5
+    elif optional_param == 'hydro3':
+        group_type = 6
+
+    elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
         group_type = 0
+    elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
+        if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+            group_type = 0
+        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
+            group_type = 0            
+        elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
+            group_type = 1
+        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
+            group_type = 1
+        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
+            group_type = 2
     else:
-        group_type = 1
+        group_type = 3
     return group_type
 
 def formula_groups_clf(formula,optional_param=None):
@@ -117,13 +157,17 @@ def formula_groups_clf(formula,optional_param=None):
         group = 0
     elif optional_param == 'hydro':
         group = 0
+    elif optional_param == 'hydro2':
+        group = 0
+    elif optional_param == 'hydro3':
+        group = 0
     else:
         group = formula_base_clf(formula_dict)
     #判断clf2的sub_group
-    sub_group = formula_sub_clf(formula_dict)
+    sub_group = formula_sub_clf(formula_dict,optional_param)
 
     #判断clf3的group
-    hydro_group = formula_hydro_clf(optional_param)
+    hydro_group = formula_hydro_clf(formula_dict,optional_param)
     return is_train,group,sub_group,hydro_group
 
 def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
@@ -299,7 +343,7 @@ def other_requirements_trainable_clf(formula):
         return 0
 
 
-def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.1):
+def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
 
     spectrum1=molmass.Formula(formula).spectrum()
     spectrum2=molmass.Formula(formula+"H2").spectrum()
@@ -393,8 +437,11 @@ if __name__ == '__main__':
     #b_2_mz,b_1_mz,a_0_mz,a_1_mz,a_2_mz,a_3_mz,b_2_int/100,b_1_int/100,a_0_int/100,a_1_int/100,a_2_int/100,a_3_int/100
     # fm_isos =Formula(f).spectrum(min_intensity=1).dataframe()
     # print(fm_isos)
-    print(Formula(f).spectrum(min_intensity=1).dataframe())
+    # print(Formula(f).spectrum(min_intensity=1).dataframe())
     # print(get_hydroisomer_isotopes(f,0.2))
-    print(get_dehydroisomer_isotopes(f,0.2))
+    # print(get_dehydroisomer_isotopes(f,0.2))
+
+    a=formula_groups_clf(f,optional_param='hydro3')
+    print(a)
 
 

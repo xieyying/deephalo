@@ -19,15 +19,18 @@ class base:
         features_data_with_noise['weight'] = noise_data_weight
         features_data_add_Fe = pd.read_csv(dataset[2])
         features_data_add_Fe['weight'] = add_fe_weight
-        features_data_hydroisomer = pd.read_csv(dataset[3])
-        features_data_hydroisomer['weight'] = hydroisomer_weight
+        data_hydroisomer = pd.read_csv(dataset[3])
+        data_hydroisomer2 = pd.read_csv(dataset[4])
+        data_hydroisomer3 = pd.read_csv(dataset[5])
+        self.features_data_hydroisomer = pd.concat([data_hydroisomer,data_hydroisomer2,data_hydroisomer3],axis=0)
+        # features_data_hydroisomer['weight'] = hydroisomer_weight
         self.features_data = features_data
         if use_noise_data == 'True':
             self.features_data = pd.concat([self.features_data,features_data_with_noise],axis=0)
         if use_add_fe_data == 'True':
             self.features_data = pd.concat([self.features_data,features_data_add_Fe],axis=0)
         if use_hydroisomer_data == 'True':
-            self.features_data = pd.concat([self.features_data,features_data_hydroisomer],axis=0)
+            self.features_data = pd.concat([self.features_data,self.features_data_hydroisomer],axis=0)
 
 
         self.train_batch = train_batch
@@ -71,3 +74,14 @@ class base:
         self.formula_train = train_formula.values
         self.formula_test = val_formula.values
         self.clf = None
+
+if __name__ =="__main__":
+    a=base(features=["a2-a1"],train_batch=32,val_batch=32,parameters={'dense1':4000,'dense1_drop':0.5,'dense2':1000,'dense2_drop':0.3,'dense3':500,'classes':3},\
+           dataset=[r'C:/Users/xyy/Desktop\python/HaloAnalyzer_training/test1/train_dataset/selected_data.csv',\
+                    r'C:/Users/xyy/Desktop\python/HaloAnalyzer_training/test1/train_dataset/selected_data_with_noise.csv',
+                    r'C:/Users/xyy/Desktop\python/HaloAnalyzer_training/test1/train_dataset/selected_add_Fe_data.csv',
+                    r'C:/Users/xyy/Desktop\python/HaloAnalyzer_training/test1/train_dataset/selected_hydroisomer_data.csv',
+                    r'C:/Users/xyy/Desktop\python/HaloAnalyzer_training/test1/train_dataset/selected_hydroisomer2_data.csv',
+                    r'C:/Users/xyy/Desktop\python/HaloAnalyzer_training/test1/train_dataset/selected_hydroisomer3_data.csv' ],save=True,use_noise_data='True',use_add_fe_data='True',use_hydroisomer_data='True')
+    print(a.features_data["hydro_group"].unique())
+    print(a.features_data_hydroisomer['hydro_group'].unique())

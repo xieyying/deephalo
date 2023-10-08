@@ -11,7 +11,7 @@ class my_model:
                  train_batch:int,
                  val_batch:int,
                  parameters:dict,
-                 dataset:str=[r'./train_dataset/selected_data.csv',r'./train_dataset/selected_data_with_noise.csv',r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_add_Fe_data.csv',r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_hydroisomer_data.csv'],
+                 dataset:str=[r'./train_dataset/selected_data.csv',r'./train_dataset/selected_data_with_noise.csv',r'.\train_dataset\selected_add_Fe_data.csv',r'.\train_dataset\selected_hydroisomer_data.csv',r'.\train_dataset\selected_hydroisomer2_data.csv',r'.\train_dataset\selected_hydroisomer3_data.csv' ],
                  save_to_file = True,
                  data_weight = 2,
                  noise_data_weight = 1,

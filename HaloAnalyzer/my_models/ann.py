@@ -45,7 +45,7 @@ class pick_halo_ann(base):
 
             z2 = layers.Concatenate()([share, clf_base_output, clf_sub_output])
             z2 = layers.Dense(500, activation="relu")(z2)
-            clf_hydro_output = layers.Dense(2,activation='softmax', name="hydroisomer")(z2)
+            clf_hydro_output = layers.Dense(7,activation='softmax', name="hydroisomer")(z2)
 
             clfs = keras.Model(inputs=input, outputs=[clf_base_output, clf_sub_output,  clf_hydro_output], name="clfs")
             
