@@ -6,13 +6,13 @@ import molmass
 def Isotope_simulation(f,type=None,rate=None):
     fm = Formula(f)
     if type == 'hydro':
-        fm_isos = get_hydroisomer_isotopes(f,rate,0.1).dataframe()
+        fm_isos = get_hydroisomer_isotopes(f,rate,0.0001).dataframe()
     if type == 'hydro2':
-        fm_isos = get_hydroisomer_isotopes(f,rate,0.1).dataframe()
+        fm_isos = get_hydroisomer_isotopes(f,rate,0.0001).dataframe()
     elif type == 'hydro3':
-        fm_isos = get_hydroisomer_isotopes(f,rate,0.1).dataframe()
+        fm_isos = get_hydroisomer_isotopes(f,rate,0.0001).dataframe()
     elif type == 'dehydro':
-        fm_isos = get_dehydroisomer_isotopes(f,rate,0.1).dataframe()
+        fm_isos = get_dehydroisomer_isotopes(f,rate,0.0001).dataframe()
     elif type == 'Fe':
         fm_isos = get_iron_additive_isotopes(f).dataframe()
     else:
@@ -204,6 +204,44 @@ def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3
     
     a0_norm = a0/2000
     return a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2
+
+def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
+    #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
+
+    if b_2_mz != 0:
+        new_a0_mz = b_2_mz
+        new_a1_mz = b_1_mz
+        new_a2_mz = a0_mz
+        new_a3_mz = a1_mz
+        new_a0_ints = b_2
+        new_a1_ints = b_1
+        new_a2_ints = 1
+        new_a3_ints = a1
+    elif b_1_mz != 0:
+        new_a0_mz = b_1_mz
+        new_a1_mz = a0_mz
+        new_a2_mz = a1_mz
+        new_a3_mz = a2_mz
+        new_a0_ints = b_1
+        new_a1_ints = 1
+        new_a2_ints = a1
+        new_a3_ints = a2
+
+    elif a0_mz != 0:
+        new_a0_mz = a0_mz
+        new_a1_mz = a1_mz
+        new_a2_mz = a2_mz
+        new_a3_mz = a3_mz
+        new_a0_ints = 1
+        new_a1_ints = a1
+        new_a2_ints = a2
+        new_a3_ints = a3
+        
+    new_a2_a1 = new_a2_mz - new_a1_mz
+    new_a2_a0 = new_a2_mz - new_a0_mz
+
+    return new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0
+
 
 def isos_calc(f):
     """
