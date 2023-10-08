@@ -30,7 +30,7 @@ class pick_halo_ann(base):
         train_dataset,val_dataset = self.create_Dataset()
         #模型参数设置
         def get_compiled_model():
-            input = keras.Input(shape=(6,), name="mass_features")
+            input = keras.Input(shape=(9,), name="mass_features")
             share = layers.Dense(4000, activation="relu")(input)
             share = layers.Dropout(0.5)(share)
             share = layers.Dense(1000, activation="relu")(share)

@@ -7,7 +7,7 @@ def Isotope_simulation(f,type=None,rate=None):
     fm = Formula(f)
     if type == 'hydro':
         fm_isos = get_hydroisomer_isotopes(f,rate,0.0001).dataframe()
-    if type == 'hydro2':
+    elif type == 'hydro2':
         fm_isos = get_hydroisomer_isotopes(f,rate,0.0001).dataframe()
     elif type == 'hydro3':
         fm_isos = get_hydroisomer_isotopes(f,rate,0.0001).dataframe()
@@ -16,7 +16,7 @@ def Isotope_simulation(f,type=None,rate=None):
     elif type == 'Fe':
         fm_isos = get_iron_additive_isotopes(f).dataframe()
     else:
-        fm_isos =fm.spectrum(min_intensity=1).dataframe()
+        fm_isos =fm.spectrum(min_intensity=0.0001).dataframe()
 
     i = 0 
     b_1_int = 0
@@ -422,7 +422,7 @@ def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
     # print(spectrum)
     return molmass.Spectrum(spectrum)
 
-def get_dehydroisomer_isotopes(formula,ratio,min_intensity=0.1):
+def get_dehydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
 
     spectrum2=molmass.Formula(formula).spectrum()
     dehydroisomer=Formula(formula)-Formula("H2")
@@ -471,15 +471,15 @@ if __name__ == '__main__':
     # a = 50
     # b = adding_noise_to_mass(a)
     # print(b)
-    f='C6H12O6'
+    f='C19H37NO5'
     #b_2_mz,b_1_mz,a_0_mz,a_1_mz,a_2_mz,a_3_mz,b_2_int/100,b_1_int/100,a_0_int/100,a_1_int/100,a_2_int/100,a_3_int/100
     # fm_isos =Formula(f).spectrum(min_intensity=1).dataframe()
     # print(fm_isos)
     # print(Formula(f).spectrum(min_intensity=1).dataframe())
-    # print(get_hydroisomer_isotopes(f,0.2))
+    # print(get_hydroisomer_isotopes(f,0.33))
     # print(get_dehydroisomer_isotopes(f,0.2))
 
-    a=formula_groups_clf(f,optional_param='hydro3')
-    print(a)
+    # a=formula_groups_clf(f,optional_param='hydro3')
+    print(Isotope_simulation(f,type='hydro3',rate=1.32))
 
 

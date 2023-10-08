@@ -21,12 +21,12 @@ element_list = [
 ]
 repeat = 1
 feature_list = [
-    "a2-a1",
-    "b_2",
-    "b_1",
-    "a1",
-    "a2",
-    "a2-a0",
+'new_a0_ints',
+'new_a1_ints',
+'new_a2_ints',
+'new_a3_ints',
+'new_a2_a1',
+'new_a2_a0',
 ]
 paths = [
     [
@@ -36,7 +36,7 @@ paths = [
 ]
 
 [model_data]
-data_weight = 2
+data_weight = 1
 noise_data_weight = 1
 use_noise_data = "False"
 use_add_fe_data = "True"
@@ -54,24 +54,24 @@ classes = 7
 epochs = 10
 
 [model_construct_class_weight.base_weight]
-0 = 10
-1 = 50
-2 = 50
+0 = 1000
+1 = 5000
+2 = 5000
 
 [model_construct_class_weight.sub_weight]
-0 = 5
-1 = 10
-2 = 5
-3 = 5
+0 = 500
+1 = 1000
+2 = 500
+3 = 500
 
 [model_construct_class_weight.hydroisomer_weight]
-0 = 100
-1 = 100
-2=20
-3=1
-4=1
-5=1
-6=1
+0 = 1000
+1 = 1000
+2=200
+3=10
+4=0.1
+5=0.1
+6=0.1
 
 [asari]
 min_prominence_threshold = 0.33
