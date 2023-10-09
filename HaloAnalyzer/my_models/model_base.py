@@ -9,7 +9,7 @@ class base:
                  noise_data_weight = 1,
                  add_fe_weight = 1,
                  hydroisomer_weight = 1,
-                 save = True,use_noise_data='True',use_add_fe_data='True',use_hydroisomer_data='True'):
+                 save = True,use_noise_data='True',use_add_fe_data='False',use_hydroisomer_data='True'):
         self.use_noise_data = use_noise_data
         self.use_add_fe_data = use_add_fe_data
         self.use_hydroisomer_data = use_hydroisomer_data
@@ -27,8 +27,8 @@ class base:
         self.features_data = features_data
         if use_noise_data == 'True':
             self.features_data = pd.concat([self.features_data,features_data_with_noise],axis=0)
-        if use_add_fe_data == 'True':
-            self.features_data = pd.concat([self.features_data,features_data_add_Fe],axis=0)
+        # if use_add_fe_data == 'True':
+        #     self.features_data = pd.concat([self.features_data,features_data_add_Fe],axis=0)
         if use_hydroisomer_data == 'True':
             self.features_data = pd.concat([self.features_data,self.features_data_hydroisomer],axis=0)
 

@@ -19,6 +19,8 @@ class run_parameters:
         self.data_weight = config['model_data']['data_weight']
         self.noise_data_weight = config['model_data']['noise_data_weight']
         self.use_noise_data = config['model_data']['use_noise_data']
+        # self.use_fe_data = config['model_data']['use_fe_data']
+        # self.use_hydroisomer_data = config['model_data']['use_hydroisomer_data']
         #model_construct参数
         self.train_batch = config['model_construct']['train_batch']
         self.val_batch = config['model_construct']['val_batch']

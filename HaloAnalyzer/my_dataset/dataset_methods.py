@@ -86,7 +86,7 @@ def formula_sub_clf(formula_dict,optional_param=None):
     elif optional_param == 'hydro2':
         group_type = 1
     elif optional_param == 'hydro3':
-        group_type = 0
+        group_type = 0       
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
         group_type = 0
@@ -101,6 +101,8 @@ def formula_sub_clf(formula_dict,optional_param=None):
             group_type = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
             group_type = 2
+    elif 'Fe' in formula_dict.keys():
+        group_type = 4 
     else:
         group_type = 3
     return group_type
@@ -143,6 +145,8 @@ def formula_hydro_clf(formula_dict,optional_param=None):
             group_type = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
             group_type = 2
+    elif 'Fe' in formula_dict.keys():
+        group_type = 7
     else:
         group_type = 3
     return group_type

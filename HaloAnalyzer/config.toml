@@ -17,21 +17,39 @@ element_list = [
     "Ho",
     "Na",
     "Al",
-    "Fe"
 ]
 repeat = 1
 feature_list = [
-'new_a0_ints',
-'new_a1_ints',
-'new_a2_ints',
-'new_a3_ints',
-'new_a2_a1',
-'new_a2_a0',
+    "new_a0_ints",
+    "new_a1_ints",
+    "new_a2_ints",
+    "new_a3_ints",
+    "new_a2_a1_10",
 ]
 paths = [
     [
         "J:/wangmengyuan/dataset/datasets/NPAtlas_download.json",
         "mol_formula",
+    ],
+    [
+        "J:/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+        "MS-Ready_Mol_Formula",
+    ],
+    [
+        "J:/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+        "chemical_formula",
+    ],
+    [
+        "J:/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+        "Formula",
+    ],
+    [
+        "J:/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+        "formula",
+    ],
+    [
+        "J:/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+        "CHEMICAL_DATA",
     ],
 ]
 
@@ -39,7 +57,7 @@ paths = [
 data_weight = 1
 noise_data_weight = 1
 use_noise_data = "False"
-use_add_fe_data = "True"
+use_add_fe_data = "False"
 use_hydroisomer_data = "True"
 
 [model_construct]
@@ -51,27 +69,27 @@ dense2 = 1000
 dense2_drop = 0.3
 dense3 = 250
 classes = 7
-epochs = 10
+epochs = 30
 
 [model_construct_class_weight.base_weight]
-0 = 1000
-1 = 5000
-2 = 5000
+0 = 500
+1 = 500
+2 = 500
 
 [model_construct_class_weight.sub_weight]
-0 = 500
-1 = 1000
-2 = 500
-3 = 500
+0 = 100
+1 = 100
+2 = 100
+3 = 100
 
 [model_construct_class_weight.hydroisomer_weight]
-0 = 1000
-1 = 1000
-2=200
-3=10
-4=0.1
-5=0.1
-6=0.1
+0 = 100
+1 = 100
+2 = 200
+3 = 100
+4 = 100
+5 = 100
+6 = 100
 
 [asari]
 min_prominence_threshold = 0.33
@@ -84,4 +102,4 @@ min_peak_height = 5000
 min_intensity = 100
 
 [visualization]
-path = "C:\\Users\\Xin\\Desktop\\p_test"
+path = "C:\\Users\\xyy\\Desktop\\python\\HaloAnalyzer_training\\test1"

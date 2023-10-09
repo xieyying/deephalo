@@ -216,6 +216,8 @@ class dataset():
         if is_iron_additive_trainable == 0:
             return  pd.DataFrame(columns=self.datalist)
         group = 1
+        sub_group = 4
+        hydro_group = 7
         #模拟质谱数据
         b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,type='Fe')
         #计算质谱数据中的差值

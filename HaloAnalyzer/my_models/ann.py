@@ -30,21 +30,25 @@ class pick_halo_ann(base):
         train_dataset,val_dataset = self.create_Dataset()
         #模型参数设置
         def get_compiled_model():
-            input = keras.Input(shape=(9,), name="mass_features")
-            share = layers.Dense(4000, activation="relu")(input)
+            input = keras.Input(shape=(5,), name="mass_features")
+            share = layers.Dense(1000, activation="relu")(input)
             share = layers.Dropout(0.5)(share)
-            share = layers.Dense(1000, activation="relu")(share)
+            share = layers.Dense(500, activation="relu")(share)
+            share = layers.Dropout(0.5,name='share')(share)
+            share = layers.Dense(250, activation="relu")(input)
+            share = layers.Dropout(0.3)(share)
+            share = layers.Dense(125, activation="relu")(share)
             share = layers.Dropout(0.3,name='share')(share)
 
-            x = layers.Dense(500, activation="relu")(share)
+            x = layers.Dense(125, activation="relu")(share)
             clf_base_output = layers.Dense(3,activation='softmax', name="base")(x)
 
             y = layers.Concatenate()([share, clf_base_output])
-            y = layers.Dense(500, activation="relu")(y)
+            y = layers.Dense(125, activation="relu")(y)
             clf_sub_output = layers.Dense(4,activation='softmax', name="sub")(y)
 
             z2 = layers.Concatenate()([share, clf_base_output, clf_sub_output])
-            z2 = layers.Dense(500, activation="relu")(z2)
+            z2 = layers.Dense(125, activation="relu")(z2)
             clf_hydro_output = layers.Dense(7,activation='softmax', name="hydroisomer")(z2)
 
             clfs = keras.Model(inputs=input, outputs=[clf_base_output, clf_sub_output,  clf_hydro_output], name="clfs")
