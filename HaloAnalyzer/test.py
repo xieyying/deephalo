@@ -43,10 +43,17 @@ path=r"C:\Users\xyy\Desktop\python\HaloAnalyzer_training\test1\train_dataset"
 #     df['new_a2_a1_10']=new_a2_a1_10
 #     df.to_csv(path+'/'+f,index=False)
 
-f=path+"\\selected_data.csv"
-df=pd.read_csv(f)
-new_a2_a1=df['new_a2_a1']
-# new_a2_a1_10为new_a2_a1的10次方
-new_a2_a1_10=new_a2_a1**10
-df['new_a2_a1_10']=new_a2_a1_10
-df.to_csv(f,index=False)
+# f=path+"\\selected_data.csv"
+# df=pd.read_csv(f)
+# new_a2_a1=df['new_a2_a1']
+# # new_a2_a1_10为new_a2_a1的10次方
+# new_a2_a1_10=new_a2_a1**10
+# df['new_a2_a1_10']=new_a2_a1_10
+# df.to_csv(f,index=False)
+import numpy as np
+a=np.array([1,2,3,4,5])
+b = np.subtract.outer(a, a)
+b = b.reshape(len(a),len(a))
+print(b)
+
+

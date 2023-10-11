@@ -128,11 +128,16 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
                     mz_flited2 = pd.Series(mz).between(df.loc[i,'mz']-2.1,df.loc[i,'mz']+3.1)
                     mz_flited2 = mz_flited2[mz_flited2].index.tolist()
                     mz_max2 = mz[mz_flited2[intensity[mz_flited2].argmax()]]
-                    intensity_max2 = intensity[mz_flited2].max()
+                    intensity_max2 = intensity[mz_flited2].max()                    
                     if mz_max2 == mz_max:
                         is_iso = 'y'
                         mz_charge_list = mz[mz_flited2]
                         ints_charge_list = intensity[mz_flited2]/intensity_max2
+
+                        #过滤掉ints_charge_list中小于0.06的值(去除杂信号)
+                        mz_charge_list = mz_charge_list[ints_charge_list>0.02]
+                        ints_charge_list = ints_charge_list[ints_charge_list>0.02]
+
                         #选取mz_charge_list中强度最大的前5个峰
                         #若不足五个峰，则选取全部
                         if len(mz_charge_list) >= 5:
