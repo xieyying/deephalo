@@ -38,7 +38,7 @@ class PipelineVis:
             y='mz',
             color='base_class',
             size = 'intensity',
-            tooltip=['roi','scan','rt','mz','Charge','base_class','sub_class','intensity'],
+            tooltip=['roi','scan','rt','mz','Charge','base_class','sub_class','hydro_class','intensity'],
             opacity=alt.condition(selection, alt.value(1), alt.value(0.1)),
         ).interactive().add_params(
             selection
@@ -48,7 +48,7 @@ class PipelineVis:
             alt.X('scan',scale=x_scale),
             y='mz',
             color='Charge',
-            tooltip=['roi','scan','rt','mz','Charge','base_class','sub_class','intensity'],
+            tooltip=['roi','scan','rt','mz','Charge','base_class','sub_class','hydro_class','intensity'],
             opacity=alt.condition(selection, alt.value(1), alt.value(0.1)),
         ).interactive().add_params(
             selection
@@ -68,7 +68,7 @@ class PipelineVis:
             x=alt.X('scan',scale=alt.Scale(domain=(target_roi['scan'].min(),target_roi['scan'].max()))),
             y='intensity',
             color='base_class',
-            tooltip=['scan','rt','mz','Charge','base_class','sub_class',]
+            tooltip=['scan','rt','mz','Charge','base_class','sub_class','hydro_class']
         ).interactive()).properties(
             width=600,
             height=250
