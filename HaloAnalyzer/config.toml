@@ -1,6 +1,9 @@
 [datasets]
-mz_start = 200
-mz_end = 2000
+paths = [
+    [
+        "F:/XinBackup/source_data/datasets/NPAtlas_download.json",
+        "mol_formula",
+    ],]
 element_list = [
     "K",
     "F",
@@ -16,29 +19,22 @@ element_list = [
     "Br",
     "Ho",
     "Na",
-    "Al",
-]
-repeat = 1
+    "Al",]
+mz_start = 200
+mz_end = 2000
+repeat_for_noise = 1
+rate_for_hydro = [0.33,0.66]
+rate_for_hydro2 = [0.99]
+rate_for_hydro3 = [1.32,1.65]
+
+[model_data]
 feature_list = [
     "new_a0_ints",
     "new_a1_ints",
     "new_a2_ints",
     "new_a3_ints",
-	"new_a2_a1",
-	"new_a2_a0"
-]
-paths = [
-    [
-        "F:/XinBackup/source_data/datasets/NPAtlas_download.json",
-        "mol_formula",
-    ],
-]
-
-[model_data]
-data_weight = 100
-noise_data_weight = 1
-add_fe_data_weight = 10
-hydroisomer_data_weight = 10
+    "new_a2_a1",
+	"new_a2_a0"]
 use_noise_data = "False"
 use_add_fe_data = "True"
 use_hydroisomer_data = "True"
@@ -46,35 +42,34 @@ use_hydroisomer_data = "True"
 [model_construct]
 train_batch = 1000
 val_batch = 1000
-dense1 = 4000
-dense1_drop = 0.5
-dense2 = 1000
-dense2_drop = 0.3
-dense3 = 250
+
 base_classes = 3
 sub_classes = 5
 hydro_classes = 8
+
 epochs = 10
+learning_rate = 0.0001
 
 [model_construct_class_weight.base_weight]
-0 = 500
-1 = 500
-2 = 500
+0 = 10
+1 = 10
+2 = 10
 
 [model_construct_class_weight.sub_weight]
-0 = 100
-1 = 100
-2 = 100
-3 = 100
+0 = 1
+1 = 1
+2 = 1
+3 = 1
 
 [model_construct_class_weight.hydroisomer_weight]
-0 = 100
-1 = 100
-2 = 200
-3 = 100
-4 = 100
-5 = 100
-6 = 100
+0 = 1
+1 = 1
+2 = 2
+3 = 1
+4 = 1
+5 = 1
+6 = 1
+7 = 1
 
 [asari]
 min_prominence_threshold = 0.33

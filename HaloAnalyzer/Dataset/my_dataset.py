@@ -66,7 +66,8 @@ class dataset():
             'new_a2_ints',
             'new_a3_ints',
             'new_a2_a1',
-            'new_a2_a0'
+            'new_a2_a0',
+            'new_a2_a0_10'
         ]
     
     #用于过滤数据，返回符合要求的数据
@@ -146,9 +147,9 @@ class dataset():
     def save(self,path):
         self.df_data.to_csv(path,index=False)
 
-    def work_flow(self,min_mass,max_mass,target_elements,type,rates=[0.5,1]):
+    def work_flow(self,min_mass,max_mass,target_elements,type,repeats=2,rates=[0.5,1]):
         self.filt(min_mass,max_mass,target_elements)
-        self.create_dataset(type,rates,repeats=2)
+        self.create_dataset(type,rates,repeats)
         #如果不存在dataset文件夹，则创建
 
         if not os.path.exists('./dataset'):
@@ -199,7 +200,8 @@ class datasets(dataset):
             'new_a2_ints',
             'new_a3_ints',
             'new_a2_a1',
-            'new_a2_a0'
+            'new_a2_a0',
+            'new_a2_a0_10'
         ]
 
 if __name__ == '__main__':

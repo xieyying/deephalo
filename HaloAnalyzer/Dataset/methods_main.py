@@ -24,6 +24,9 @@ def formula_clf(formula_dict,type=None):
         base_group = 1
     else:
         base_group = 2
+    
+    if type in ['hydro','hydro2','hydro3','dehydro']:
+        base_group = 0
 
     #根据分子式，判断其具体类别
     if type == 'dehydro':
@@ -165,13 +168,13 @@ def create_data(formula,datalist,type='base',rate=None):
     
     
     a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
-    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0,new_a2_a0_10 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
 
     df = pd.DataFrame(
         [[formula, base_group, sub_group, hydro_group, b_2_mz, b_1_mz, a0_mz, a1_mz, a2_mz, a3_mz,
         b_2, b_1, a0, a1, a2, a3, a1_a0, a2_a0, a2_a1, a0_b1, b1_b2, a0_norm, a3_a0, a3_a1, a3_a2,
         new_a0_mz, new_a1_mz, new_a2_mz, new_a3_mz, new_a0_ints, new_a1_ints, new_a2_ints, new_a3_ints,
-        new_a2_a1, new_a2_a0]],
+        new_a2_a1, new_a2_a0, new_a2_a0_10]],
         columns=datalist)
     return df
     

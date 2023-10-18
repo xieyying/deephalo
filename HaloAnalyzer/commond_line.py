@@ -5,7 +5,7 @@ import argparse
 from .parameters import run_parameters
 import importlib_resources
 #通过终端选择运行模式
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 def main():
     print("\n\nHaloAnalyzer (%s) \n" %__version__)

@@ -1,8 +1,8 @@
 import os
-from my_vis.vis_pipeline import PipelineVis
-from my_vis.vis_dataset import Dataset_vis
-from my_vis.vis_model import Model_vis
-from my_vis.intro import introduction
+from .VIZ.vis_pipeline import PipelineVis
+from .VIZ.vis_dataset import Dataset_vis
+from .VIZ.vis_model import Model_vis
+from .VIZ.intro import introduction
 import tomli
 import importlib_resources
 
@@ -78,15 +78,15 @@ def main(pipeline_vis,dataset_vis,model_vis):
     st.markdown('---')
     st.sidebar.markdown('This application is a Streamlit dashboard for Halo Mass Spectrometry Data Analysis')
     st.sidebar.markdown('Please select the page you want to view')
-    pages = st.sidebar.radio('Select page', ['Home', 'Dataset visualization', 'Model visualization','Pipeline visualization'])
-
-    if pages == 'Dataset visualization':
-        show_dataset_vis(dataset_vis)
-        st.markdown('---')
-    elif pages == 'Model visualization':
-        show_model_vis(model_vis)
-        st.markdown('---')    
-    elif pages == 'Pipeline visualization':
+    # pages = st.sidebar.radio('Select page', ['Home', 'Dataset visualization', 'Model visualization','Pipeline visualization'])
+    pages = st.sidebar.radio('Select page', ['Home', 'Pipeline visualization'])
+    # if pages == 'Dataset visualization':
+    #     show_dataset_vis(dataset_vis)
+    #     st.markdown('---')
+    # elif pages == 'Model visualization':
+    #     show_model_vis(model_vis)
+    #     st.markdown('---')    
+    if pages == 'Pipeline visualization':
         show_pipeline_vis(pipeline_vis)
         st.markdown('---')
     else:

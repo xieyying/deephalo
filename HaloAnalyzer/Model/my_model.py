@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from .methods import create_dataset
-from .model_build import model
+from .model_build import model,model_sequence
 class my_model:
     def __init__(self,para) -> None:
         self.batch_size = para['batch_size']
@@ -15,21 +15,28 @@ class my_model:
         self.output1_shape = para['base_classes']
         self.output2_shape = para['sub_classes']
         self.output3_shape = para['hydro_classes']
-    
+        self.base_weight = para['base_weight']
+        self.sub_weight = para['sub_weight']
+        self.hydroisomer_weight = para['hydroisomer_weight']
+        self.learning_rate = para['learning_rate']
     def load_dataset(self):
         self.train_dataset,self.val_dataset = create_dataset(self.features,self.paths,self.batch_size)
 
     def get_model(self):
-        self.model = model(self.input_shape,self.output1_shape,self.output2_shape,self.output3_shape)
+        #model_build中可以定义多种模型结构方便切换
+        self.model = model_sequence(self.input_shape,self.output1_shape,self.output2_shape,self.output3_shape)
         #绘制模型图
-        keras.utils.plot_model(self.model, to_file='./model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
+        keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
     def train(self):
-        opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+        opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=opt,
               loss={'base': 'SparseCategoricalCrossentropy',
                     'sub': 'SparseCategoricalCrossentropy',
                     'hydro': 'SparseCategoricalCrossentropy'},
+                loss_weights={'base': self.base_weight,
+                                'sub': self.sub_weight,
+                                'hydro': self.hydroisomer_weight},
               metrics=['accuracy'])
         self.history = self.model.fit(self.train_dataset, epochs=self.epochs, validation_data=self.val_dataset)
         self.model.save(r'./trained_models/pick_halo_ann.h5')
