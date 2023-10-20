@@ -23,7 +23,7 @@ feature_list = [
     "new_a0_ints",
     "new_a1_ints",
     "new_a2_ints",
-    "new_a3_ints",
+    "new_a2_ints",
     "new_a2_a1_10",
 ]
 paths = [
@@ -56,40 +56,40 @@ paths = [
 [model_data]
 data_weight = 1
 noise_data_weight = 1
-use_noise_data = "False"
+use_noise_data = "True"
 use_add_fe_data = "False"
 use_hydroisomer_data = "True"
 
 [model_construct]
-train_batch = 1000
-val_batch = 1000
-dense1 = 4000
+train_batch = 1024
+val_batch = 1024
+dense1 = 2000
 dense1_drop = 0.5
-dense2 = 1000
+dense2 = 500
 dense2_drop = 0.3
 dense3 = 250
 classes = 7
-epochs = 30
+epochs = 5
 
 [model_construct_class_weight.base_weight]
-0 = 500
-1 = 500
-2 = 500
+0 = 1
+1 = 1
+2 = 1
 
 [model_construct_class_weight.sub_weight]
-0 = 100
-1 = 100
-2 = 100
-3 = 100
+0 = 5
+1 = 3
+2 = 2
+3 = 1
 
 [model_construct_class_weight.hydroisomer_weight]
-0 = 100
-1 = 100
-2 = 200
-3 = 100
-4 = 100
-5 = 100
-6 = 100
+0 = 5
+1 = 3
+2 = 5
+3 = 1
+4 = 1
+5 = 1
+6 = 1
 
 [asari]
 min_prominence_threshold = 0.33

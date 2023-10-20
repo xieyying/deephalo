@@ -2,7 +2,7 @@
 
 from .my_dataset.dataset_base import dataset,datasets
 from .my_models.select_models import my_model
-from .my_mzml.analysis import analysis_by_asari
+from .my_mzml.analysis import analysis_mzml
 from .parameters import run_parameters
 
 def load_config():
@@ -18,19 +18,19 @@ def pipeline_dataset():
     data = datasets(datas)
     data.filt(para.mz_start,para.mz_end,para.elements_list)
     data.creat_classify_data(para.repeat)
-    # data.creat_add_Fe_data()
-    # data.creat_hydroisomer_data()
-    # data.creat_hydroisomer2_data()
-    # data.creat_hydroisomer3_data()
+    data.creat_add_Fe_data()
+    data.creat_hydroisomer_data()
+    data.creat_hydroisomer2_data()
+    data.creat_hydroisomer3_data()
 
     # data.creat_dehydroisomer_data()
-    # data.creat_classify_data_with_nose(para.repeat)
+    data.creat_classify_data_with_nose(para.repeat)
     data.data_statistics_customized()
 
 #Model Pipeline
 def pipeline_model():
     para = load_config()
-    a = my_model('ann',
+    a = my_model('ann2',
             train_batch=para.train_batch,
             val_batch=para.val_batch,
             parameters={'dense1':para.dense1,
@@ -53,7 +53,7 @@ def pipeline_model():
 #Find Halo Pipeline
 def pipeline_find_halo(mzml_path):
     para = load_config()
-    a = analysis_by_asari(mzml_path,para)
-    a.asari_workflow()
+    a = analysis_mzml(mzml_path,para)
+    a.MS2fMS1_workflow()
 
 

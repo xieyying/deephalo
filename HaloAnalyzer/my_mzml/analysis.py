@@ -6,8 +6,9 @@ from .methods import feature_extractor,correct_df_charge
 import tensorflow as tf
 from .base import mzml_base
 from .methods import process_spectrum
+from .MS2fMS1 import process_spectrum, MS1_MS2_connected
 
-class analysis_by_asari:
+class analysis_mzml:
     def __init__(self,path,para) -> None:
         #找到test_mzml文件夹中的mzml文件
         if not os.path.exists(r'./test_mzml_prediction'):
@@ -30,7 +31,7 @@ class analysis_by_asari:
 
 
 
-    def get_mzml_data(self):
+    def get_mzml_data_from_asari(self):
         #提取质谱信息
         ms1_spectra = mzml_base.load_mzml_file(self.mzml_path,1)
         print('ms1_spectra:',len(ms1_spectra))
@@ -58,8 +59,35 @@ class analysis_by_asari:
         #将df2存入csv文件
         # df2.to_csv(self.save_target,index=False)
         df2 = correct_df_charge(df2)
+        # mz_m2 = df2['mz_m2']
+        # mass_spectrum_calc_2(mz_m2,mz_m1,mz_p1,mz_p2,mz_p3,ints_m2,ints_m1,ints_p1,ints_p2,ints_p3)
+        # new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+
+        #添加新feature
         self.raw_df = df2
-    
+
+    def get_mzml_data_from_MS2fMS1(self):
+        #提取质谱信息
+        ms1_spectra = mzml_base.load_mzml_file(self.mzml_path,1)
+        print('ms1_spectra:',len(ms1_spectra))
+
+        #获取ms1_spectra中的scan，total ion current
+        scan = [i for i in range(len(ms1_spectra))]
+        rt = [s['scanList']['scan'][0]['scan start time']*60 for s in ms1_spectra]
+        tic = [s['total ion current'] for s in ms1_spectra]
+
+        df = pd.DataFrame({'rt':rt,'tic':tic,'scan':scan,})
+        df.to_csv(self.save_tic,index=False)
+
+
+        #提取ms1_spectra中的质谱信息
+        #每张质谱中具有二级质谱信息的质谱信息的同位素峰信息提取出来存入新的dataframe
+
+        df2 = pd.DataFrame()
+        df2 = process_spectrum(self.mzml_path,self.para.mzml_min_intensity)
+
+        self.raw_df = df2   
+
     def add_label(self):
         #读取数据
         df = self.raw_df
@@ -76,8 +104,8 @@ class analysis_by_asari:
         base = ["'"+str(i)+"'" for i in base]
         sub = ["'"+str(i)+"'" for i in sub]
         #将hydro转为字符，0变为'hyro',1变为'non-hydro'
-        hydro = ["'hydro'" if i==0 else "'non-hydro'" for i in hydro]
-        # hydro = ["'"+str(i)+"'" for i in hydro]
+        # hydro = ["'hydro'" if i==0 else "'non-hydro'" for i in hydro]
+        hydro = ["'"+str(i)+"'" for i in hydro]
         df['base_class'] = base
         df['sub_class'] = sub
         df['hydro_class'] = hydro
@@ -85,10 +113,12 @@ class analysis_by_asari:
         #保存到csv文件
         df.to_csv(self.save_target,index=False)
 
-                        
     def asari_workflow(self):
+        self.get_mzml_data_from_asari()
+        self.add_label()
 
-        self.get_mzml_data()
+    def MS2fMS1_workflow(self):
+        self.get_mzml_data_from_MS2fMS1()
         self.add_label()
 
 

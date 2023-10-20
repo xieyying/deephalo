@@ -73,9 +73,9 @@ def formula_base_clf(formula_dict):
     if ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         group_type = 0
     elif 'Fe' in formula_dict.keys():
-        group_type = 1
-    else:
         group_type = 2
+    else:
+        group_type = 1
     return group_type
 
 def formula_sub_clf(formula_dict,optional_param=None):

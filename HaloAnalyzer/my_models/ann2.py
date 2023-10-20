@@ -10,7 +10,7 @@ from keras.utils import plot_model
 from keras import layers
 import pandas as pd
 np.set_printoptions(suppress=True)
-class pick_halo_ann(base):
+class pick_halo_ann2(base):
     """
     ann_para:dense1,dense1_drop,dense2,dense2_drop,classes
     """
@@ -33,37 +33,33 @@ class pick_halo_ann(base):
             input = keras.Input(shape=(5,), name="mass_features")
             share = layers.Dense(4096, activation="relu")(input)
             share = layers.Dropout(0.5)(share)
-            share = layers.Dense(2048, activation="relu")(share)
-            share = layers.Dropout(0.5)(share)
             share = layers.Dense(1024, activation="relu")(share)
             share = layers.Dropout(0.4)(share)
             share = layers.Dense(512, activation="relu")(share)
             share = layers.Dropout(0.3)(share)
-            share = layers.Dense(256, activation="relu")(share)
-            share = layers.Dropout(0.3)(share)
-            # share = layers.Dense(250, activation="relu")(share)
-            # share = layers.Dropout(0.2)(share)
 
+            # x = layers.Dense(256, activation="relu")(share)
+            # clf_base_output = layers.Dense(3,activation='softmax', name="base")(x)
 
-            x = layers.Dense(256, activation="relu")(share)
-            clf_base_output = layers.Dense(3,activation='softmax', name="base")(x)
-
-            y = layers.Concatenate()([share, clf_base_output])
-            y = layers.Dense(256, activation="relu")(y)
+            # y = layers.Concatenate()([share, clf_base_output])
+            y = layers.Dense(256, activation="relu")(share)
+            y = layers.Dropout(0.2)(y)
+            y = layers.Dense(128, activation="relu")(y)
             clf_sub_output = layers.Dense(4,activation='softmax', name="sub")(y)
 
-            z2 = layers.Concatenate()([share, clf_sub_output])
+            z2 = layers.Concatenate()([y, clf_sub_output])
             z2 = layers.Dense(256, activation="relu")(z2)
+            z2 = layers.Dropout(0.2)(z2)
+            z2 = layers.Dense(128, activation="relu")(z2)
             clf_hydro_output = layers.Dense(7,activation='softmax', name="hydroisomer")(z2)
 
-            clfs = keras.Model(inputs=input, outputs=[clf_base_output, clf_sub_output,  clf_hydro_output], name="clfs")
+            clfs = keras.Model(inputs=input, outputs=[clf_sub_output,  clf_hydro_output], name="clfs")
+
             
             clfs.compile(   optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
-                            loss={'base': 'SparseCategoricalCrossentropy',
-                                  'sub': 'SparseCategoricalCrossentropy',
+                            loss={'sub': 'SparseCategoricalCrossentropy',
                                   'hydroisomer': 'SparseCategoricalCrossentropy'},
-                            loss_weights={'base': self.parameters['base_weight'],
-                                            'sub': self.parameters['sub_weight'],
+                            loss_weights={'sub': self.parameters['sub_weight'],
                                             'hydroisomer': self.parameters['hydroisomer_weight']},
                             metrics=['accuracy']
                         )
@@ -86,7 +82,7 @@ class pick_halo_ann(base):
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.plot(history['loss'],color='red')
-        plt.plot(history['base_loss'],color='yellow')
+        # plt.plot(history['base_loss'],color='yellow')
         plt.plot(history['sub_loss'],color='blue')
         plt.plot(history['hydroisomer_loss'],color='green')
         #训练结束的模型保存至本地文件中

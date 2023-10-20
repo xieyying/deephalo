@@ -23,7 +23,7 @@ class base:
         data_hydroisomer2 = pd.read_csv(dataset[4])
         data_hydroisomer3 = pd.read_csv(dataset[5])
         self.features_data_hydroisomer = pd.concat([data_hydroisomer,data_hydroisomer2,data_hydroisomer3],axis=0)
-        # features_data_hydroisomer['weight'] = hydroisomer_weight
+        self.features_data_hydroisomer['weight'] = hydroisomer_weight
         self.features_data = features_data
         if use_noise_data == 'True':
             self.features_data = pd.concat([self.features_data,features_data_with_noise],axis=0)

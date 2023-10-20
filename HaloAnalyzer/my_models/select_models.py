@@ -1,4 +1,5 @@
 from .ann import pick_halo_ann
+from .ann2 import pick_halo_ann2
 
 class my_model:
     """
@@ -27,4 +28,8 @@ class my_model:
         self.save = save_to_file
         if method == 'ann':
             self.model = pick_halo_ann(features = self.dataset_features,train_batch=self.train_batch,val_batch=self.val_batch,parameters=self.modle_para,dataset=self.dataset,data_weight=data_weight,noise_data_weight=noise_data_weight,save=self.save,use_noise_data= use_noise_data,use_add_fe_data=use_add_fe_data,use_hydroisomer_data=use_hydroisomer_data)
+
+        elif method == 'ann2':
+            self.model = pick_halo_ann2(features = self.dataset_features,train_batch=self.train_batch,val_batch=self.val_batch,parameters=self.modle_para,dataset=self.dataset,data_weight=data_weight,noise_data_weight=noise_data_weight,save=self.save,use_noise_data= use_noise_data,use_add_fe_data=use_add_fe_data,use_hydroisomer_data=use_hydroisomer_data)
+
 

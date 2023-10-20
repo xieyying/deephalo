@@ -3,6 +3,7 @@ from asari.peaks import *
 from asari.default_parameters import PARAMETERS
 import pymzml
 import pandas as pd
+from ..my_dataset.dataset_methods import mass_spectrum_calc_2
 
 def judge_charge(a):
     b = []
@@ -94,6 +95,7 @@ def correct_df_charge(df):
             row['a0-b1'] = row['a0-b1']/row['Charge']*df2.loc[row['roi']]['charge_corrected']
             row['b1-b2'] = row['b1-b2']/row['Charge']*df2.loc[row['roi']]['charge_corrected']
             row['a2-a0'] = row['a2-a0']/row['Charge']*df2.loc[row['roi']]['charge_corrected']
+            
 
             row['Charge'] = df2.loc[row['roi']]['charge_corrected']
         return row
@@ -111,7 +113,10 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
     for scan in range(len(ms1_spectra)):
         rt = ms1_spectra[scan]['scanList']['scan'][0]['scan start time']*60
         mz = ms1_spectra[scan]['m/z array']
+        
         intensity = ms1_spectra[scan]['intensity array']
+        int_min = intensity.min()
+        intensity = intensity - int_min
         #只保留intensity大于min_intensity的峰
         mz = mz[intensity>min_intensity]
         intensity = intensity[intensity>min_intensity]
@@ -134,12 +139,14 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
                         mz_charge_list = mz[mz_flited2]
                         ints_charge_list = intensity[mz_flited2]/intensity_max2
 
-                        #过滤掉ints_charge_list中小于0.06的值(去除杂信号)
+                        #过滤掉ints_charge_list中小于0.02的值(去除杂信号)
                         mz_charge_list = mz_charge_list[ints_charge_list>0.02]
                         ints_charge_list = ints_charge_list[ints_charge_list>0.02]
 
                         #选取mz_charge_list中强度最大的前5个峰
                         #若不足五个峰，则选取全部
+                        if len(mz_charge_list) <=1:
+                            continue
                         if len(mz_charge_list) >= 5:
                             mz_charge_list_calc = mz_charge_list[ints_charge_list.argsort()[-5:][::-1]]
                         else:
@@ -151,7 +158,7 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
                         #M-2峰的mz值为mz_max-2/Charge,误差为0.01，若有多个结果取ints最大的
                         #若没有M-2峰，则M-2_mz为0，M-2_ints为0
                         
-                        mz_m2 = pd.Series(mz_charge_list).between(mz_max-2/Charge-0.01,mz_max-2/Charge+0.01)
+                        mz_m2 = pd.Series(mz_charge_list).between(mz_max-2/Charge-0.06,mz_max-2/Charge+0.06)
                         mz_m2 = mz_m2[mz_m2].index.tolist()
                         if len(mz_m2) != 0:
                             ints_m2 = ints_charge_list[mz_m2]
@@ -163,7 +170,7 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
 
                         #获取M-1峰的mz值，ints值
 
-                        mz_m1 = pd.Series(mz_charge_list).between(mz_max-1/Charge-0.01,mz_max-1/Charge+0.01)
+                        mz_m1 = pd.Series(mz_charge_list).between(mz_max-1/Charge-0.02,mz_max-1/Charge+0.02)
                         mz_m1 = mz_m1[mz_m1].index.tolist()
                         if len(mz_m1) != 0:
                             ints_m1 = ints_charge_list[mz_m1]
@@ -250,21 +257,83 @@ def process_spectrum(ms1_spectra,df,df2,min_intensity):
                                 mz_b1_b2 = mz_m1 - mz_m2
                         
                         a0_norm = mz_max/2000
-                        #将new_item存入df2
-                        df2 = pd.concat([df2,pd.DataFrame([[i,scan,rt,mz_max,intensity_max,
-                                                            is_iso,mz_charge_list,ints_charge_list,Charge,
-                                                            mz_m2,ints_m2,mz_m1,ints_m1,mz_p1,ints_p1,mz_p2,ints_p2,
-                                                            mz_p3,ints_p3,mz_a2_a1*Charge,mz_a1_a0*Charge,a2a1,mass_d,  mz_a0_b1*Charge,mz_b1_b2*Charge,a0_norm,mz_a2_a0*Charge,mz_charge_list_calc]],
-                                                            columns=['roi','scan','rt','mz','intensity',
-                                                                        'is_iso','mz_charge_list','ints_charge_list',
-                                                                        'Charge','mz_m2','b_2','mz_m1','b_1',
-                                                                        'mz_p1','a1','mz_p2','a2','mz_p3','a3',
-                                                                        'a2-a1','a1-a0','a2a1','mass_d', 'a0-b1','b1-b2','a0_norm','a2-a0','charge_calc'])],ignore_index=True)
+                        is_iso = is_isotopes(ints_m2,ints_m1,intensity_max,ints_p1,ints_p2,ints_p3)
+
+                        if is_iso:
+
+                            new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0 = mass_spectrum_calc_2(mz_m2,mz_m1,mz_max,mz_p1,mz_p2,mz_p3,ints_m2,ints_m1,intensity_max,ints_p1,ints_p2,ints_p3)
+                            new_a2_a1_10 = (new_a2_a1*Charge)**10
+                            new_a2_a0_10 = (new_a2_a0*Charge-1)**10
+
+                            new_a2_a1_20 = (new_a2_a1*Charge)**20
+                            new_a2_a0_20 = (new_a2_a0*Charge-1)**20
+
+                            new_a2_a1_15 = (new_a2_a1*Charge)**15
+                            new_a2_a0_15 = (new_a2_a0*Charge-1)**15
+
+                            new_a2_a1_5 = (new_a2_a1*Charge)**5
+                            new_a2_a0_5 = (new_a2_a0*Charge-1)**5
+
+                            new_a2_a1_4 = (new_a2_a1*Charge)**4
+                            new_a2_a0_4 = (new_a2_a0*Charge-1)**4
+
+                            new_a2_a1_8 = (new_a2_a1*Charge)**8
+                            new_a2_a0_8 = (new_a2_a0*Charge-1)**8
+
+                            new_a2_a1_ints = new_a2_ints/new_a1_ints
+                            #将new_item存入df2
+                            df2 = pd.concat([df2,pd.DataFrame([[i,scan,rt,mz_max,intensity_max,
+                                                                is_iso,mz_charge_list,ints_charge_list,
+                                                                Charge,mz_m2,ints_m2,mz_m1,ints_m1,
+                                                                mz_p1,ints_p1,mz_p2,ints_p2,mz_p3,ints_p3,
+                                                                mz_a2_a1*Charge,mz_a1_a0*Charge,a2a1,mass_d, 
+                                                                mz_a0_b1*Charge,mz_b1_b2*Charge,a0_norm,mz_a2_a0*Charge,mz_charge_list_calc,
+                                                                new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,
+                                                                new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,
+                                                                new_a2_a1*Charge,new_a2_a0*Charge,new_a2_a1_10,new_a2_a0_10,new_a2_a1_5,new_a2_a0_5,new_a2_a1_8,new_a2_a0_8,
+                                                                new_a2_a1_4,new_a2_a0_4,new_a2_a0_15,new_a2_a1_15,new_a2_a1_20,new_a2_a0_20,new_a2_a1_ints]],
+                                                                columns=['roi','scan','rt','mz','intensity',
+                                                                            'is_iso','mz_charge_list','ints_charge_list',
+                                                                            'Charge','mz_m2','b_2','mz_m1','b_1',
+                                                                            'mz_p1','a1','mz_p2','a2','mz_p3','a3',
+                                                                            'a2-a1','a1-a0','a2a1','mass_d', 
+                                                                            'a0-b1','b1-b2','a0_norm','a2-a0','charge_calc',
+                                                                            'new_a0_mz','new_a1_mz','new_a2_mz','new_a3_mz',
+                                                                            'new_a0_ints','new_a1_ints','new_a2_ints','new_a3_ints',
+                                                                            'new_a2_a1','new_a2_a0','new_a2_a1_10','new_a2_a0_10','new_a2_a1_5','new_a2_a0_5','new_a2_a1_8','new_a2_a0_8',
+                                                                            'new_a2_a1_4','new_a2_a0_4','new_a2_a0_15','new_a2_a1_15','new_a2_a1_20','new_a2_a0_20','new_a2_a1_ints'
+                                                                            ])],ignore_index=True)
                         
                 except:
                     # print(scan,i,'error')
                     pass
     return df2
+
+def is_isotopes(b_2,b_1,a0,a1,a2,a3):
+    if a1>0.06:
+        if b_2 == 0:
+            if b_1==0:
+                is_isotope = 1
+            else:
+                if  b_1 > 0.5:
+                    is_isotope = 1
+                else:
+                    is_isotope = 0
+        else:
+            if b_2>0.3:
+                if b_1>0.02:
+                   is_isotope = 1
+                else:
+                    is_isotope = 0
+            else:
+                is_isotope = 0
+    else:
+        is_isotope =0
+
+    return is_isotope
+
+
+
 if __name__ == '__main__':
 
     a = [724.70568848 ,725.70318604, 725.20709229, 726.20495605 ,726.70135498]

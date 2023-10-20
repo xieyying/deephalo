@@ -35,10 +35,10 @@ class PipelineVis:
         
         self.target_chart = base.mark_point().encode(
             alt.X('scan',scale=x_scale),
-            y='mz',
-            color='base_class',
+            y='new_a0_mz',
+            color='hydro_class',
             size = 'intensity',
-            tooltip=['roi','scan','rt','mz','Charge','base_class','sub_class','hydro_class','intensity'],
+            tooltip=['roi','scan','rt','new_a0_mz','Charge','base_class','sub_class','hydro_class','intensity'],
             opacity=alt.condition(selection, alt.value(1), alt.value(0.1)),
         ).interactive().add_params(
             selection
@@ -46,9 +46,9 @@ class PipelineVis:
         
         self.target_chart_charge = base.mark_point().encode(
             alt.X('scan',scale=x_scale),
-            y='mz',
+            y='new_a0_mz',
             color='Charge',
-            tooltip=['roi','scan','rt','mz','Charge','base_class','sub_class','hydro_class','intensity'],
+            tooltip=['roi','scan','rt','new_a0_mz','Charge','base_class','sub_class','hydro_class','intensity'],
             opacity=alt.condition(selection, alt.value(1), alt.value(0.1)),
         ).interactive().add_params(
             selection
@@ -67,8 +67,8 @@ class PipelineVis:
         self.target_chart_roi = (alt.Chart(target_roi).mark_point().encode(
             x=alt.X('scan',scale=alt.Scale(domain=(target_roi['scan'].min(),target_roi['scan'].max()))),
             y='intensity',
-            color='base_class',
-            tooltip=['scan','rt','mz','Charge','base_class','sub_class','hydro_class']
+            color='hydro_class',
+            tooltip=['scan','rt','new_a0_mz','Charge','base_class','sub_class','hydro_class']
         ).interactive()).properties(
             width=600,
             height=250
