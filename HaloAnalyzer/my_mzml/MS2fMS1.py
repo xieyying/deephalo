@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 import time
 import numpy as np
-# import pymzml
+
 import pandas as pd
-from ..my_dataset.dataset_methods import mass_spectrum_calc_2
+# from ..my_dataset.dataset_methods import mass_spectrum_calc_2
 
 def judge_charge(a):
     b = []
@@ -62,7 +62,7 @@ def MS1_MS2_connected(filename):
     在waters采集中MS1的function=1
 
     """
-    start_time = time.time()
+  
 
  
     MS1_MS2_connected = {}
@@ -90,9 +90,7 @@ def MS1_MS2_connected(filename):
             continue
     # transfer MS1_MS2_connected to a dataframe
     MS1_MS2_connected = pd.DataFrame(MS1_MS2_connected)
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+
 
     return MS1_MS2_connected,level1_spectra
 
@@ -317,9 +315,11 @@ def is_isotopes(b_2,b_1,a0,a1,a2,a3):
 
     return is_isotope
 
-def process_spectrum(file,min_intensity):
+def process_spectrum(file,min_intensity,precursor_error = 0.3, gap_scans = 3,min_points = 3):
     MS1_MS2_con,ms1_spectra = MS1_MS2_connected(file)
     df11 = pd.DataFrame()
+
+    ROI = [] 
     for scan in range(len(ms1_spectra)):
         rt = ms1_spectra[scan]['scanList']['scan'][0]['scan start time']*60
         mz = ms1_spectra[scan]['m/z array']
@@ -338,12 +338,51 @@ def process_spectrum(file,min_intensity):
 
         if precursors.size == 0:
             continue
+      
+        for precursor in precursors:
+            df_p = precursor_isotopes(mz, intensity, precursor, precursor_error).assign(rt=rt, scan=scan, index=index)
+    
+            if df_p.empty:
+                continue
+            precursor_mz = df_p['new_a0_mz'].values[0]
+            df_p['precursor_ints'] = df_p['new_a0_ints'].values[0]*df_p['intensity'].values[0]
 
-        df2 = pd.concat([precursor_isotopes(mz, intensity, precursor, error=0.3).assign(rt=rt, scan=scan, roi=round(precursor, 1)) 
-                         for precursor in precursors], ignore_index=True)
-        df11 = pd.concat([df11,df2],ignore_index=True)      
+            # Check if there exists a region with mean m/z value within ppm of mz
+            found = False
 
-    return df11
+            if len(ROI) == 0:
+                df_p['mzmean'] = precursor_mz
+                ROI.append(df_p)
+                continue
+            for j in range(len(ROI)):
+                
+                if (abs(ROI[j]['mzmean'].values[0] - precursor_mz) / precursor_mz) * 1e6 <= 10 and scan - ROI[j]['scan'].values[-1] <= gap_scans:
+                    # Append mz to the region and update the mean m/z value
+                    ROI[j] = pd.concat([ROI[j], df_p], ignore_index=True)
+                    ROI[j]['mzmean'] = ROI[j]['mz'].mean()
+    
+                    found = True
+                    break
+
+            # If no region was found, initialise a new region
+            if not found:
+                df_p['mzmean'] = precursor_mz
+                ROI.append(pd.DataFrame(df_p))
+    
+    # 过滤掉ROI中少于5个峰的region
+    ROI = [i for i in ROI if len(i) >= min_points]
+
+    # 将ROI转换为dataframe，并增加一列ROI_index
+    df_roi = pd.DataFrame()
+    for i in range(len(ROI)):
+        ROI[i]['roi'] = i
+        df_roi = pd.concat([df_roi,ROI[i]],ignore_index=True)
+    # print(df_roi)
+
+    return df_roi
+
+
+
 
 def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
     #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
@@ -383,7 +422,9 @@ def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,
     return new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0
 
 
+
 if __name__=="__main__":
+    start_time = time.time()
     # file=r"J:\chenmingxu\Repeated_fermentation\cmx_11-23\raw.pro\mzML\test\cmx_11_23_M3_p9_bottle_2_nr1.mzML"
     file=r'D:\python\my_pick_halo_4\source_data\mzmls\Meropenem.mzML'
 
@@ -392,6 +433,10 @@ if __name__=="__main__":
     # print(MS1_MS2_con['MS1'])
 
     df = process_spectrum(file,100)
+    # ROI = ROI(file,100)
     print(df)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")
 
 
