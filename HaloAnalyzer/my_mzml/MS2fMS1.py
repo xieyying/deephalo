@@ -315,7 +315,7 @@ def is_isotopes(b_2,b_1,a0,a1,a2,a3):
 
     return is_isotope
 
-def process_spectrum(file,min_intensity,precursor_error = 0.3, gap_scans = 3,min_points = 3):
+def process_spectrum(file,min_intensity,precursor_error = 0.3, gap_scans = 3,min_points = 5,precursor_min_intensity = 5000):
     MS1_MS2_con,ms1_spectra = MS1_MS2_connected(file)
     df11 = pd.DataFrame()
 
@@ -345,7 +345,10 @@ def process_spectrum(file,min_intensity,precursor_error = 0.3, gap_scans = 3,min
             if df_p.empty:
                 continue
             precursor_mz = df_p['new_a0_mz'].values[0]
-            df_p['precursor_ints'] = df_p['new_a0_ints'].values[0]*df_p['intensity'].values[0]
+            df_p['precursor_a0_ints'] = df_p['new_a0_ints'].values[0]*df_p['intensity'].values[0]
+            df_p['precursor_a1_ints'] = df_p['new_a1_ints'].values[0]*df_p['intensity'].values[0]
+            df_p['precursor_a2_ints'] = df_p['new_a2_ints'].values[0]*df_p['intensity'].values[0]
+            df_p['precursor_a3_ints'] = df_p['new_a3_ints'].values[0]*df_p['intensity'].values[0]
 
             # Check if there exists a region with mean m/z value within ppm of mz
             found = False
@@ -376,6 +379,8 @@ def process_spectrum(file,min_intensity,precursor_error = 0.3, gap_scans = 3,min
     df_roi = pd.DataFrame()
     for i in range(len(ROI)):
         ROI[i]['roi'] = i
+        # 过滤掉precuror_ints小于5000的峰
+        ROI[i] = ROI[i][ROI[i]['precursor_a0_ints'] > 5000]
         df_roi = pd.concat([df_roi,ROI[i]],ignore_index=True)
     # print(df_roi)
 

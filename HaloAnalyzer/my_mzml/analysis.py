@@ -7,6 +7,7 @@ import tensorflow as tf
 from .base import mzml_base
 from .methods import process_spectrum
 from .MS2fMS1 import process_spectrum, MS1_MS2_connected
+from .halo_evaluation import halo_evaluation
 
 class analysis_mzml:
     def __init__(self,path,para) -> None:
@@ -120,6 +121,7 @@ class analysis_mzml:
     def MS2fMS1_workflow(self):
         self.get_mzml_data_from_MS2fMS1()
         self.add_label()
+        halo_evaluation(self.save_target)
 
 
 if __name__ == '__main__':

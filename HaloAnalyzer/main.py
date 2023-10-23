@@ -3,6 +3,7 @@
 from .my_dataset.dataset_base import dataset,datasets
 from .my_models.select_models import my_model
 from .my_mzml.analysis import analysis_mzml
+from .my_mzml.halo_evaluation import halo_evaluation
 from .parameters import run_parameters
 
 def load_config():
