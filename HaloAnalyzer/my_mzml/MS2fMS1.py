@@ -192,8 +192,6 @@ def precursor_isotopes(mz,intensity,precursor,precursor_error=0.3):
         mz_list = np.array(mz_list)
         int_list = np.array(int_list)
         intensity_max2 = int_list.max()
-        mz_max2 = mz_list[int_list.argmax()]
- 
         int_rel_list = int_list/intensity_max2
 
         # 过滤掉ints_rel_list中小于0.02的值(去除杂信号)
@@ -257,6 +255,7 @@ def precursor_isotope_df(mz,intensity,precursor,precursor_error=0.3):
 
     #将质谱信息存入precursor_iso
     precursor_iso = pd.DataFrame()
+    # 利用is_halo_isotope function 判断是否为同位素峰
     is_iso_2 = is_halo_isotopes(int_m2,int_m1,int_max,int_p1,int_p2,int_p3)
     if is_iso_2:    
         mz_a2_a1 = mz_p2 - mz_p1
@@ -334,7 +333,7 @@ def precursor_isotope_df(mz,intensity,precursor,precursor_error=0.3):
 
 def is_halo_isotopes(b_2,b_1,a0,a1,a2,a3):
     """
-    根据六个数据库8亿多个分子的同位素峰强度的统计结果,判断是否为同位素峰
+    根据五个同位素峰的强度,判断是否为同位素峰
     判断主要依据卤化物的同位素峰强度的统计结果
 
     """
