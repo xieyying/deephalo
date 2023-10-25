@@ -99,7 +99,7 @@ min_timepoints = 5
 min_peak_height = 5000
 
 [mzml]
-min_intensity = 100
+min_intensity = 1
 
 [visualization]
 path = "C:\\Users\\xyy\\Desktop\\python\\HaloAnalyzer_training\\test1"

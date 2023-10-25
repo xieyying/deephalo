@@ -121,7 +121,7 @@ class analysis_mzml:
     def MS2fMS1_workflow(self):
         self.get_mzml_data_from_MS2fMS1()
         self.add_label()
-        halo_evaluation(self.save_target)
+        # halo_evaluation(r'./test_mzml_prediction/target.csv')
 
 
 if __name__ == '__main__':

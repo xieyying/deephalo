@@ -11,7 +11,7 @@ class mzml_base:
         pass
 
     def load_mzml_file(path,level=1):
-        spectras = mzml.read(path,use_index=True,read_schema=True)
-        level_spectra = [s for s in spectras if s.get('ms level') == level]
+        spectra = mzml.read(path,use_index=True,read_schema=True)
+        level_spectra = [s for s in spectra if s.get('ms level') == level]
         return level_spectra
     
