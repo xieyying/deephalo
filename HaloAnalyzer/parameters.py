@@ -42,14 +42,17 @@ class run_parameters:
         
 
         #asari参数
-        self.min_prominence_threshold = config['asari']['min_prominence_threshold']
-        self.mz_tolerance_ppm = config['asari']['mz_tolerance_ppm']
-        self.asari_min_intensity = config['asari']['min_intensity']
-        self.min_timepoints = config['asari']['min_timepoints']
-        self.min_peak_height = config['asari']['min_peak_height']
-
+        self.asari_dict = {'min_prominence_threshold':config['asari']['min_prominence_threshold'],
+                           'mz_tolerance_ppm':config['asari']['mz_tolerance_ppm'],
+                           'min_intensity':config['asari']['min_intensity'],
+                           'min_timepoints':config['asari']['min_timepoints'],
+                           'min_peak_height':config['asari']['min_peak_height'],}
         #mzml参数
-        self.mzml_min_intensity = config['mzml']['min_intensity']
+        self.mzml_dict = {'min_intensity':config['mzml']['min_intensity'],
+                          'vendor':config['mzml']['vendor'],
+                          'precursor_error':config['mzml']['precursor_error'],
+                          'ROI_identify_method':config['mzml']['ROI_identify_method'],}
+
 
         #vis参数
         self.vis_path = config['visualization']['path']

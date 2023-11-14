@@ -1,9 +1,10 @@
 #import packages
+import os
 from .Dataset.my_dataset import dataset,datasets
 from .Model.my_model import my_model
-from .MZML.analysis import analysis_by_asari
+from .MZML.my_mzml import my_mzml
 from .parameters import run_parameters
-
+from .MZML.methons import extract_ms2_of_rois
 def load_config():
     return run_parameters()
      
@@ -56,7 +57,26 @@ def pipeline_model():
 #Find Halo Pipeline
 def pipeline_find_halo(mzml_path):
     para = load_config()
-    a = analysis_by_asari(mzml_path,para)
-    a.asari_workflow()
+    mzml_para = {'path':mzml_path,
+                 'feature_list':para.features_list,
+                 'asari':para.asari_dict,
+                 'mzml':para.mzml_dict,}
+    data = my_mzml(mzml_para)
+    data.work_flow()
 
+
+#extract ms2 of rois
+def pipeline_extract_ms2_of_rois(mzml_path,project_path,rois:list):
+    save_halo_evaluation = os.path.normpath(project_path +r'./test_mzml_prediction/halo_evaluation.csv')
+    output_path = os.path.normpath(project_path +r'./test_mzml_prediction/select_roi_ms2.mgf')
+    extract_ms2_of_rois(mzml_path,save_halo_evaluation,output_path,rois)
+    
+
+    
+                 
+if __file__ == '__main__':
+    p1 = r'C:\Users\xq75\Desktop\test'
+    p2 = r'./test_mzml_prediction/halo_evaluation.csv'
+    p3 = os.path.join(p1,p2)
+    print(p3)
 

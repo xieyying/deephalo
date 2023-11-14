@@ -68,7 +68,20 @@ def other_requirements_trainable_clf(formula):
     else:
         return 0
 
-def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
+def mass_spectrum_calc(dict_isos):
+    b_2_mz = dict_isos['mz_b2']
+    b_1_mz = dict_isos['mz_b1']
+    a0_mz = dict_isos['mz_a0']
+    a1_mz = dict_isos['mz_a1']
+    a2_mz = dict_isos['mz_a2']
+    a3_mz = dict_isos['mz_a3']
+    b_2 = dict_isos['ints_b2']
+    b_1 = dict_isos['ints_b1']
+    a0 = dict_isos['ints_a0']
+    a1 = dict_isos['ints_a1']
+    a2 = dict_isos['ints_a2']
+    a3 = dict_isos['ints_a3']
+
     #校正质谱数据   
     if a1_mz>0.1:
         a1_a0 = a1_mz - a0_mz
@@ -101,9 +114,24 @@ def mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3
         b1_b2 = b_1_mz-b_2_mz
     
     a0_norm = a0/2000
-    return a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2
+    return {'mz_b2':b_2_mz,'mz_b1':b_1_mz,'mz_a0':a0_mz,'mz_a1':a1_mz,'mz_a2':a2_mz,'mz_a3':a3_mz,
+            'ints_b2':b_2,'ints_b1':b_1,'ints_a0':a0,'ints_a1':a1,'ints_a2':a2,'ints_a3':a3,
+            'a1_a0':a1_a0,'a2_a0':a2_a0,'a2_a1':a2_a1,'a0_b1':a0_b1,'b1_b2':b1_b2,
+            'a0_norm':a0_norm,'a3_a0':a3_a0,'a3_a1':a3_a1,'a3_a2':a3_a2}
 
-def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3):
+def mass_spectrum_calc_2(dict_features):
+    b_2_mz = dict_features['mz_b2']
+    b_1_mz = dict_features['mz_b1']
+    a0_mz = dict_features['mz_a0']
+    a1_mz = dict_features['mz_a1']
+    a2_mz = dict_features['mz_a2']
+    a3_mz = dict_features['mz_a3']
+    b_2 = dict_features['ints_b2']
+    b_1 = dict_features['ints_b1']
+    a0 = dict_features['ints_a0']
+    a1 = dict_features['ints_a1']
+    a2 = dict_features['ints_a2']
+    a3 = dict_features['ints_a3']
     #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
 
     if b_2_mz != 0:
@@ -137,8 +165,13 @@ def mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,
         
     new_a2_a1 = new_a2_mz - new_a1_mz
     new_a2_a0 = new_a2_mz - new_a0_mz
-    new_a2_a0_10 = new_a2_a0**10
-    return new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0,new_a2_a0_10
+    new_a2_a0_10 = (new_a2_a0-1)**10
+    new_a2_a1_10 = (new_a2_a1)**10
+    #以字典的形式返回
+    return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
+            'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
+            'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
+            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10}
 
 def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
 

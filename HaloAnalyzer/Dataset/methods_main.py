@@ -85,7 +85,7 @@ def formula_clf(formula_dict,type=None):
 
     return trainable,base_group,sub_group,hydro_group
 
-def Isotope_simulation(formula,type=None,rate=None):
+def Isotope_simulation(formula,type=None,rate=None) -> dict:
     
     fm = Formula(formula)
     if type in ['hydro','hydro2','hydro3']:
@@ -134,9 +134,10 @@ def Isotope_simulation(formula,type=None,rate=None):
         a_3_mz = 0
         a_3_int = 0
 
-    return b_2_mz,b_1_mz,a_0_mz,a_1_mz,a_2_mz,a_3_mz,b_2_int/100,b_1_int/100,a_0_int/100,a_1_int/100,a_2_int/100,a_3_int/100
+    # b_2_mz,b_1_mz,a_0_mz,a_1_mz,a_2_mz,a_3_mz,b_2_int/100,b_1_int/100,a_0_int/100,a_1_int/100,a_2_int/100,a_3_int/100
+    return {'mz_b2':b_2_mz,'mz_b1':b_1_mz,'mz_a0':a_0_mz,'mz_a1':a_1_mz,'mz_a2':a_2_mz,'mz_a3':a_3_mz,'ints_b2':b_2_int/100,'ints_b1':b_1_int/100,'ints_a0':a_0_int/100,'ints_a1':a_1_int/100,'ints_a2':a_2_int/100,'ints_a3':a_3_int/100} 
 
-def create_data(formula,datalist,type='base',rate=None):
+def create_data(formula,type='base',rate=None):
     if not isinstance(formula, str):
         raise ValueError(formula,'formula must be a string')
     #将formula转化为formula_dict
@@ -145,46 +146,50 @@ def create_data(formula,datalist,type='base',rate=None):
     trainable,base_group,sub_group,hydro_group =formula_clf(formula_dict,type=type)
 
     if trainable == 'no':
-        return  pd.DataFrame(columns=datalist)
+        return  pd.DataFrame()
     elif type in ['Fe','hydro','hydro2','hydro3','dehydro']:
 
         if not set(formula_dict.keys()).issubset(set(['C','H','O','N','S'])):
-            return pd.DataFrame(columns=datalist)
+            return pd.DataFrame()
 
+    
     #模拟质谱数据
-    b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3 = Isotope_simulation(formula,type,rate)
+    dict_isos = Isotope_simulation(formula,type,rate)
 
     if type == 'noise':
         #为质谱数据添加噪音
-        #mz
-        b_2_mz, b_1_mz, a0_mz, a1_mz, a2_mz, a3_mz = map(adding_noise_to_mass, [b_2_mz, b_1_mz, a0_mz, a1_mz, a2_mz, a3_mz])
-        #intensity
-        b_2, b_1, a0, a1, a2, a3 = map(adding_noise_to_intensity, [b_2, b_1, a0, a1, a2, a3])  
+        #更新dict_isos中的数据，逐个增加噪音
+        for key in dict_isos.keys():
+            if key in ['mz_b2','mz_b1','mz_a0','mz_a1','mz_a2','mz_a3']:
+                dict_isos[key] = adding_noise_to_mass(dict_isos[key])
+            else:
+                dict_isos[key] = adding_noise_to_intensity(dict_isos[key])
+    
         
     elif type == 'Fe':
         base_group = 1
         sub_group = 4
         hydro_group = 7
     
-    
-    a0_norm,a1_a0,a2_a0,a2_a1,a3_a0,a3_a1,a3_a2,a0_b1,b1_b2=mass_spectrum_calc(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
-    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz,new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints,new_a2_a1,new_a2_a0,new_a2_a0_10 = mass_spectrum_calc_2(b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz,b_2,b_1,a0,a1,a2,a3)
+    dict_base = {'formula':formula,'base_group':base_group,'sub_group':sub_group,'hydro_group':hydro_group}
+    dict_isos_calc=mass_spectrum_calc(dict_isos)
+    dict_isos_calc_new = mass_spectrum_calc_2(dict_isos_calc)
 
-    df = pd.DataFrame(
-        [[formula, base_group, sub_group, hydro_group, b_2_mz, b_1_mz, a0_mz, a1_mz, a2_mz, a3_mz,
-        b_2, b_1, a0, a1, a2, a3, a1_a0, a2_a0, a2_a1, a0_b1, b1_b2, a0_norm, a3_a0, a3_a1, a3_a2,
-        new_a0_mz, new_a1_mz, new_a2_mz, new_a3_mz, new_a0_ints, new_a1_ints, new_a2_ints, new_a3_ints,
-        new_a2_a1, new_a2_a0, new_a2_a0_10]],
-        columns=datalist)
+    #合并dict_base,dict_isos_calc和dict_isos_calc_new
+    dict_all = dict_base.copy()
+    dict_all.update(dict_isos_calc)
+    dict_all.update(dict_isos_calc_new)
+    df = pd.DataFrame([dict_all])
+
     return df
     
 if __name__ == '__main__':
     formula = 'C19H37NO5'
-    datalist = ['formula','base_group','sub_group','hydro_group','b_2_mz','b_1_mz','a0_mz','a1_mz','a2_mz','a3_mz',
-    'b_2','b_1','a0','a1','a2','a3','a1_a0','a2_a0','a2_a1','a0_b1','b1_b2','a0_norm','a3_a0','a3_a1','a3_a2',
-    'new_a0_mz','new_a1_mz','new_a2_mz','new_a3_mz','new_a0_ints','new_a1_ints','new_a2_ints','new_a3_ints',
-    'new_a2_a1','new_a2_a0']
-    df = create_data((formula,datalist),type='base',rate=0.1)
+    # datalist = ['formula','base_group','sub_group','hydro_group','b_2_mz','b_1_mz','a0_mz','a1_mz','a2_mz','a3_mz',
+    # 'b_2','b_1','a0','a1','a2','a3','a1_a0','a2_a0','a2_a1','a0_b1','b1_b2','a0_norm','a3_a0','a3_a1','a3_a2',
+    # 'new_a0_mz','new_a1_mz','new_a2_mz','new_a3_mz','new_a0_ints','new_a1_ints','new_a2_ints','new_a3_ints',
+    # 'new_a2_a1','new_a2_a0']
+    df = create_data((formula),type='base',rate=0.1)
 
     print(df)
 

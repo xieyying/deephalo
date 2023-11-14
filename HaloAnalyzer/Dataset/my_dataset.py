@@ -29,46 +29,7 @@ class dataset():
 
         #重置index
         self.data = self.data.reset_index(drop=True)
-
-        #定义数据集的列名
-        self.datalist = [
-            'formula',
-            'group',
-            'sub_group_type',
-            'hydro_group',
-            'b_2_mz',
-            'b_1_mz',
-            'a0_mz',
-            'a1_mz',
-            'a2_mz',
-            'a3_mz',
-            'b_2',
-            'b_1',
-            'a0',
-            'a1',
-            'a2',
-            'a3',
-            'a1-a0',
-            'a2-a0',
-            'a2-a1',
-            'a0-b1',
-            'b1-b2',
-            'a0_norm',
-            'a3-a0',
-            'a3-a1',
-            'a3-a2',
-            'new_a0',
-            'new_a1',
-            'new_a2',
-            'new_a3',
-            'new_a0_ints',
-            'new_a1_ints',
-            'new_a2_ints',
-            'new_a3_ints',
-            'new_a2_a1',
-            'new_a2_a0',
-            'new_a2_a0_10'
-        ]
+        
     
     #用于过滤数据，返回符合要求的数据
     def filter(self,lp):
@@ -111,7 +72,7 @@ class dataset():
         if type in ['base','Fe']:
             #基础数据集
             pool = Pool()
-            func = partial(create_data, datalist=self.datalist, type=type)
+            func = partial(create_data, type=type)
             dfs = pool.map(func, [formula for formula in self.data['formula']])
             pool.close()
             df = pd.concat(dfs,ignore_index=True)
@@ -123,7 +84,7 @@ class dataset():
         
             #加噪音数据集
             pool = Pool()
-            func = partial(create_data, datalist=self.datalist, type=type)
+            func = partial(create_data, type=type)
             dfs = pool.map(func, [formula for formula in self.data['formula']])
             pool.close()
             df = pd.concat(dfs, ignore_index=True)
@@ -134,7 +95,7 @@ class dataset():
             #模拟加氢数据集
             pool = Pool()
             for rate in rates:
-                func = partial(create_data, datalist=self.datalist, type=type,rate=rate)
+                func = partial(create_data, type=type,rate=rate)
                 dfs = pool.map(func, [formula for formula in self.data['formula']])
                 df0 = pd.concat(dfs, ignore_index=True)
                 df = pd.concat([df,df0],ignore_index=True)
@@ -165,45 +126,7 @@ class datasets(dataset):
         print('去重后数据',len(self.data))
         #重置index
         self.data = self.data.reset_index(drop=True)
-        self.datalist = [
-            'formula',
-            'group',
-            'sub_group_type',
-            'hydro_group',
-            'b_2_mz',
-            'b_1_mz',
-            'a0_mz',
-            'a1_mz',
-            'a2_mz',
-            'a3_mz',
-            'b_2',
-            'b_1',
-            'a0',
-            'a1',
-            'a2',
-            'a3',
-            'a1-a0',
-            'a2-a0',
-            'a2-a1',
-            'a0-b1',
-            'b1-b2',
-            'a0_norm',
-            'a3-a0',
-            'a3-a1',
-            'a3-a2',
-            'new_a0',
-            'new_a1',
-            'new_a2',
-            'new_a3',
-            'new_a0_ints',
-            'new_a1_ints',
-            'new_a2_ints',
-            'new_a3_ints',
-            'new_a2_a1',
-            'new_a2_a0',
-            'new_a2_a0_10'
-        ]
-
+        
 if __name__ == '__main__':
     test = dataset('F:/XinBackup/source_data/datasets/NPAtlas_download.json','mol_formula')
     

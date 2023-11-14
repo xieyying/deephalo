@@ -1,5 +1,5 @@
 import tensorflow as tf
-import keras
+import keras,os
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -20,7 +20,7 @@ class my_model:
         self.hydroisomer_weight = para['hydroisomer_weight']
         self.learning_rate = para['learning_rate']
     def load_dataset(self):
-        self.train_dataset,self.val_dataset = create_dataset(self.features,self.paths,self.batch_size)
+        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.sub_group_test,self.hydro_group_test = create_dataset(self.features,self.paths,self.batch_size)
 
     def get_model(self):
         #model_build中可以定义多种模型结构方便切换
@@ -46,21 +46,21 @@ class my_model:
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
 
         # make predictions on the validation set
-        val_data = next(iter(self.val_dataset))
-        X_val, (Y_val, sub_group,hydro_group) = val_data
-        y_pred = model.predict(X_val)
+        y_pred = model.predict(self.X_test)
 
         # plot the confusion matrices
         fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-        ConfusionMatrixDisplay.from_predictions(Y_val, np.argmax(y_pred[0], axis=1), ax=axs[0], cmap=plt.cm.terrain)
+        ConfusionMatrixDisplay.from_predictions(self.Y_test, np.argmax(y_pred[0], axis=1), ax=axs[0], cmap=plt.cm.terrain)
         axs[0].set_title('Base Classifier')
-        ConfusionMatrixDisplay.from_predictions(sub_group, np.argmax(y_pred[1], axis=1), ax=axs[1], cmap=plt.cm.terrain)
+        ConfusionMatrixDisplay.from_predictions(self.sub_group_test, np.argmax(y_pred[1], axis=1), ax=axs[1], cmap=plt.cm.terrain)
         axs[1].set_title('Sub Classifier')
-        ConfusionMatrixDisplay.from_predictions(hydro_group, np.argmax(y_pred[2], axis=1), ax=axs[2], cmap=plt.cm.terrain)
+        ConfusionMatrixDisplay.from_predictions(self.hydro_group_test, np.argmax(y_pred[2], axis=1), ax=axs[2], cmap=plt.cm.terrain)
         axs[2].set_title('Hydro Classifier')
         plt.show()
     
     def work_flow(self):
+        if not os.path.exists('./trained_models'):
+            os.mkdir('./trained_models')
         self.load_dataset()
         self.get_model()
         self.train()
