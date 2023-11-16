@@ -15,12 +15,14 @@ class run_parameters:
         self.mz_start = config['datasets']['mz_start']
         self.mz_end = config['datasets']['mz_end']
         self.rate_for_hydro = config['datasets']['rate_for_hydro']
-        self.rate_for_hydro2 = config['datasets']['rate_for_hydro2']
-        self.rate_for_hydro3 = config['datasets']['rate_for_hydro3']
+
         #model_data参数
         self.features_list = config['model_data']['feature_list']
         self.use_noise_data = config['model_data']['use_noise_data']
         self.use_fe_data = config['model_data']['use_add_fe_data']
+        self.use_b_data = config['model_data']['use_add_b_data']
+        self.use_se_data = config['model_data']['use_add_se_data']
+        self.use_s_data = config['model_data']['use_add_s_data']
         self.use_hydroisomer_data = config['model_data']['use_hydroisomer_data']
         # self.data_weight = config['model_data']['data_weight']
         # self.noise_data_weight = config['model_data']['noise_data_weight']
@@ -31,14 +33,11 @@ class run_parameters:
         self.train_batch = config['model_construct']['train_batch']
         self.val_batch = config['model_construct']['val_batch']
 
-        self.base_classes = config['model_construct']['base_classes']
-        self.sub_classes = config['model_construct']['sub_classes']
-        self.hydro_classes = config['model_construct']['hydro_classes']
+
+        self.classes = config['model_construct']['classes']
         self.epochs = config['model_construct']['epochs']
         self.learning_rate = config['model_construct']['learning_rate']
-        self.base_weight = {int(k): v for k, v in config['model_construct_class_weight']['base_weight'].items()}
-        self.sub_weight = {int(k): v for k, v in config['model_construct_class_weight']['sub_weight'].items()}
-        self.hydroisomer_weight = {int(k): v for k, v in config['model_construct_class_weight']['hydroisomer_weight'].items()}
+        self.classes_weight = {int(k): v for k, v in config['model_construct_class_weight']['classes_weight'].items()}
         
 
         #asari参数

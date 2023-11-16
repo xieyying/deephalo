@@ -1,3 +1,4 @@
+import pandas as pd
 import tensorflow as tf
 import keras,os
 import matplotlib.pyplot as plt
@@ -12,33 +13,41 @@ class my_model:
         self.features = para['features']
         self.paths = para['paths']
         self.input_shape = len(self.features)
-        self.output1_shape = para['base_classes']
-        self.output2_shape = para['sub_classes']
-        self.output3_shape = para['hydro_classes']
-        self.base_weight = para['base_weight']
-        self.sub_weight = para['sub_weight']
-        self.hydroisomer_weight = para['hydroisomer_weight']
+        self.output_shape = para['classes']
+        self.classes_weight = para['weight']
         self.learning_rate = para['learning_rate']
     def load_dataset(self):
-        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.sub_group_test,self.hydro_group_test = create_dataset(self.features,self.paths,self.batch_size)
+        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features,self.paths,self.batch_size)
 
     def get_model(self):
         #model_build中可以定义多种模型结构方便切换
-        self.model = model_sequence(self.input_shape,self.output1_shape,self.output2_shape,self.output3_shape)
+        self.model = model(self.input_shape,self.output_shape)
         #绘制模型图
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
     def train(self):
         opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=opt,
-              loss={'base': 'SparseCategoricalCrossentropy',
-                    'sub': 'SparseCategoricalCrossentropy',
-                    'hydro': 'SparseCategoricalCrossentropy'},
-                loss_weights={'base': self.base_weight,
-                                'sub': self.sub_weight,
-                                'hydro': self.hydroisomer_weight},
+              loss={'classes': 'SparseCategoricalCrossentropy'},
+                loss_weights={'classes': self.classes_weight},
               metrics=['accuracy'])
         self.history = self.model.fit(self.train_dataset, epochs=self.epochs, validation_data=self.val_dataset)
+        self.model.summary()
+
+        # 显示loss和epoch的关系
+        history = self.history.history
+        print(history.keys())
+        #不同loss显示不同颜色
+        plt.figure()
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.plot(history['loss'],color='red')
+        plt.plot(history['accuracy'],color='blue')
+        plt.plot(history['val_loss'],color='black')
+        plt.plot(history['val_accuracy'],color='green')
+
+        #显示图例
+        plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
         self.model.save(r'./trained_models/pick_halo_ann.h5')
 
     def show_CM(self):
@@ -46,16 +55,41 @@ class my_model:
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
 
         # make predictions on the validation set
-        y_pred = model.predict(self.X_test)
 
-        # plot the confusion matrices
-        fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-        ConfusionMatrixDisplay.from_predictions(self.Y_test, np.argmax(y_pred[0], axis=1), ax=axs[0], cmap=plt.cm.terrain)
-        axs[0].set_title('Base Classifier')
-        ConfusionMatrixDisplay.from_predictions(self.sub_group_test, np.argmax(y_pred[1], axis=1), ax=axs[1], cmap=plt.cm.terrain)
-        axs[1].set_title('Sub Classifier')
-        ConfusionMatrixDisplay.from_predictions(self.hydro_group_test, np.argmax(y_pred[2], axis=1), ax=axs[2], cmap=plt.cm.terrain)
-        axs[2].set_title('Hydro Classifier')
+        X_val = self.X_test
+        Y_val = self.Y_test
+        y_pred = model.predict(X_val)
+        y_pred = np.argmax(y_pred, axis=1)
+        wrong_index = np.where(Y_val !=y_pred)
+    
+        wrong_data = X_val[wrong_index]
+
+        cols  = [
+                "ints_b3",
+                "ints_b2",
+                "ints_b1",
+                "ints_a0",
+                "ints_a1",
+                "ints_a2",
+                "ints_a3",
+                "new_a2_a1_10",
+            ]
+           
+        formula_test = np.array(self.val_['formula'].tolist())
+        new_a0 = np.array(self.val_['new_a0_mz'].tolist())
+        wrong_data = pd.DataFrame(wrong_data,columns=cols)
+        wrong_data['formula'] = pd.Series(formula_test[wrong_index])
+        wrong_data['new_a0_mz'] = pd.Series(new_a0[wrong_index])
+        wrong_data['true_classes'] = pd.Series(Y_val[wrong_index])
+        wrong_data['pred_classes'] = pd.Series(y_pred[wrong_index])
+        
+        #将wrong_data转为dataframe
+        wrong_data.to_csv(r'./trained_models/pick_halo_ann_wrong_data.csv',index=False)
+        # plot the confusion matrices, 1个子图
+        fig, axs = plt.subplots(1, 1, figsize=(15, 5))
+        ConfusionMatrixDisplay.from_predictions(Y_val, y_pred, ax=axs, cmap=plt.cm.terrain)
+        axs.set_title('Classifier')
+    
         plt.show()
     
     def work_flow(self):

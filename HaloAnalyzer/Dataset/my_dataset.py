@@ -69,7 +69,7 @@ class dataset():
         模拟脱氢数据集：基于formula，模拟脱氢后的分子式，构建数据集。
         模拟加氢数据集：基于formula，模拟加氢后的分子式，构建数据集。
         """
-        if type in ['base','Fe']:
+        if type in ['base','Fe','B','Se']:
             #基础数据集
             pool = Pool()
             func = partial(create_data, type=type)
@@ -90,7 +90,7 @@ class dataset():
             df = pd.concat(dfs, ignore_index=True)
             self.df_data = df
 
-        elif type in ['hydro','hydro2','hydro3','dehydro']:
+        elif type =='hydro':
             df = pd.DataFrame()
             #模拟加氢数据集
             pool = Pool()

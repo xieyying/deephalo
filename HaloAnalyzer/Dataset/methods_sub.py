@@ -58,17 +58,24 @@ def get_iron_additive_isotopes(formula):
 
     f=Formula(formula+"Fe")-Formula('H3')
     return f.spectrum()
+def get_boron_additive_isotopes(formula):
+    f=Formula(formula+"B")-Formula('H3')
+    return f.spectrum()
+def get_selenium_additive_isotopes(formula):
+    f=Formula(formula+"Se")
+    return f.spectrum()
 
 def other_requirements_trainable_clf(formula):
     #将formula列中的公式转为字典
     f_dict = Formula(formula).composition().dataframe().to_dict()['Count']
     #如果f_dict中的keys是[C,H,O,N,S]的子集，则返回1，否则返回0
-    if set(f_dict.keys()).issubset(set(['C','H','O','N','S'])):
+    if set(f_dict.keys()).issubset(set(['C','H','O','N','S','P','F','I'])):
         return 1
     else:
         return 0
 
 def mass_spectrum_calc(dict_isos):
+    # 目前没用到
     b_2_mz = dict_isos['mz_b2']
     b_1_mz = dict_isos['mz_b1']
     a0_mz = dict_isos['mz_a0']
@@ -120,21 +127,36 @@ def mass_spectrum_calc(dict_isos):
             'a0_norm':a0_norm,'a3_a0':a3_a0,'a3_a1':a3_a1,'a3_a2':a3_a2}
 
 def mass_spectrum_calc_2(dict_features):
+    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为new_a0的质谱数据
+    b_3_mz = dict_features['mz_b3']
     b_2_mz = dict_features['mz_b2']
     b_1_mz = dict_features['mz_b1']
     a0_mz = dict_features['mz_a0']
     a1_mz = dict_features['mz_a1']
     a2_mz = dict_features['mz_a2']
     a3_mz = dict_features['mz_a3']
+    a4_mz = dict_features['mz_a4']
+    b_3 = dict_features['ints_b3']
     b_2 = dict_features['ints_b2']
     b_1 = dict_features['ints_b1']
     a0 = dict_features['ints_a0']
     a1 = dict_features['ints_a1']
     a2 = dict_features['ints_a2']
     a3 = dict_features['ints_a3']
+    a4 = dict_features['ints_a4']
     #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
-
-    if b_2_mz != 0:
+    if b_3_mz != 0:
+        new_a0_mz = b_3_mz
+        new_a1_mz = b_2_mz
+        new_a2_mz = b_1_mz
+        new_a3_mz = a0_mz
+        # new_a4_mz = a1_mz
+        new_a0_ints = b_3
+        new_a1_ints = b_2
+        new_a2_ints = b_1
+        new_a3_ints = 1
+        # new_a4_ints = a1
+    elif b_2_mz != 0:
         new_a0_mz = b_2_mz
         new_a1_mz = b_1_mz
         new_a2_mz = a0_mz
@@ -162,11 +184,17 @@ def mass_spectrum_calc_2(dict_features):
         new_a1_ints = a1
         new_a2_ints = a2
         new_a3_ints = a3
-        
-    new_a2_a1 = new_a2_mz - new_a1_mz
-    new_a2_a0 = new_a2_mz - new_a0_mz
+
+    if new_a2_mz !=0:
+        new_a2_a1 = new_a2_mz - new_a1_mz
+        new_a2_a0 = new_a2_mz - new_a0_mz
+    else:
+        new_a2_a1 = 0
+        new_a2_a0 = 0
+
     new_a2_a0_10 = (new_a2_a0-1)**10
-    new_a2_a1_10 = (new_a2_a1)**10
+    new_a2_a1_10 = new_a2_a1**10    
+
     #以字典的形式返回
     return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
             'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
@@ -212,49 +240,4 @@ def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
             else:
                 spectrum[massnumber][2] = value[1]*norm
     # print(spectrum)
-    return Spectrum(spectrum)
-
-def get_dehydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
-
-    spectrum2=Formula(formula).spectrum()
-    dehydroisomer=Formula(formula)-Formula("H2")
-    spectrum1=Formula(str(dehydroisomer)).spectrum()
-    # print(spectrum1,spectrum2)
-
-    min_fraction: float = 1e-16
-    # min_intensity: float =1e-16
-
-    spectrum={}
-    for key1,items in sorted(spectrum1.items()):
-        # print(key1)
-        f=items.fraction
-        m=items.mass
-        k=items.massnumber
-        if f<min_fraction:
-            continue
-        if key1 in spectrum2:
-            f2=spectrum2[key1].fraction
-            m2=spectrum2[key1].mass
-            if f2<min_fraction:
-                continue
-            s_0 = (f * m + f2 * m2*ratio) / (f + f2*ratio)
-            s_1 =f + f2*ratio
-            spectrum[k]=[s_0, s_1,1.0]
-        else:
-            spectrum[k] = [m, f,1.0]
-    for key2 in spectrum2:
-        if key2 not in spectrum1:
-            spectrum[key2]=[spectrum2[key2].mass,spectrum2[key2].fraction,1.0]
-
-
-    # print(spectrum)
-    # return spectrum
-    # filter low intensities
-    if min_intensity is not None:
-        norm = 100 / max(v[1] for v in spectrum.values())
-        for massnumber, value in spectrum.copy().items():
-            if value[1] * norm < min_intensity:
-                del spectrum[massnumber]
-            else:
-                spectrum[massnumber][2] = value[1]*norm
     return Spectrum(spectrum)
