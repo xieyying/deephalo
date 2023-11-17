@@ -4,7 +4,7 @@ from .Dataset.my_dataset import dataset,datasets
 from .Model.my_model import my_model
 from .MZML.my_mzml import my_mzml
 from .parameters import run_parameters
-from .MZML.methons import extract_ms2_of_rois
+from .MZML.methods import extract_ms2_of_rois
 def load_config():
     return run_parameters()
      

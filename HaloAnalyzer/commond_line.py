@@ -9,7 +9,7 @@ __version__ = '0.2.0'
 def main():
     print("\n\nHaloAnalyzer (%s) \n" %__version__)
     #命令行参数设置
-    parser = argparse.ArgumentParser(description='HALOAnalyzer: a tool for metabolomics data analysis.')
+    parser = argparse.ArgumentParser(description='HALOAnalyzer: a tool for mining halogenates based on high resolution mass data.')
 
     parser.add_argument('-v', '--version', action='version', version=__version__, 
             help='print version and exit')

@@ -54,8 +54,6 @@ class ROIs:
                 })
                 self.max_roi += 1
 
-
-
     #过滤掉scan_list长度小于min_points的roi
     def filter(self,min_points):
         self.rois = [roi for roi in self.rois if len(roi['scan_list']) > min_points]
@@ -65,11 +63,7 @@ class ROIs:
     def merge(self,merge_precursor_error = 20, merge_gap_scans = 3):
         #将self.rois按照mz_mean从小到大排序
         self.rois = sorted(self.rois,key=lambda x:x['mz_mean'])
-        # print(self.rois)
-        # print(len(self.rois))
-        # print('merge')
-        # print(self.rois)
-        # print(len(self.rois))
+
         for i in range(len(self.rois)-1):
             delt_mz = abs(self.rois[i]['mz_mean'] - self.rois[i+1]['mz_mean'])/self.rois[i]['mz_mean']*1e6
             delt_scan = abs(self.rois[i]['index_list'][-1] - self.rois[i+1]['index_list'][0])
@@ -81,11 +75,7 @@ class ROIs:
                 self.rois[i]['left_base'] = min(self.rois[i]['left_base'],self.rois[i+1]['left_base'])
                 self.rois[i]['right_base'] = max(self.rois[i]['right_base'],self.rois[i+1]['right_base'])
                 self.rois.pop(i+1)
-                # print(self.rois)
-                # print(len(self.rois))
                 self.merge()
-
-
 
     def get_roi_df(self):
         df = pd.DataFrame(self.rois)
@@ -100,6 +90,8 @@ def feature_extractor(file_name: str,para) -> pd.DataFrame:
 
     Returns:
         A DataFrame containing feature information, including the quality-time coordinates of the features, peak area, peak height, and other information.
+
+    this function is modified from asari.feature_extractor
     """
     ms_expt = pymzml.run.Reader(file_name)
 
@@ -145,10 +137,7 @@ def MS1_MS2_connected(spectra,mzml_dict):
     MS1_index_list = []
     MS1_index=-1
     
-
-    
     for s in spectra:
-        
         try:
             if (s['ms level'] == 1 and s['id'].split(' ')[0] == "function=1" and vendor == 'waters') or (s['ms level'] == 1 and vendor != 'waters'):
                 mz_list = s['m/z array']
@@ -168,14 +157,13 @@ def MS1_MS2_connected(spectra,mzml_dict):
                 MS1_MS2_connected['MS1_index'].append(MS1_index_list[-1])
                 MS1_MS2_connected['rt'].append(MS1_rt[-1])
                 MS1_MS2_connected['MS1'].append(MS1_scan_list[-1])
+
                 MS1_MS2_connected['MS2'].append(s['index'])
                 MS1_MS2_connected['precursor'].append(precursor_mz)
             else:
                 continue
         except:
             continue
-
-    
 
     # transfer MS1_MS2_connected to a dataframe
     MS1_MS2_connected = pd.DataFrame(MS1_MS2_connected)
@@ -191,23 +179,27 @@ def fliter_mzml_data(ms1_spectra,min_intensity):
     mz = mz[intensity>min_intensity]
     intensity = intensity[intensity>min_intensity]
     return rt,mz,intensity
+
 #误差范围也需要同步传递
 def get_mz_max(mz,intensity,target_mz):
     #获取mz中与target_mz相差在0.02的所有mz
     mz_list1 = mz[np.abs(mz-target_mz)<0.02]
     ints_list1 = intensity[np.abs(mz-target_mz)<0.02]
-    #获取mz_list中intensity最大的mz
+    #获取mz_list1中intensity最大的mz
     mz_max1 = mz_list1[np.argmax(ints_list1)]
     #获取mz_max1对应的intensity
-    intensity_max1 = intensity[np.argmax(intensity[np.abs(mz-target_mz)<0.02])]
-    #获取mz中与target_mz相差在-2.1和+3.1的所有mz
-    mz_list2_index = pd.Series(mz).between((target_mz-2.1),(target_mz+3.1))
+    # intensity_max1 = intensity[np.argmax(intensity[np.abs(mz-target_mz)<0.02])]
+    intensity_max1 = ints_list1.max()
+    
+    #获取mz中与target_mz相差在-3.1和+3.1的所有mz
+    mz_list2_index = pd.Series(mz).between((target_mz-3.1),(target_mz+3.1))
     mz_list2 = mz[mz_list2_index]
     ints_list2 = intensity[mz_list2_index]
     #获取mz_list2中intensity最大的mz
     mz_max2 = mz_list2[np.argmax(ints_list2)]
     #获取mz_max2对应的intensity
-    intensity_max2 = intensity[np.argmax(intensity[mz_list2_index])]
+    # intensity_max2 = intensity[np.argmax(intensity[mz_list2_index])]
+    intensity_max2 = ints_list2.max()
     #以字典的形式返回
     return {'mz_list1':mz_list1,'ints_list1':ints_list1,'mz_max1':mz_max1,'intensity_max1':intensity_max1,'mz_list2':mz_list2,'ints_list2':ints_list2,'mz_max2':mz_max2,'intensity_max2':intensity_max2}
 
@@ -266,16 +258,14 @@ def get_charge(mz_list,ints_list,intensity_max):
     else:
         return 0
 
-def get_one_feature(mz_list,ints_list,mz_max,charge,delta_mz,error=0.01):
-    # mz = pd.Series(mz_list).between(mz_max-(delta_mz-error)/charge,mz_max-(delta_mz+error)/charge)
-    # mz = mz[mz].index.tolist()
-    # if len(mz) != 0:
-    #     ints = ints_list[mz]
-    #     mz = mz_list[mz[ints_list[mz].argmax()]]
-    #     ints = ints.max()
-    # else:
-    #     mz = 0
-    #     ints = 0
+def get_one_isotopologue(mz_list,ints_list,mz_max,charge,delta_mz,error=0.02):
+    
+    """
+    以最高峰为基准，获取与其相差delta_mz的同位素峰的mz和intensity;
+    考虑电荷
+    允许误差范围为error
+    """
+
     mz = [i for i, x in enumerate(mz_list) if (mz_max+(delta_mz-error)/charge) <= x <= (mz_max+(delta_mz+error)/charge)]
     if len(mz) != 0:
         ints = [ints_list[i] for i in mz]
@@ -286,49 +276,72 @@ def get_one_feature(mz_list,ints_list,mz_max,charge,delta_mz,error=0.01):
         ints = 0
     return mz,ints
 
-def get_features(mz_max,mz_list,ints_list,charge):
+def get_isotoplogues(mz_max,mz_list,ints_list,charge):
+    """
+    以最高峰为基准，获取同位素峰的mz和intensity;
 
-    mz_b2,ints_b2 = get_one_feature(mz_list,ints_list,mz_max,charge,-2)
-    mz_b1,ints_b1 = get_one_feature(mz_list,ints_list,mz_max,charge,-1)
-    mz_a0,ints_a0 = get_one_feature(mz_list,ints_list,mz_max,charge,0)
-    mz_a1,ints_a1 = get_one_feature(mz_list,ints_list,mz_max,charge,1)
-    mz_a2,ints_a2 = get_one_feature(mz_list,ints_list,mz_max,charge,2)
-    mz_a3,ints_a3 = get_one_feature(mz_list,ints_list,mz_max,charge,3)
+    """
+    mz_b3,ints_b3 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,-3)
+    mz_b2,ints_b2 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,-2)
+    mz_b1,ints_b1 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,-1)
+    mz_a0,ints_a0 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,0)
+    mz_a1,ints_a1 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,1)
+    mz_a2,ints_a2 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,2)
+    mz_a3,ints_a3 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,3)
+
+    ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
+
     #以字典的形式返回
+    return {'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3}
 
-    return {'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3}
-
-def is_halo_isotopes(b_2,b_1,a0,a1,a2,a3):
+def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
     """
-    根据五个同位素峰的强度,判断是否为同位素峰
+    根据六个个同位素峰的强度,判断是否为同位素峰
     判断主要依据卤化物的同位素峰强度的统计结果
-
     """
+    # if a1>0.02:
+    #     if b_2 == 0:
+    #         if b_1==0:
+    #             is_isotope = 1
+    #         else:
+    #             if  b_1 > 0.5:
+    #                 is_isotope = 1
+    #             else:
+    #                 is_isotope = 0
+    #     else:
+    #         if b_2>0.3:
+    #             if b_1>0.02:
+    #                is_isotope = 1
+    #             else:
+    #                 is_isotope = 0
+    #         else:
+    #             is_isotope = 0
+    # else:
+    #     is_isotope =0
 
-    if a1>0.06:
-        if b_2 == 0:
-            if b_1==0:
+    # return is_isotope
+    if a1>0.02:
+        if b_3 == 0:
+            if b_2 == 0:
+                is_isotope = 1
+            elif b_2>0.04:
                 is_isotope = 1
             else:
-                if  b_1 > 0.5:
-                    is_isotope = 1
-                else:
-                    is_isotope = 0
+                is_isotope = 0
         else:
-            if b_2>0.3:
-                if b_1>0.02:
-                   is_isotope = 1
-                else:
-                    is_isotope = 0
+            if b_2 > 0.04:
+                is_isotope = 1
             else:
                 is_isotope = 0
     else:
         is_isotope =0
-
     return is_isotope
     
-
 def calculate_zig_zag(I):
+    """
+    根据一个ROI中所有scan的分类结果，计算ZigZag score
+    I:list，为一个ROI中所有scan的分类结果
+    """
     # Calculate the maximum and minimum values of I
     Imax= max(I)
     Imin = min(I)
@@ -346,7 +359,13 @@ def calculate_zig_zag(I):
     return score
 
 def roi_halo_evaluation(I):
+    """
+    根据一个ROI中所有scan的分类结果，判断该ROI为halo的概率
+    I:list，为一个ROI中所有scan的分类结果
+    """
+    # Get the common classes in the ROI
     com_class = list(Counter(I).keys())
+
     # Determine the halo classification for the ROI
     if any(i in com_class for i in [0, 1, 2]):
         if len(com_class) == 1:
@@ -356,16 +375,12 @@ def roi_halo_evaluation(I):
             halo_sub_class = com_class[0]
         else:
             if {0, 1, 2}.issuperset(set(com_class)):
-            # if ((0 in com_class) and (1 in com_class)) or ((0 in com_class) and (2 in com_class)) or ((1 in com_class) and (2 in com_class)) or ((0 in com_class) and (1 in com_class) and (2 in com_class)):
-
                 halo_class = 'halo'
                 halo_score = 100
                 halo_sub_class =max(Counter(I).items(), key=lambda x: x[1])[0]
                 halo_sub_score = calculate_zig_zag(I)
             else:
                 I_new = [1 if i in [0,1,2] else 0 for i in I]
-                
-                # if the number of 1 in I is equal to the number of 0 in I, then the max_class is 1
                 if I_new.count(1) == I_new.count(0):
                     max_class = 1
                 else:
@@ -388,25 +403,25 @@ def roi_halo_evaluation(I):
     return halo_class,halo_score,halo_sub_class,halo_sub_score
 
 if __name__ == "__main__":
-    def ms2ms1_linked_ROI_identify(spectra,vendor=''):
+    def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
+        mzml_dict['vendor'] = 'waters'
+        mzml_dict['precursor_error'] = 0.3
+        df = MS1_MS2_connected(spectra, mzml_dict)
 
-        df = MS1_MS2_connected(spectra, vendor=vendor)
+        #将df中的每一行转为一个字典
+        t = df.to_dict('records')
 
-        # #将df中的每一行转为一个字典
-        # t = df.to_dict('records')
+        rois = ROIs()
+        for i in range(len(t)):
+            rois.update(t[i])
 
-        # rois = ROIs()
-        # for i in range(len(t)):
-        #     rois.update(t[i])
+        rois.merge()
+        rois.filter(2)
 
-        # rois.merge()
-        # rois.filter(2)
-
-
-        # df = rois.get_roi_df()
+        df = rois.get_roi_df()
         return df
     from pyteomics import mzml
 
-    spectra = mzml.read(r'E:\XinBackup\source_data\mzmls\Vancomycin.mzML')
-    df = ms2ms1_linked_ROI_identify(spectra)
+    spectra = mzml.read(r'J:\wangmengyuan\dataset\mzmls\Vancomycin.mzML')
+    df = ms2ms1_linked_ROI_identify(spectra,{'vendor':'waters','precursor_error':0.3})
     print(df)

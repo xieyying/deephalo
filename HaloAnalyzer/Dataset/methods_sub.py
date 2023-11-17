@@ -135,7 +135,7 @@ def mass_spectrum_calc_2(dict_features):
     a1_mz = dict_features['mz_a1']
     a2_mz = dict_features['mz_a2']
     a3_mz = dict_features['mz_a3']
-    a4_mz = dict_features['mz_a4']
+    # a4_mz = dict_features['mz_a4']
     b_3 = dict_features['ints_b3']
     b_2 = dict_features['ints_b2']
     b_1 = dict_features['ints_b1']
@@ -143,7 +143,7 @@ def mass_spectrum_calc_2(dict_features):
     a1 = dict_features['ints_a1']
     a2 = dict_features['ints_a2']
     a3 = dict_features['ints_a3']
-    a4 = dict_features['ints_a4']
+    # a4 = dict_features['ints_a4']
     #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
     if b_3_mz != 0:
         new_a0_mz = b_3_mz

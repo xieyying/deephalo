@@ -1,6 +1,6 @@
 from pyteomics import mzml ,mgf
 import pandas as pd
-from .methods_sub import feature_extractor,fliter_mzml_data,get_mz_max,get_charge,get_features,ROIs,MS1_MS2_connected,is_halo_isotopes,roi_halo_evaluation
+from .methods_sub import feature_extractor,fliter_mzml_data,get_mz_max,get_charge,get_isotoplogues,ROIs,MS1_MS2_connected,is_halo_isotopes,roi_halo_evaluation
 import numpy as np
 import tensorflow as tf
 
@@ -10,12 +10,12 @@ from ..Dataset.methods_sub import mass_spectrum_calc_2
 #读取mzml文件
 def load_mzml_file(path,level=1):
     if level != 'all':
-        spectras = mzml.read(path,use_index=True,read_schema=True)
-        level_spectra = [s for s in spectras if s.get('ms level') == level]
+        spectra = mzml.read(path,use_index=True,read_schema=True)
+        level_spectra = [s for s in spectra if s.get('ms level') == level]
         return level_spectra 
     else:
-        spectras = mzml.read(path,use_index=True,read_schema=True)
-        return spectras
+        spectra = mzml.read(path,use_index=True,read_schema=True)
+        return spectra
           
 
 #获取ms1_spectra中的scan，total ion current
@@ -45,7 +45,6 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
 
     rois.merge()
     rois.filter(2)
-
 
     df = rois.get_roi_df()
     #将mz_mean列名改为mz
@@ -90,18 +89,18 @@ def find_isotopologues(df1,mzml_data):
                 dict_mz_max = get_mz_max(mz,intensity,target_mz)#需要修正误差范围
                 if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2']:
                     charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
-                    dict_features = get_features(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
+                    dict_isotoplogues = get_isotoplogues(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
                 else:
-                    #charege为0，a0,a1,a2,a3,b1,b2均为0
+                    #charge为0，a0,a1,a2,a3,b1,b2均为0
                     charge = 0
-                    dict_features = {'mz_b2':0,'ints_b2':0,'mz_b1':0,'ints_b1':0,'mz_a0':0,'ints_a0':0,'mz_a1':0,'ints_a1':0,'mz_a2':0,'ints_a2':0,'mz_a3':0,'ints_a3':0}
+                    dict_isotoplogues = {'mz_b3':0,'ints_b3':0,'mz_b2':0,'ints_b2':0,'mz_b1':0,'ints_b1':0,'mz_a0':0,'ints_a0':0,'mz_a1':0,'ints_a1':0,'mz_a2':0,'ints_a2':0,'mz_a3':0,'ints_a3':0}
                 #应该将函数的返回值修改为字典，可以避免重复修改此处代码    
-                dict_new = mass_spectrum_calc_2(dict_features)
+                dict_new = mass_spectrum_calc_2(dict_isotoplogues)
                 if charge != 0:
-                    #合并dict_base,dict_mz_max,dict_features
+                    #合并dict_base,dict_mz_max,dict_isotoplogues
                     dict_all = dict_base.copy()
                     dict_all.update(dict_mz_max)
-                    dict_all.update(dict_features)
+                    dict_all.update(dict_isotoplogues)
                     dict_all.update(dict_new)
                     df = pd.concat([df, pd.Series(dict_all)], axis=1)
             except:
@@ -119,26 +118,25 @@ def add_predict(df,model_path,features_list):
     querys = querys.astype('float32')
     #对特征进行预测
     res = clf.predict(querys)
-    base = tf.math.argmax(res[0],1).numpy()
-    sub = tf.math.argmax(res[1],1).numpy()
-    hydro = tf.math.argmax(res[2],1).numpy()
+    # classes = tf.math.argmax(res[0],1).numpy()
+    classes_pred = np.argmax(res, axis=1)
     #将预测结果添加到df_features中
-    df['base_class'] = base
-    df['sub_class'] = sub
-    df['hydro_class'] = hydro
+    df['class_pred'] = classes_pred
+
     return df
 
 def add_is_halo_isotopes(df):
     is_halo_isotopes_list = []
     #提取每行的ints_b2,ints_b1,ints_a1,ints_a2,ints_a3
     for i in range(len(df)):
+        ints_b3 = df['ints_b3'].iloc[i]
         ints_b2 = df['ints_b2'].iloc[i]
         ints_b1 = df['ints_b1'].iloc[i]
         ints_a0 = df['ints_a0'].iloc[i]
         ints_a1 = df['ints_a1'].iloc[i]
         ints_a2 = df['ints_a2'].iloc[i]
         ints_a3 = df['ints_a3'].iloc[i]
-        is_halo_isotopes_list.append(is_halo_isotopes(ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3))
+        is_halo_isotopes_list.append(is_halo_isotopes(ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3))
     df['is_halo_isotopes'] = is_halo_isotopes_list
     
     return df
@@ -146,7 +144,7 @@ def add_is_halo_isotopes(df):
 def halo_evaluation(df):
     #以此将self.df_features中的数据按照roi进行分组
     df_evaluation = pd.DataFrame()
-    #循环self.df_features中的每一行，将target_roi相同的scan，hydro_class分别整合到一个list中
+    #循环self.df_features中的每一行，将target_roi相同的scan，class_pred分别整合到一个list中
     #获取self.df_features中的target_roi列的唯一值
     target_roi_list = df['target_roi'].unique()
     for id in target_roi_list:
@@ -154,8 +152,8 @@ def halo_evaluation(df):
         df_ = df[df['target_roi']==id]
         #获取该行的scan列
         scan_list = df_['scan'].tolist()    
-        #获取该行的hydro_class列
-        halo_class_list = df_['hydro_class'].tolist()
+        #获取该行的class_pred列
+        halo_class_list = df_['class_pred'].tolist()
         halo_class,halo_score,halo_sub_class,halo_sub_score = roi_halo_evaluation(halo_class_list)
 
         #添加到df_evaluation中的新行

@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 import tensorflow as tf
-from .methons import load_mzml_file,asari_ROI_identify,get_tic,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
+from .methods import load_mzml_file,asari_ROI_identify,get_tic,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
                     add_predict,add_is_halo_isotopes,halo_evaluation
 from pyteomics import mzml ,mgf
 
