@@ -151,13 +151,13 @@ def halo_evaluation(df):
         #获取target_roi为id的行
         df_ = df[df['target_roi']==id]
         #获取该行的scan列
-        scan_list = df_['scan'].tolist()    
+        counter_list = df_['scan'].tolist()    
         #获取该行的class_pred列
         halo_class_list = df_['class_pred'].tolist()
         halo_class,halo_score,halo_sub_class,halo_sub_score = roi_halo_evaluation(halo_class_list)
 
         #添加到df_evaluation中的新行
-        df_evaluation = pd.concat([df_evaluation, pd.Series({'target_roi':id,'scan_list':scan_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
+        df_evaluation = pd.concat([df_evaluation, pd.Series({'target_roi':id,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
     df_evaluation = df_evaluation.T
     df_evaluation = df_evaluation.reset_index(drop=True)
     return df_evaluation
@@ -169,11 +169,11 @@ def extract_ms2_of_rois(mzml_path,halo_evaluation_path,out_path,rois:list):
     for id in rois:
         #获取self.df_socres中的target_roi为id的行
         df = df_halo_evaluation[df_halo_evaluation['target_roi']==id]
-        #获取该行的scan_list列
-        scan_list = df['scan_list'].tolist()[0]
-        #将scan_list由str转为list
-        scan_list = eval(scan_list)
-        scans = data.get_by_indexes(scan_list)
+        #获取该行的counter_list列
+        counter_list = df['counter_list'].tolist()[0]
+        #将counter_list由str转为list
+        counter_list = eval(counter_list)
+        scans = data.get_by_indexes(counter_list)
         for scan in scans:
             #获取spectra中除了'm/z array', 'intensity array'以外的所有信息存入params
             params = {k: scan[k] for k in scan if k not in ['m/z array', 'intensity array']}

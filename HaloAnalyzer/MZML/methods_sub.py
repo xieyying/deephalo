@@ -16,11 +16,11 @@ class ROIs:
             self.rois.append({
                 'id':self.max_roi,
                 'mz_mean':update_dict['precursor'],
-                'scan_list':[update_dict['MS1']],
-                'index_list':[update_dict['MS1_index']],
-                'roi_ms2_list':[update_dict['MS2']],
-                'left_base':update_dict['MS1_index'],
-                'right_base':update_dict['MS1_index'],
+                'MS1_index':[update_dict['MS1']],
+                'counter_list':[update_dict['MS1_counter']],
+                'roi_ms2_index':[update_dict['MS2']],
+                'left_base':update_dict['MS1_counter'],
+                'right_base':update_dict['MS1_counter'],
             })
             self.max_roi += 1
         
@@ -28,17 +28,17 @@ class ROIs:
             add_new = False
             for roi in self.rois:
                 delt_mz = abs(roi['mz_mean'] - update_dict['precursor'])/update_dict['precursor']*1e6
-                delt_scan = abs(roi['index_list'][-1] - update_dict['MS1_index'])
+                delt_scan = abs(roi['counter_list'][-1] - update_dict['MS1_counter'])
                 if delt_mz <= roi_precusor_error and delt_scan <= gap_scans:
 
-                    roi['mz_mean'] = (roi['mz_mean'] * len(roi['scan_list']) + update_dict['precursor'])/(len(roi['scan_list']) + 1)
-                    if update_dict['MS1_index']  not in roi['index_list']:
-                        roi['scan_list'].append(update_dict['MS1'])
-                        roi['index_list'].append(update_dict['MS1_index'])
-                    roi['roi_ms2_list'].append(update_dict['MS2'])
+                    roi['mz_mean'] = (roi['mz_mean'] * len(roi['MS1_index']) + update_dict['precursor'])/(len(roi['MS1_index']) + 1)
+                    if update_dict['MS1_counter']  not in roi['counter_list']:
+                        roi['MS1_index'].append(update_dict['MS1'])
+                        roi['counter_list'].append(update_dict['MS1_counter'])
+                    roi['roi_ms2_index'].append(update_dict['MS2'])
                     #更新roi的左右边界
-                    roi['left_base'] = min(roi['left_base'],update_dict['MS1_index'])
-                    roi['right_base'] = max(roi['right_base'],update_dict['MS1_index'])
+                    roi['left_base'] = min(roi['left_base'],update_dict['MS1_counter'])
+                    roi['right_base'] = max(roi['right_base'],update_dict['MS1_counter'])
                     add_new = True
                     # break
             if not add_new:
@@ -46,17 +46,17 @@ class ROIs:
                 self.rois.append({
                     'id':self.max_roi,
                     'mz_mean':update_dict['precursor'],
-                    'scan_list':[update_dict['MS1']],
-                    'index_list':[update_dict['MS1_index']],
-                    'roi_ms2_list':[update_dict['MS2']],
-                    'left_base':update_dict['MS1_index'],
-                    'right_base':update_dict['MS1_index'],
+                    'MS1_index':[update_dict['MS1']],
+                    'counter_list':[update_dict['MS1_counter']],
+                    'roi_ms2_index':[update_dict['MS2']],
+                    'left_base':update_dict['MS1_counter'],
+                    'right_base':update_dict['MS1_counter'],
                 })
                 self.max_roi += 1
 
-    #过滤掉scan_list长度小于min_points的roi
+    #过滤掉MS1_index长度小于min_points的roi
     def filter(self,min_points):
-        self.rois = [roi for roi in self.rois if len(roi['scan_list']) > min_points]
+        self.rois = [roi for roi in self.rois if len(roi['MS1_index']) > min_points]
         df = pd.DataFrame(self.rois)
         return df
 
@@ -66,12 +66,12 @@ class ROIs:
 
         for i in range(len(self.rois)-1):
             delt_mz = abs(self.rois[i]['mz_mean'] - self.rois[i+1]['mz_mean'])/self.rois[i]['mz_mean']*1e6
-            delt_scan = abs(self.rois[i]['index_list'][-1] - self.rois[i+1]['index_list'][0])
+            delt_scan = abs(self.rois[i]['counter_list'][-1] - self.rois[i+1]['counter_list'][0])
             if delt_mz <= merge_precursor_error and delt_scan <= merge_gap_scans:
-                self.rois[i]['mz_mean'] = (self.rois[i]['mz_mean'] * len(self.rois[i]['scan_list']) + self.rois[i+1]['mz_mean'] * len(self.rois[i+1]['scan_list']))/(len(self.rois[i]['scan_list']) + len(self.rois[i+1]['scan_list']))
-                self.rois[i]['scan_list'] = self.rois[i]['scan_list'] + self.rois[i+1]['scan_list']
-                self.rois[i]['index_list'] = self.rois[i]['index_list'] + self.rois[i+1]['index_list']
-                self.rois[i]['roi_ms2_list'] = self.rois[i]['roi_ms2_list'] + self.rois[i+1]['roi_ms2_list']
+                self.rois[i]['mz_mean'] = (self.rois[i]['mz_mean'] * len(self.rois[i]['MS1_index']) + self.rois[i+1]['mz_mean'] * len(self.rois[i+1]['MS1_index']))/(len(self.rois[i]['MS1_index']) + len(self.rois[i+1]['MS1_index']))
+                self.rois[i]['MS1_index'] = self.rois[i]['MS1_index'] + self.rois[i+1]['MS1_index']
+                self.rois[i]['counter_list'] = self.rois[i]['counter_list'] + self.rois[i+1]['counter_list']
+                self.rois[i]['roi_ms2_index'] = self.rois[i]['roi_ms2_index'] + self.rois[i+1]['roi_ms2_index']
                 self.rois[i]['left_base'] = min(self.rois[i]['left_base'],self.rois[i+1]['left_base'])
                 self.rois[i]['right_base'] = max(self.rois[i]['right_base'],self.rois[i+1]['right_base'])
                 self.rois.pop(i+1)
@@ -91,7 +91,7 @@ def feature_extractor(file_name: str,para) -> pd.DataFrame:
     Returns:
         A DataFrame containing feature information, including the quality-time coordinates of the features, peak area, peak height, and other information.
 
-    this function is modified from asari.feature_extractor
+    this function is modified from asari
     """
     ms_expt = pymzml.run.Reader(file_name)
 
@@ -131,21 +131,21 @@ def MS1_MS2_connected(spectra,mzml_dict):
     MS1_MS2_connected['MS2'] = []
     MS1_MS2_connected['precursor'] = []
     MS1_MS2_connected['rt'] = []
-    MS1_MS2_connected['MS1_index'] = []
-    MS1_scan_list = []
+    MS1_MS2_connected['MS1_counter'] = []
+    MS1_MS1_index = []
     MS1_rt = []
-    MS1_index_list = []
-    MS1_index=-1
+    MS1_counter_list = []
+    MS1_counter=-1
     
     for s in spectra:
         try:
             if (s['ms level'] == 1 and s['id'].split(' ')[0] == "function=1" and vendor == 'waters') or (s['ms level'] == 1 and vendor != 'waters'):
                 mz_list = s['m/z array']
                 ints_list = s['intensity array']
-                MS1_index += 1
-                MS1_scan_list.append(s['index'])
+                MS1_counter += 1
+                MS1_MS1_index.append(s['index'])
                 MS1_rt.append(s['scanList']['scan'][0]['scan start time'])
-                MS1_index_list.append(MS1_index)
+                MS1_counter_list.append(MS1_counter)
                 
             elif s['ms level'] == 2:
                 precursor_mz_source = s['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
@@ -154,9 +154,9 @@ def MS1_MS2_connected(spectra,mzml_dict):
                 ints_list1 = ints_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
                 precursor_mz = mz_list1[np.argmax(ints_list1)]
 
-                MS1_MS2_connected['MS1_index'].append(MS1_index_list[-1])
+                MS1_MS2_connected['MS1_counter'].append(MS1_counter_list[-1])
                 MS1_MS2_connected['rt'].append(MS1_rt[-1])
-                MS1_MS2_connected['MS1'].append(MS1_scan_list[-1])
+                MS1_MS2_connected['MS1'].append(MS1_MS1_index[-1])
 
                 MS1_MS2_connected['MS2'].append(s['index'])
                 MS1_MS2_connected['precursor'].append(precursor_mz)
