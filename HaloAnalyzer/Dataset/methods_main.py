@@ -97,28 +97,40 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
         b_2_int = b_1_int
         b_1_mz = fm_isos.iloc[i]['Relative mass']
         b_1_int = fm_isos.iloc[i]['Intensity %']
+        # if b_1_int >=1:
+        #     b_1_mz = fm_isos.iloc[i]['Relative mass']
+        #     b_1_int = fm_isos.iloc[i]['Intensity %']
+        # else:
+        #     b_1_int = 0
+        #     b_1_mz = 0
         i+=1
     
     a_0_mz = fm_isos.iloc[i]['Relative mass']
     a_0_int = fm_isos.iloc[i]['Intensity %']
 
     try:
+    
         a_1_mz = fm_isos.iloc[i+1]['Relative mass']
         a_1_int = fm_isos.iloc[i+1]['Intensity %']
+    
     except:
         a_1_mz = 0
         a_1_int = 0
 
     try:
+    
         a_2_mz = fm_isos.iloc[i+2]['Relative mass']
         a_2_int = fm_isos.iloc[i+2]['Intensity %']
+        
     except:
         a_2_mz = 0
         a_2_int = 0
 
     try:
-        a_3_mz = fm_isos.iloc[i+3]['m/z']
+        
+        a_3_mz = fm_isos.iloc[i+3]['Relative mass']
         a_3_int = fm_isos.iloc[i+3]['Intensity %']
+
     except:
         a_3_mz = 0
         a_3_int = 0
@@ -162,10 +174,9 @@ def create_data(formula,type='base',rate=None):
                 dict_isos[key] = adding_noise_to_mass(dict_isos[key])
             else:
                 dict_isos[key] = adding_noise_to_intensity(dict_isos[key])
-    
-        
+      
     elif type == 'Fe':
-        group = 7
+        group = 5
     elif type == 'B':
         group = 6
     elif type == 'Se':

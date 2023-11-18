@@ -289,7 +289,28 @@ def get_isotoplogues(mz_max,mz_list,ints_list,charge):
     mz_a2,ints_a2 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,2)
     mz_a3,ints_a3 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,3)
 
-    ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
+    ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
+    ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
+    
+    # 强度小于0.01的intensity和mz都设置为0，防止背景信号影响
+    if ints_b3 < 0.01:
+        mz_b3 = 0
+        ints_b3 = 0
+    if ints_b2 < 0.01:
+        mz_b2 = 0
+        ints_b2 = 0
+    if ints_b1 < 0.01:
+        mz_b1 = 0
+        ints_b1 = 0
+    if ints_a1 < 0.01:
+        mz_a1 = 0
+        ints_a1 = 0
+    if ints_a2 < 0.01:
+        mz_a2 = 0
+        ints_a2 = 0
+    if ints_a3 < 0.01:
+        mz_a3 = 0
+        ints_a3 = 0
 
     #以字典的形式返回
     return {'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3}
@@ -356,6 +377,7 @@ def calculate_zig_zag(I):
 
     # Convert the ZigZag score to a percentage
     score = (4-8/N-zigzag)/(4-8/N)*100
+    # score = (4-8/N-zigzag)/(4-8/N)*100
     return score
 
 def roi_halo_evaluation(I):
@@ -416,7 +438,7 @@ if __name__ == "__main__":
             rois.update(t[i])
 
         rois.merge()
-        rois.filter(2)
+        rois.filter(3)  # 这个参数应设置为可调参数
 
         df = rois.get_roi_df()
         return df

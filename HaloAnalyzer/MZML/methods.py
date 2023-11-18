@@ -44,7 +44,7 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
         rois.update(t[i])
 
     rois.merge()
-    rois.filter(2)
+    rois.filter(3) # 这个参数应设置为可调参数
 
     df = rois.get_roi_df()
     #将mz_mean列名改为mz

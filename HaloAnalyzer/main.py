@@ -17,10 +17,10 @@ def pipeline_dataset():
     raw_data = datasets(datas)
     raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
     # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'noise',repeats=para.repeat_for_noise)
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
 
     # data.data_statistics_customized()
 
@@ -63,6 +63,22 @@ def pipeline_find_halo(mzml_path):
     data = my_mzml(mzml_para)
     data.work_flow()
 
+def batch_find_halo(folder_path):
+    para = load_config()
+
+    # get all mzml files
+    mzml_files = []
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.mzML'):
+                mzml_files.append(os.path.join(root, file))
+    for f in mzml_files:
+        mzml_para = {'path':f,
+                    'feature_list':para.features_list,
+                    'asari':para.asari_dict,
+                    'mzml':para.mzml_dict,}
+        data = my_mzml(mzml_para)
+        data.work_flow()
 
 #extract ms2 of rois
 def pipeline_extract_ms2_of_rois(mzml_path,project_path,rois:list):

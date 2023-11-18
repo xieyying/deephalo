@@ -40,9 +40,10 @@ def main():
             elif args.run == 'analyze_mzml':
                 mzml_path = args.input
                 if mzml_path == None:
-                    print("Please specify a mzML file to analyze.")
+                    print("Please specify a folder containing mzML files to analyze.")
                 else:
-                    pipeline_find_halo(mzml_path)
+                    # pipeline_find_halo(mzml_path)
+                    batch_find_halo(mzml_path)
                     with open(r'test_mzml_prediction/log.txt','w') as f: f.write(mzml_path)
             elif args.run == 'viz_result':
 

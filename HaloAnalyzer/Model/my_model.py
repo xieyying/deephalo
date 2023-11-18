@@ -76,10 +76,10 @@ class my_model:
             ]
            
         formula_test = np.array(self.val_['formula'].tolist())
-        # new_a0 = np.array(self.val_['new_a0'].tolist())
+        new_a0 = np.array(self.val_['new_a0_mz'].tolist())
         wrong_data = pd.DataFrame(wrong_data,columns=cols)
         wrong_data['formula'] = pd.Series(formula_test[wrong_index])
-        # wrong_data['new_a0'] = pd.Series(new_a0[wrong_index])
+        wrong_data['new_a0_mz'] = pd.Series(new_a0[wrong_index])
         wrong_data['true_classes'] = pd.Series(Y_val[wrong_index])
         wrong_data['pred_classes'] = pd.Series(y_pred[wrong_index])
         

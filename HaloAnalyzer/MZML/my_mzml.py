@@ -9,14 +9,15 @@ from pyteomics import mzml ,mgf
 class my_mzml:
     def __init__(self,para) -> None:
         self.path = para['path']
+        print(self.path)
         self.feature_list = para['feature_list']
         self.asari_dict = para['asari']
         self.mzml_dict = para['mzml']
         self.model_path = r'./trained_models/pick_halo_ann.h5'
-        self.save_tic =  r'./test_mzml_prediction/tic.csv'
-        self.save_rois = r'./test_mzml_prediction/rois.csv'
-        self.save_isotopolgues = r'./test_mzml_prediction/isotopolgues.csv'
-        self.save_halo_evaluation = r'./test_mzml_prediction/halo_evaluation.csv'
+        self.save_tic =  r'./test_mzml_prediction/' + para['path'].split('.')[0].split('\\')[-1] + '_tic.csv'
+        self.save_rois = r'./test_mzml_prediction/' + para['path'].split('.')[0].split('\\')[-1] + '_rois.csv'
+        self.save_isotopolgues = r'./test_mzml_prediction/'+  para['path'].split('.')[0].split('\\')[-1] + '_isotopolgues.csv'
+        self.save_halo_evaluation = r'./test_mzml_prediction/' +  para['path'].split('.')[0].split('\\')[-1] + '_halo_evaluation.csv'
         self.save_mgf = r'./test_mzml_prediction/roi_ms2.mgf'
 
         
@@ -47,8 +48,9 @@ class my_mzml:
         df_isotopologues = add_predict(df_isotopologues,self.model_path,self.feature_list)
         #添加is_halo_isotopes判断结果
         df_isotopologues = add_is_halo_isotopes(df_isotopologues)
-        #保存isotopologues到self.df_isotopologues
-        self.df_isotopologues = df_isotopologues
+        #保存is_halo_isotopes 为1的isotopologues到self.df_isotopologues
+        self.df_isotopologues = df_isotopologues[df_isotopologues['is_halo_isotopes']==1]
+        # self.df_isotopologues = df_isotopologues
   
     #对ROI进行halo评估
     def rois_evaluation(self):
@@ -74,14 +76,18 @@ class my_mzml:
         
                 
 if __name__ == "__main__":
-    path = r'E:\XinBackup\source_data\mzmls\Vancomycin.mzML'
-    features_list = [
-    "new_a0_ints",
-    "new_a1_ints",
-    "new_a2_ints",
-    "new_a3_ints",
-    "new_a2_a1_10"]
+    # path = r'E:\XinBackup\source_data\mzmls\Vancomycin.mzML'
+    # features_list = [
+    # "new_a0_ints",
+    # "new_a1_ints",
+    # "new_a2_ints",
+    # "new_a3_ints",
+    # "new_a2_a1_10"]
     
-    t = my_mzml(path,features_list) 
-    t.work_flow()
-    t.extract_ms2_of_rois([1,])
+    # t = my_mzml(path,features_list) 
+    # t.work_flow()
+    # t.extract_ms2_of_rois([1,])
+
+    file = 'J:\wangmengyuan\dataset\mzmls\Amycolatopsis_cmx_4_37_M10_cmx_p11_H10.mzML'
+    a= file.split('.')[0].split('\\')[-1]
+    print(a)
