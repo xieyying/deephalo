@@ -14,7 +14,7 @@ class ROIs:
         #如果self.rois为空，则将update_dict['precursor']作为一个新的roi
         if self.rois == []:
             self.rois.append({
-                'id':self.max_roi,
+                'id_roi':self.max_roi,
                 'mz_mean':update_dict['precursor'],
                 'MS1_index':[update_dict['MS1']],
                 'counter_list':[update_dict['MS1_counter']],
@@ -44,7 +44,7 @@ class ROIs:
             if not add_new:
                 # print('new')
                 self.rois.append({
-                    'id':self.max_roi,
+                    'id_roi':self.max_roi,
                     'mz_mean':update_dict['precursor'],
                     'MS1_index':[update_dict['MS1']],
                     'counter_list':[update_dict['MS1_counter']],

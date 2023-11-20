@@ -49,7 +49,7 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
     df = rois.get_roi_df()
     #将mz_mean列名改为mz
     df = df.rename(columns={'mz_mean':'mz'})
-
+    # df.to_csv('roi0.csv')
     return df
 
 def get_calc_targets(df_rois):
@@ -66,16 +66,16 @@ def get_calc_targets(df_rois):
         for i in range(len(df_rois)):
             if df_rois.loc[i,'left_base'] <=scan<=df_rois.loc[i,'right_base']:
                 mz_list.append(df_rois.loc[i,'mz'])
-                roi_list.append(i)
+                roi_list.append(df_rois.loc[i,'id_roi'])
         df1 = pd.concat([df1, pd.Series({'scan':scan,'mz_list':mz_list,'roi_list':roi_list})], axis=1)
     df1 = df1.T
     #删除df1中的mz_list为[]的行
     df1 = df1[df1['mz_list'].map(lambda x: len(x)) > 0]
     df1 = df1.reset_index(drop=True)
-
+    # df1.to_csv('calc_targets.csv')
     return df1     
 
-def find_isotopologues(df1,mzml_data):
+def  find_isotopologues(df1,mzml_data):
     df = pd.DataFrame()
     for i in range(len(df1)):
         scan_id = df1['scan'][i]
@@ -84,7 +84,7 @@ def find_isotopologues(df1,mzml_data):
 
             target_roi = df1['roi_list'][i][j]
             target_mz = df1['mz_list'][i][j]
-            dict_base = {'scan':scan_id,'target_roi':target_roi,'target_mz':target_mz}
+            dict_base = {'scan':scan_id,'id_roi':target_roi,'target_mz':target_mz}
             try:
                 dict_mz_max = get_mz_max(mz,intensity,target_mz)#需要修正误差范围
                 if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2']:
@@ -107,6 +107,7 @@ def find_isotopologues(df1,mzml_data):
                 pass
 
     df = df.T
+    # df.to_csv('iso_0.csv')
     return df
 
 def add_predict(df,model_path,features_list):
@@ -146,10 +147,10 @@ def halo_evaluation(df):
     df_evaluation = pd.DataFrame()
     #循环self.df_features中的每一行，将target_roi相同的scan，class_pred分别整合到一个list中
     #获取self.df_features中的target_roi列的唯一值
-    target_roi_list = df['target_roi'].unique()
+    target_roi_list = df['id_roi'].unique()
     for id in target_roi_list:
         #获取target_roi为id的行
-        df_ = df[df['target_roi']==id]
+        df_ = df[df['id_roi']==id]
         #获取该行的scan列
         counter_list = df_['scan'].tolist()    
         #获取该行的class_pred列
@@ -157,9 +158,9 @@ def halo_evaluation(df):
         halo_class,halo_score,halo_sub_class,halo_sub_score = roi_halo_evaluation(halo_class_list)
 
         #添加到df_evaluation中的新行
-        df_evaluation = pd.concat([df_evaluation, pd.Series({'target_roi':id,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
+        df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
     df_evaluation = df_evaluation.T
-    df_evaluation = df_evaluation.reset_index(drop=True)
+    # df_evaluation = df_evaluation.reset_index(drop=True)
     return df_evaluation
 
 def extract_ms2_of_rois(mzml_path,halo_evaluation_path,out_path,rois:list):
@@ -168,7 +169,7 @@ def extract_ms2_of_rois(mzml_path,halo_evaluation_path,out_path,rois:list):
     df_halo_evaluation = pd.read_csv(halo_evaluation_path)
     for id in rois:
         #获取self.df_socres中的target_roi为id的行
-        df = df_halo_evaluation[df_halo_evaluation['target_roi']==id]
+        df = df_halo_evaluation[df_halo_evaluation['id_roi']==id]
         #获取该行的counter_list列
         counter_list = df['counter_list'].tolist()[0]
         #将counter_list由str转为list
