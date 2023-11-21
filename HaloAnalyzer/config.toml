@@ -77,9 +77,11 @@ min_peak_height = 5000
 
 [mzml]
 vendor = ''
-min_intensity = 100
+min_intensity = 100 #并非相对强度
 precursor_error = 0.3
 ROI_identify_method = 'ms1ms2_linked'
+min_element_roi = 3 #roi识别中MS1_index的最少元素数量
+min_element_sum = 2 #halo_eval中count_list中最少元素数量
 
 [visualization]
 path = "C:\\Users\\xyy\\Desktop\\python\\HaloAnalyzer_training\\test1"

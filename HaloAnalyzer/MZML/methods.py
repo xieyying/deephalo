@@ -30,12 +30,15 @@ def get_tic(mzml_data):
 def asari_ROI_identify(path,para):
     #获得features
     df_features = feature_extractor(path,para)
+    #为df_features添加roi_id列
+    df_features['id_roi'] = df_features.index
+
     return df_features
 
 def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
 
     df = MS1_MS2_connected(spectra, mzml_dict)
-
+    # df.to_csv('roi0.csv')
     #将df中的每一行转为一个字典
     t = df.to_dict('records')
 
@@ -44,7 +47,7 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
         rois.update(t[i])
 
     rois.merge()
-    rois.filter(3) # 这个参数应设置为可调参数
+    rois.filter(mzml_dict['min_element_roi']) # 这个参数应设置为可调参数
 
     df = rois.get_roi_df()
     #将mz_mean列名改为mz
@@ -75,16 +78,17 @@ def get_calc_targets(df_rois):
     # df1.to_csv('calc_targets.csv')
     return df1     
 
-def  find_isotopologues(df1,mzml_data):
+def  find_isotopologues(df1,mzml_data,mzml_dict):
     df = pd.DataFrame()
     for i in range(len(df1)):
         scan_id = df1['scan'][i]
-        rt,mz,intensity = fliter_mzml_data(mzml_data[scan_id],min_intensity=0.01)
+        rt,mz,intensity = fliter_mzml_data(mzml_data[scan_id],min_intensity=mzml_dict['min_intensity'])
+        rt = rt/60
         for j in range(len(df1['mz_list'][i])):
 
             target_roi = df1['roi_list'][i][j]
             target_mz = df1['mz_list'][i][j]
-            dict_base = {'scan':scan_id,'id_roi':target_roi,'target_mz':target_mz}
+            dict_base = {'scan':scan_id,'RT':rt,'id_roi':target_roi,'target_mz':target_mz}
             try:
                 dict_mz_max = get_mz_max(mz,intensity,target_mz)#需要修正误差范围
                 if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2']:
@@ -156,9 +160,15 @@ def halo_evaluation(df):
         #获取该行的class_pred列
         halo_class_list = df_['class_pred'].tolist()
         halo_class,halo_score,halo_sub_class,halo_sub_score = roi_halo_evaluation(halo_class_list)
+        #获取该行的RT
+        rt = df_['RT'].tolist()
+        rt_left = min(rt)
+        rt_right = max(rt)
+        #获取改行的所有intensity_max1之和
+        precursor_ints_sum  = sum(df_['intensity_max1'].tolist())
 
         #添加到df_evaluation中的新行
-        df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
+        df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'precursor_ints_sum':precursor_ints_sum,'RT_left':rt_left,'RT_right':rt_right,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
     df_evaluation = df_evaluation.T
     # df_evaluation = df_evaluation.reset_index(drop=True)
     return df_evaluation
@@ -171,7 +181,7 @@ def extract_ms2_of_rois(mzml_path,halo_evaluation_path,out_path,rois:list):
         #获取self.df_socres中的target_roi为id的行
         df = df_halo_evaluation[df_halo_evaluation['id_roi']==id]
         #获取该行的counter_list列
-        counter_list = df['counter_list'].tolist()[0]
+        counter_list = df['counter_list_x'].tolist()[0]
         #将counter_list由str转为list
         counter_list = eval(counter_list)
         scans = data.get_by_indexes(counter_list)

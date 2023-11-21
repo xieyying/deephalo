@@ -101,7 +101,7 @@ def feature_extractor(file_name: str,para) -> pd.DataFrame:
 
     # extract mass tracks
 
-    list_mass_tracks1 = extract_massTracks_(ms_expt, mz_tolerance_ppm=para['mz_tolerance_ppm'], min_intensity=para['asari_min_intensity'], min_timepoints=para['min_timepoints'], min_peak_height=para['min_peak_height'])
+    list_mass_tracks1 = extract_massTracks_(ms_expt, mz_tolerance_ppm=para['mz_tolerance_ppm'], min_intensity=para['min_intensity'], min_timepoints=para['min_timepoints'], min_peak_height=para['min_peak_height'])
 
     # reformat mass tracks to fit the input format of batch_deep_detect_elution_peaks
     list_mass_tracks = [{'id_number': i, 'mz': x[0], 'intensity': x[1]} for i, x in enumerate(list_mass_tracks1["tracks"])]

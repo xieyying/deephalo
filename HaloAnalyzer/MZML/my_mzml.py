@@ -18,7 +18,7 @@ class my_mzml:
         self.save_rois = r'./test_mzml_prediction/' + para['path'].split('.')[0].split('\\')[-1] + '_rois.csv'
         self.save_isotopolgues = r'./test_mzml_prediction/'+  para['path'].split('.')[0].split('\\')[-1] + '_isotopolgues.csv'
         self.save_halo_evaluation = r'./test_mzml_prediction/' +  para['path'].split('.')[0].split('\\')[-1] + '_halo_evaluation.csv'
-        self.save_mgf = r'./test_mzml_prediction/roi_ms2.mgf'
+        self.save_mgf = r'./test_mzml_prediction/' +  para['path'].split('.')[0].split('\\')[-1] +'_roi_ms2.mgf'
 
         
     #加载数据
@@ -43,7 +43,7 @@ class my_mzml:
     #对ROI进行特征提取
     def extract_features(self):
         df1 = get_calc_targets(self.df_rois)
-        df_isotopologues = find_isotopologues(df1,self.mzml_data)
+        df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
         #对isotopologue进行预测
         df_isotopologues = add_predict(df_isotopologues,self.model_path,self.feature_list)
         #添加is_halo_isotopes判断结果
@@ -58,9 +58,19 @@ class my_mzml:
 
 
     def save_result(self):
-        self.df_rois.to_csv(self.save_rois,index=False)
+        # self.df_rois.to_csv('roi.csv',index=False)
         self.df_isotopologues.to_csv(self.save_isotopolgues,index=False)
-        self.halo_evaluation.to_csv(self.save_halo_evaluation,index=False)
+        # self.halo_evaluation.to_csv('halo.csv',index=False)
+        #找到self.halo_evaluation和self.df_rois中相同的roi_id
+        df = pd.merge(self.halo_evaluation,self.df_rois,on='id_roi')
+        #将df中的'mz'列至于第2列
+        cols = list(df)
+        cols.insert(1,cols.pop(cols.index('mz')))
+        df = df.loc[:,cols]
+        #过滤掉df中counter_list_x中元素少于self.mzml_dict['min_element_sum']的行
+        df = df[df['counter_list_x'].map(lambda x: len(x)) >= self.mzml_dict['min_element_sum']]
+        df.to_csv(self.save_halo_evaluation,index=False)
+
 
     def work_flow(self):
         if not os.path.exists('./test_mzml_prediction'):

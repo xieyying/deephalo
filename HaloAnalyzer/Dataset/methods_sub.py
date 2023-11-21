@@ -189,8 +189,8 @@ def mass_spectrum_calc_2(dict_features):
         new_a2_a1 = new_a2_mz - new_a1_mz
         new_a2_a0 = new_a2_mz - new_a0_mz
     else:
-        new_a2_a1 = 0
-        new_a2_a0 = 0
+        new_a2_a1 = 1.002
+        new_a2_a0 = 2.002
 
     new_a2_a0_10 = (new_a2_a0-1)**10
     new_a2_a1_10 = new_a2_a1**10    

@@ -45,12 +45,16 @@ class run_parameters:
                            'mz_tolerance_ppm':config['asari']['mz_tolerance_ppm'],
                            'min_intensity':config['asari']['min_intensity'],
                            'min_timepoints':config['asari']['min_timepoints'],
-                           'min_peak_height':config['asari']['min_peak_height'],}
+                           'min_peak_height':config['asari']['min_peak_height'],
+                           }
         #mzml参数
         self.mzml_dict = {'min_intensity':config['mzml']['min_intensity'],
                           'vendor':config['mzml']['vendor'],
                           'precursor_error':config['mzml']['precursor_error'],
-                          'ROI_identify_method':config['mzml']['ROI_identify_method'],}
+                          'ROI_identify_method':config['mzml']['ROI_identify_method'],
+                          'min_element_roi':config['mzml']['min_element_roi'],
+                          'min_element_sum':config['mzml']['min_element_sum'],
+                          }
 
 
         #vis参数
