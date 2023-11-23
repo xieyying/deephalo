@@ -30,9 +30,8 @@ class dataset():
         #重置index
         self.data = self.data.reset_index(drop=True)
         
-    
-    #用于过滤数据，返回符合要求的数据
     def filter(self,lp):
+        """用于过滤数据，返回符合要求的数据"""
         df = pd.DataFrame(columns=['formula'])
         try:
             i,min_mass,max_mass,target_elements = lp[0],lp[1],lp[2],lp[3]
@@ -49,9 +48,8 @@ class dataset():
         except:
             return df
         
-    #多进程的方式map filter，默认使用全部cpu
     def filt(self,min_mass,max_mass,target_elements):
-        
+        """多进程的方式map filter，默认使用全部cpu"""
         pool = Pool()
         dfs = pool.map(self.filter, [   (i,min_mass,max_mass,target_elements) for i in self.data.index] )
         pool.close()
@@ -106,9 +104,11 @@ class dataset():
             raise ValueError('type must be in [base,noise,Fe,hydro,dehydro]')
         
     def save(self,path):
+        """保存数据集"""
         self.df_data.to_csv(path,index=False)
 
     def work_flow(self,min_mass,max_mass,target_elements,type,repeats=2,rates=[0.5,1]):
+        """工作流程"""
         self.filt(min_mass,max_mass,target_elements)
         self.create_dataset(type,rates,repeats)
         #如果不存在dataset文件夹，则创建
@@ -118,6 +118,8 @@ class dataset():
         self.save('./dataset/'+type+'.csv')   
 
 class datasets(dataset):
+    """dataset的子类，用于合并多个dataset
+    """
     def __init__(self,datas) -> None:
         self.data = pd.concat(datas,axis=0)
         print('原始数据',len(self.data))

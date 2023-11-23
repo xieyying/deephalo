@@ -7,6 +7,7 @@ from .methods import load_mzml_file,asari_ROI_identify,get_tic,get_calc_targets,
 from pyteomics import mzml ,mgf
 
 class my_mzml:
+    """自定义mzml类，包含了mzml数据的加载，ROI的识别，特征提取，halo评估等方法"""
     def __init__(self,para) -> None:
         self.path = para['path']
         print(self.path)
@@ -23,25 +24,29 @@ class my_mzml:
         
     #加载数据
     def load_mzml_data(self):
+        """加载mzml数据"""
+        #MS1数据
         self.mzml_data =load_mzml_file(self.path)
+        #全部数据
         self.mzml_data_all = load_mzml_file(self.path,level='all')
+    
     #保存原始tic数据
     def save_tic_spectra(self):
+        """保存原始tic数据"""
         df_tic = get_tic(self.mzml_data)
         df_tic.to_csv(self.save_tic,index=False)
 
     #分析数据
-    #ROI的识别：asari或ms2_linked others
     def ROI_identify(self):
+        """ROI的识别：asari或ms2_linked others"""
         method = self.mzml_dict['ROI_identify_method']
         if method == 'asari':
             self.df_rois = asari_ROI_identify(self.path,self.asari_dict)
-
         elif method == 'ms1ms2_linked':
             self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict)
 
-    #对ROI进行特征提取
     def extract_features(self):
+        """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
         df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
         #对isotopologue进行预测
@@ -52,17 +57,20 @@ class my_mzml:
         self.df_isotopologues = df_isotopologues[df_isotopologues['is_halo_isotopes']==1]
         # self.df_isotopologues = df_isotopologues
   
-    #对ROI进行halo评估
     def rois_evaluation(self):
+        """对ROI进行halo评估"""
         self.halo_evaluation = halo_evaluation(self.df_isotopologues.copy())
 
 
     def save_result(self):
+        """保存结果"""
         # self.df_rois.to_csv('roi.csv',index=False)
         self.df_isotopologues.to_csv(self.save_isotopolgues,index=False)
         # self.halo_evaluation.to_csv('halo.csv',index=False)
         #找到self.halo_evaluation和self.df_rois中相同的roi_id
         df = pd.merge(self.halo_evaluation,self.df_rois,on='id_roi')
+
+        #为方便查看，更改df的列顺序
         #将df中的'mz'列至于第2列
         cols = list(df)
         cols.insert(1,cols.pop(cols.index('mz')))
@@ -73,6 +81,7 @@ class my_mzml:
 
 
     def work_flow(self):
+        """mzml数据处理流程"""
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
         self.load_mzml_data()
@@ -86,18 +95,4 @@ class my_mzml:
         
                 
 if __name__ == "__main__":
-    # path = r'E:\XinBackup\source_data\mzmls\Vancomycin.mzML'
-    # features_list = [
-    # "new_a0_ints",
-    # "new_a1_ints",
-    # "new_a2_ints",
-    # "new_a3_ints",
-    # "new_a2_a1_10"]
-    
-    # t = my_mzml(path,features_list) 
-    # t.work_flow()
-    # t.extract_ms2_of_rois([1,])
-
-    file = 'J:\wangmengyuan\dataset\mzmls\Amycolatopsis_cmx_4_37_M10_cmx_p11_H10.mzML'
-    a= file.split('.')[0].split('\\')[-1]
-    print(a)
+    pass

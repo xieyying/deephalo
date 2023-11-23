@@ -5,7 +5,7 @@ from .methods_sub import get_iron_additive_isotopes,get_boron_additive_isotopes,
     adding_noise_to_mass,adding_noise_to_intensity,mass_spectrum_calc,mass_spectrum_calc_2
     
 
-def formula_clf(formula_dict,type=None):
+def formula_clf(formula_dict,type=None) :
     """
     Returns a classifier based on the formula given.
     """
@@ -68,7 +68,7 @@ def formula_clf(formula_dict,type=None):
     return trainable,group
 
 def Isotope_simulation(formula,type=None,rate=None) -> dict:
-    
+    """基于分子式，模拟质谱同位素分布，返回模拟质谱数"""
     fm = Formula(formula)
     if type =='hydro':
         fm_isos = get_hydroisomer_isotopes(formula,rate,0.0001).dataframe()
@@ -147,7 +147,8 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
             'ints_a0':a_0_int/100,'ints_a1':a_1_int/100,'ints_a2':a_2_int/100,\
             'ints_a3':a_3_int/100,'ints_a4':a_4_int/100} 
 
-def create_data(formula,type='base',rate=None):
+def create_data(formula,type='base',rate=None) -> pd.DataFrame:
+    """基于分子式及其类型，模拟质谱数据，返回模拟质谱数"""
     if not isinstance(formula, str):
         raise ValueError(formula,'formula must be a string')
     #将formula转化为formula_dict

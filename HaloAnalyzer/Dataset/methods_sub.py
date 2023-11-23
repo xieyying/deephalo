@@ -55,17 +55,21 @@ def adding_noise_to_mass (mass, M=0.0015):
     return m_simulated
 
 def get_iron_additive_isotopes(formula):
-
+    """get the isotopic distribution of the formula with iron additive"""
     f=Formula(formula+"Fe")-Formula('H3')
     return f.spectrum()
 def get_boron_additive_isotopes(formula):
+    """get the isotopic distribution of the formula with boron additive"""
     f=Formula(formula+"B")-Formula('H3')
     return f.spectrum()
 def get_selenium_additive_isotopes(formula):
+    """get the isotopic distribution of the formula with selenium additive"""
     f=Formula(formula+"Se")
     return f.spectrum()
 
 def other_requirements_trainable_clf(formula):
+    """判断分子式是否满足其他要求，满足返回1，否则返回0
+    要求：分子式中的元素只能是C,H,O,N,S,P,F,I的子集"""
     #将formula列中的公式转为字典
     f_dict = Formula(formula).composition().dataframe().to_dict()['Count']
     #如果f_dict中的keys是[C,H,O,N,S]的子集，则返回1，否则返回0
@@ -126,64 +130,18 @@ def mass_spectrum_calc(dict_isos):
             'a1_a0':a1_a0,'a2_a0':a2_a0,'a2_a1':a2_a1,'a0_b1':a0_b1,'b1_b2':b1_b2,
             'a0_norm':a0_norm,'a3_a0':a3_a0,'a3_a1':a3_a1,'a3_a2':a3_a2}
 
-def mass_spectrum_calc_2(dict_features):
+def mass_spectrum_calc_2(dict_features) -> dict:
+    """校正质谱数据"""
     # 将以最高峰为a0的质谱数据转化为以mz最小的峰为new_a0的质谱数据
-    b_3_mz = dict_features['mz_b3']
-    b_2_mz = dict_features['mz_b2']
-    b_1_mz = dict_features['mz_b1']
-    a0_mz = dict_features['mz_a0']
-    a1_mz = dict_features['mz_a1']
-    a2_mz = dict_features['mz_a2']
-    a3_mz = dict_features['mz_a3']
-    # a4_mz = dict_features['mz_a4']
-    b_3 = dict_features['ints_b3']
-    b_2 = dict_features['ints_b2']
-    b_1 = dict_features['ints_b1']
-    a0 = dict_features['ints_a0']
-    a1 = dict_features['ints_a1']
-    a2 = dict_features['ints_a2']
-    a3 = dict_features['ints_a3']
-    # a4 = dict_features['ints_a4']
-    #将b_2_mz,b_1_mz,a0_mz,a1_mz,a2_mz,a3_mz中第一个不为0的值赋给new_a0_mz，其后的值赋给new_a1_mz,new_a2_mz,new_a3_mz
-    if b_3_mz != 0:
-        new_a0_mz = b_3_mz
-        new_a1_mz = b_2_mz
-        new_a2_mz = b_1_mz
-        new_a3_mz = a0_mz
-        # new_a4_mz = a1_mz
-        new_a0_ints = b_3
-        new_a1_ints = b_2
-        new_a2_ints = b_1
-        new_a3_ints = 1
-        # new_a4_ints = a1
-    elif b_2_mz != 0:
-        new_a0_mz = b_2_mz
-        new_a1_mz = b_1_mz
-        new_a2_mz = a0_mz
-        new_a3_mz = a1_mz
-        new_a0_ints = b_2
-        new_a1_ints = b_1
-        new_a2_ints = 1
-        new_a3_ints = a1
-    elif b_1_mz != 0:
-        new_a0_mz = b_1_mz
-        new_a1_mz = a0_mz
-        new_a2_mz = a1_mz
-        new_a3_mz = a2_mz
-        new_a0_ints = b_1
-        new_a1_ints = 1
-        new_a2_ints = a1
-        new_a3_ints = a2
-
-    elif a0_mz != 0:
-        new_a0_mz = a0_mz
-        new_a1_mz = a1_mz
-        new_a2_mz = a2_mz
-        new_a3_mz = a3_mz
-        new_a0_ints = 1
-        new_a1_ints = a1
-        new_a2_ints = a2
-        new_a3_ints = a3
+    mz_list = [dict_features['mz_b3'],dict_features['mz_b2'],dict_features['mz_b1'],dict_features['mz_a0'],dict_features['mz_a1'],dict_features['mz_a2'],dict_features['mz_a3']]
+    ints_list = [dict_features['ints_b3'],dict_features['ints_b2'],dict_features['ints_b1'],1,dict_features['ints_a1'],dict_features['ints_a2'],dict_features['ints_a3']]
+    for i in range(len(ints_list)):
+        if ints_list[i] != 0:
+            index = i
+            break
+    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
+    new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
+    
 
     if new_a2_mz !=0:
         new_a2_a1 = new_a2_mz - new_a1_mz
@@ -201,8 +159,8 @@ def mass_spectrum_calc_2(dict_features):
             'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
             'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10}
 
-def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001):
-
+def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
+    """get the isotopic distribution of the formula with hydrogen isotope"""
     spectrum1=Formula(formula).spectrum()
     spectrum2=Formula(formula+"H2").spectrum()
     # print(spectrum1,spectrum2)

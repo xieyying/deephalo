@@ -7,7 +7,9 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from .methods import create_dataset
 from .model_build import model,model_sequence
 class my_model:
+    '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
     def __init__(self,para) -> None:
+        """para是一个字典，包含了模型训练所需的所有参数"""
         self.batch_size = para['batch_size']
         self.epochs = para['epochs']
         self.features = para['features']
@@ -17,15 +19,18 @@ class my_model:
         self.classes_weight = para['weight']
         self.learning_rate = para['learning_rate']
     def load_dataset(self):
+        """加载数据集"""
         self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features,self.paths,self.batch_size)
 
     def get_model(self):
+        """获取自定义模型，并绘制模型结构图"""
         #model_build中可以定义多种模型结构方便切换
         self.model = model(self.input_shape,self.output_shape)
         #绘制模型图
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
     def train(self):
+        """训练模型"""
         opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=opt,
               loss={'classes': 'SparseCategoricalCrossentropy'},
@@ -51,6 +56,7 @@ class my_model:
         self.model.save(r'./trained_models/pick_halo_ann.h5')
 
     def show_CM(self):
+        """显示混淆矩阵"""
         # load the model
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
 
@@ -93,6 +99,7 @@ class my_model:
         plt.show()
     
     def work_flow(self):
+        """模型训练流程"""
         if not os.path.exists('./trained_models'):
             os.mkdir('./trained_models')
         self.load_dataset()
@@ -101,18 +108,4 @@ class my_model:
         self.show_CM()
 
 if __name__ == '__main__':
-    para = {
-            'batch_size': 1000,
-            'epochs': 10,
-            'features': ["new_a0_ints","new_a1_ints","new_a2_ints","new_a3_ints","new_a2_a1","new_a2_a0"],
-            'paths':    [r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_add_Fe_data.csv',
-                         r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_data.csv',
-                         r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_hydroisomer_data.csv',
-                         r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_hydroisomer2_data.csv',
-                         r'C:\Users\Xin\Desktop\p_test\train_dataset\selected_hydroisomer3_data.csv',],
-            'base_classes':3,
-            'sub_classes':5,
-            'hydro_classes':8,
-            }
-    model = my_model(para)
-    model.work_flow()
+    pass

@@ -45,14 +45,14 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
     rois = ROIs()
     for i in range(len(t)):
         rois.update(t[i])
-
+    # pd.DataFrame(rois.rois).to_csv('roi0.csv')
     rois.merge()
     rois.filter(mzml_dict['min_element_roi']) # 这个参数应设置为可调参数
 
     df = rois.get_roi_df()
     #将mz_mean列名改为mz
     df = df.rename(columns={'mz_mean':'mz'})
-    # df.to_csv('roi0.csv')
+    df.to_csv('roi-ckeck.csv')
     return df
 
 def get_calc_targets(df_rois):

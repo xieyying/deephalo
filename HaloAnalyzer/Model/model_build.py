@@ -2,6 +2,7 @@ import keras
 from keras import layers
 
 def model(input_shape,  output_shape):
+    """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features")
     share = layers.Dense(128, activation="relu")(input)
     share = layers.Dropout(0.3)(share)
@@ -16,6 +17,7 @@ def model(input_shape,  output_shape):
     return clfs
 
 def model_sequence(input_shape,  output1_shape, output2_shape, output3_shape):
+    """自定义模型结构_多输出"""
     input = keras.Input(shape=(input_shape,), name="features")
     share = layers.Dense(4000, activation="relu")(input)
     share = layers.Dropout(0.5)(share)
