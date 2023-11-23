@@ -15,11 +15,11 @@ class my_mzml:
         self.asari_dict = para['asari']
         self.mzml_dict = para['mzml']
         self.model_path = r'./trained_models/pick_halo_ann.h5'
-        self.save_tic =  r'./test_mzml_prediction/' + para['path'].split('.')[0].split('\\')[-1] + '_tic.csv'
-        self.save_rois = r'./test_mzml_prediction/' + para['path'].split('.')[0].split('\\')[-1] + '_rois.csv'
-        self.save_isotopolgues = r'./test_mzml_prediction/'+  para['path'].split('.')[0].split('\\')[-1] + '_isotopolgues.csv'
-        self.save_halo_evaluation = r'./test_mzml_prediction/' +  para['path'].split('.')[0].split('\\')[-1] + '_halo_evaluation.csv'
-        self.save_mgf = r'./test_mzml_prediction/' +  para['path'].split('.')[0].split('\\')[-1] +'_roi_ms2.mgf'
+        self.save_tic =  r'./test_mzml_prediction/' + para['path'].split('.mzML')[0].split('\\')[-1] + '_tic.csv'
+        self.save_rois = r'./test_mzml_prediction/' + para['path'].split('.mzML')[0].split('\\')[-1] + '_rois.csv'
+        self.save_isotopolgues = r'./test_mzml_prediction/'+  para['path'].split('.mzML')[0].split('\\')[-1] + '_isotopolgues.csv'
+        self.save_halo_evaluation = r'./test_mzml_prediction/' +  para['path'].split('.mzML')[0].split('\\')[-1] + '_halo_evaluation.csv'
+        self.save_mgf = r'./test_mzml_prediction/' +  para['path'].split('.mzML')[0].split('\\')[-1] +'_roi_ms2.mgf'
 
         
     #加载数据

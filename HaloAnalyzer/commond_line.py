@@ -3,10 +3,12 @@ import os
 import argparse
 from .parameters import run_parameters
 import importlib_resources
+import time
 #通过终端选择运行模式
 __version__ = '0.2.0'
 
 def main():
+    start = time.time()
     print("\n\nHaloAnalyzer (%s) \n" %__version__)
     #命令行参数设置
     parser = argparse.ArgumentParser(description='HALOAnalyzer: a tool for mining halogenates based on high resolution mass data.')
@@ -39,12 +41,14 @@ def main():
                 pipeline_model()
             elif args.run == 'analyze_mzml':
                 mzml_path = args.input
-                if mzml_path == None:
-                    print("Please specify a folder containing mzML files to analyze.")
-                else:
+                if os.path.isdir(mzml_path):
+                    batch_find_halo(mzml_path)
+                elif os.path.isfile(mzml_path):
                     pipeline_find_halo(mzml_path)
-                    # batch_find_halo(mzml_path)
                     with open(r'test_mzml_prediction/log.txt','w') as f: f.write(mzml_path)
+                else:
+                    print("Please specify a mzML file or a folder containing mzML files to analyze.")
+
             elif args.run == 'viz_result':
 
                 #更新config中的vis_path
@@ -69,11 +73,10 @@ def main():
                 if mzml_path != None and rois_list != None and project_path != None:
                     pipeline_extract_ms2_of_rois(mzml_path,project_path,rois_list)
                 
-                    
-                    
-
         else:
             print("Please specify a project path.")
+    end = time.time()
+    print('time cost:',end-start,'s')
 
 
 

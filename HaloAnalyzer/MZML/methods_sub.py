@@ -62,7 +62,7 @@ class ROIs:
 
     def merge(self,merge_precursor_error = 20, merge_gap_scans = 3):
         #将self.rois按照mz_mean从小到大排序
-        self.rois = sorted(self.rois,key=lambda x:x['mz_mean'])
+        # self.rois = sorted(self.rois,key=lambda x:x['mz_mean'])
         #如果相邻的两行的mz_mean相差小于merge_precursor_error且相邻的两行的counter_list的最大值相差小于merge_gap_scans，则将这两行合并，left_base为两行中left_base最小的值，right_base为两行中right_base最大的值，mz_mean为两行中mz_mean的平均值，MS1_index为两行中MS1_index的合并，counter_list为两行中counter_list的合并，roi_ms2_index为两行中roi_ms2_index的合并
         i = 0
         while i < len(self.rois)-1:
