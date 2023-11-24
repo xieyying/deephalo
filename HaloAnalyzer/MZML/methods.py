@@ -3,7 +3,7 @@ import pandas as pd
 from .methods_sub import feature_extractor,fliter_mzml_data,get_mz_max,get_charge,get_isotoplogues,ROIs,MS1_MS2_connected,is_halo_isotopes,roi_halo_evaluation
 import numpy as np
 import tensorflow as tf
-
+import time
 from ..Dataset.methods_sub import mass_spectrum_calc_2
 
 
@@ -36,8 +36,9 @@ def asari_ROI_identify(path,para):
     return df_features
 
 def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
-
+    start = time.time()
     df = MS1_MS2_connected(spectra, mzml_dict)
+    connect_time = time.time()
     # df.to_csv('roi0.csv')
     #将df中的每一行转为一个字典
     t = df.to_dict('records')
@@ -45,14 +46,24 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict):
     rois = ROIs()
     for i in range(len(t)):
         rois.update(t[i])
-    # pd.DataFrame(rois.rois).to_csv('roi0.csv')
-    # rois.merge()
+    update_time = time.time()
+    pd.DataFrame(rois.rois).to_csv('roi_no_sorted.csv')
+    rois.merge()
+    merge_time = time.time()
     rois.filter(mzml_dict['min_element_roi']) # 这个参数应设置为可调参数
-
+    filter_time = time.time()
     df = rois.get_roi_df()
     #将mz_mean列名改为mz
     df = df.rename(columns={'mz_mean':'mz'})
     df.to_csv('roi-ckeck.csv')
+    save_time = time.time()
+    print('connect_time',connect_time   - start)
+    print('update_time',update_time     - connect_time)
+    print('merge_time',merge_time       - update_time)
+    print('filter_time',filter_time     - merge_time)
+    print('save_time',save_time         - filter_time)
+    print('total_time',save_time        - start)
+
     return df
 
 def get_calc_targets(df_rois):

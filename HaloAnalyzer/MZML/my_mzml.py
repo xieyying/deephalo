@@ -81,15 +81,31 @@ class my_mzml:
 
 
     def work_flow(self):
+        import time
+        start = time.time()
         """mzml数据处理流程"""
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
         self.load_mzml_data()
+        time_load = time.time()
+        print('load mzml data cost time: ',time_load-start)
+        
         self.save_tic_spectra()
+        time_tic = time.time()
+        print('save tic cost time: ',time_tic-time_load)
+
         self.ROI_identify()
+        time_roi = time.time()
+        print('ROI identify cost time: ',time_roi-time_tic)
         self.extract_features()
+        time_feature = time.time()
+        print('extract features cost time: ',time_feature-time_roi)
         self.rois_evaluation()
+        time_evaluation = time.time()
+        print('evaluation cost time: ',time_evaluation-time_feature)
         self.save_result()
+        time_save = time.time()
+        print('save result cost time: ',time_save-time_evaluation)
 
 
         
