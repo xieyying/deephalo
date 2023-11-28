@@ -76,7 +76,6 @@ class my_mzml:
 
 
     def work_flow(self):
-
         """mzml数据处理流程"""
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
@@ -87,8 +86,6 @@ class my_mzml:
         self.save_result()
 
 
-
-        
                 
 if __name__ == "__main__":
     pass

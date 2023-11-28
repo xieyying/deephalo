@@ -91,8 +91,8 @@ def batch_find_halo(folder_path) -> None:
 #extract ms2 of rois
 def pipeline_extract_ms2_of_rois(mzml_path,project_path,rois:list):
     """extract ms2 of rois"""
-    save_halo_evaluation = os.path.normpath(project_path +r'./test_mzml_prediction/'+  mzml_path.split('.')[0].split('\\')[-1] +'_halo_evaluation.csv')
-    output_path = os.path.normpath(project_path +r'./test_mzml_prediction/'+  mzml_path.split('.')[0].split('\\')[-1] +'_select_roi_ms2.mgf')
+    save_halo_evaluation = os.path.normpath(project_path +r'/test_mzml_prediction/'+  mzml_path.split('.')[0].split('\\')[-1] +'_halo_evaluation.csv')
+    output_path = os.path.normpath(project_path +r'/test_mzml_prediction/'+  mzml_path.split('.')[0].split('\\')[-1] +'_select_roi_ms2.mgf')
     extract_ms2_of_rois(mzml_path,save_halo_evaluation,output_path,rois)
     
 
