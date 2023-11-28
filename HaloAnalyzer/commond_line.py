@@ -3,12 +3,13 @@ import os
 import argparse
 from .parameters import run_parameters
 import importlib_resources
-import time
+from .model_test import timeit
 #通过终端选择运行模式
 __version__ = '0.2.0'
 
+@timeit
 def main():
-    start = time.time()
+
     print("\n\nHaloAnalyzer (%s) \n" %__version__)
     #命令行参数设置
     parser = argparse.ArgumentParser(description='HALOAnalyzer: a tool for mining halogenates based on high resolution mass data.')
@@ -75,8 +76,7 @@ def main():
                 
         else:
             print("Please specify a project path.")
-    end = time.time()
-    print('time cost:',end-start,'s')
+
 
 
 

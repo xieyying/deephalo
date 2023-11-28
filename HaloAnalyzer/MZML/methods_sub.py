@@ -3,7 +3,8 @@ import pandas as pd
 from asari.peaks import *
 from asari.default_parameters import PARAMETERS
 from collections import Counter
-
+from ..model_test import timeit
+from pyteomics import mzml ,mgf,mzxml
 class ROIs:
     def __init__(self) -> None:
         self.rois = []
@@ -90,6 +91,34 @@ class ROIs:
         df = pd.DataFrame(self.rois)
         return df
 
+#建立一个自定义的数据类
+class my_data:
+    #初始化
+    def __init__(self,path,) -> None:
+        self.path = path
+        self.source = path.split('.')[-1]
+    def read(self):
+        if self.source == 'mzML':
+            self.data = mzml.read(self.path,use_index=True,read_schema=True)
+        elif self.source == 'mzXML':
+            self.data = mzxml.read(self.path,use_index=True,read_schema=True)
+    @timeit
+    def create(self):
+        new_data = []
+        if self.source == 'mzML':
+            for s in self.data:
+                new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
+        elif self.source == 'mzXML':
+            for s in self.data:
+                new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
+        self.data = pd.DataFrame(new_data)
+    @timeit
+    def get_by_level(self,level):
+        return self.data[self.data['ms level']==level]
+    def run(self):
+        self.read()
+        self.create()
+
 def feature_extractor(file_name: str,para) -> pd.DataFrame:
     """
     Extract features from an mzML file and return a DataFrame containing the feature information.
@@ -122,8 +151,8 @@ def feature_extractor(file_name: str,para) -> pd.DataFrame:
 
     return df_features
 
-def MS1_MS2_connected(spectra,mzml_dict):
-    vendor = mzml_dict['vendor']
+def MS1_MS2_connected(spectra,mzml_dict,source):
+    # vendor = mzml_dict['vendor']
     precursor_error = mzml_dict['precursor_error']
 
     """
@@ -146,18 +175,21 @@ def MS1_MS2_connected(spectra,mzml_dict):
     MS1_counter_list = []
     MS1_counter=-1
     
-    for s in spectra:
+    for s in spectra.iterrows():
         try:
-            if (s['ms level'] == 1 and s['id'].split(' ')[0] == "function=1" and vendor == 'waters') or (s['ms level'] == 1 and vendor != 'waters'):
-                mz_list = s['m/z array']
-                ints_list = s['intensity array']
+            if s[1]['ms level'] == 1:
+                mz_list = s[1]['m/z array']
+                ints_list = s[1]['intensity array']
                 MS1_counter += 1
-                MS1_MS1_index.append(s['index'])
-                MS1_rt.append(s['scanList']['scan'][0]['scan start time'])
+                MS1_MS1_index.append(s[1]['scan'])
+                MS1_rt.append(s[1]['rt'])
                 MS1_counter_list.append(MS1_counter)
                 
-            elif s['ms level'] == 2:
-                precursor_mz_source = s['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
+            elif s[1]['ms level'] == 2:
+                if source == 'mzML':
+                    precursor_mz_source = s[1]['precursor']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
+                elif source == 'mzXML':
+                    precursor_mz_source = s[1]['precursor'][0]['precursorMz']
                 #找到mz中与precursor_mz相差在0.3的所有mz_list中最高的峰
                 mz_list1 = mz_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
                 ints_list1 = ints_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
@@ -167,7 +199,7 @@ def MS1_MS2_connected(spectra,mzml_dict):
                 MS1_MS2_connected['rt'].append(MS1_rt[-1])
                 MS1_MS2_connected['MS1'].append(MS1_MS1_index[-1])
 
-                MS1_MS2_connected['MS2'].append(s['index'])
+                MS1_MS2_connected['MS2'].append(s[1]['scan'])
                 MS1_MS2_connected['precursor'].append(precursor_mz)
             else:
                 continue
@@ -181,7 +213,7 @@ def MS1_MS2_connected(spectra,mzml_dict):
 
 #待更新减去质谱中的基线
 def fliter_mzml_data(ms1_spectra,min_intensity):
-    rt = ms1_spectra['scanList']['scan'][0]['scan start time']*60
+    rt = ms1_spectra['rt']
     mz = ms1_spectra['m/z array']
     intensity = ms1_spectra['intensity array']
     #只保留intensity大于min_intensity的峰

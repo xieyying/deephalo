@@ -2,10 +2,10 @@
 import os
 import pandas as pd
 import tensorflow as tf
-from .methods import load_mzml_file,asari_ROI_identify,get_tic,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
+from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
                     add_predict,add_is_halo_isotopes,halo_evaluation
 from pyteomics import mzml ,mgf
-
+from ..model_test import timeit
 class my_mzml:
     """自定义mzml类，包含了mzml数据的加载，ROI的识别，特征提取，halo评估等方法"""
     def __init__(self,para) -> None:
@@ -23,28 +23,23 @@ class my_mzml:
 
         
     #加载数据
+    @timeit
     def load_mzml_data(self):
         """加载mzml数据"""
         #MS1数据
-        self.mzml_data =load_mzml_file(self.path)
-        #全部数据
-        self.mzml_data_all = load_mzml_file(self.path,level='all')
-    
-    #保存原始tic数据
-    def save_tic_spectra(self):
-        """保存原始tic数据"""
-        df_tic = get_tic(self.mzml_data)
-        df_tic.to_csv(self.save_tic,index=False)
+        self.mzml_data_all,self.mzml_data =load_mzml_file(self.path)
 
+    
     #分析数据
+    @timeit
     def ROI_identify(self):
         """ROI的识别：asari或ms2_linked others"""
         method = self.mzml_dict['ROI_identify_method']
         if method == 'asari':
             self.df_rois = asari_ROI_identify(self.path,self.asari_dict)
         elif method == 'ms1ms2_linked':
-            self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict)
-
+            self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict,self.path)
+    @timeit
     def extract_features(self):
         """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
@@ -56,12 +51,12 @@ class my_mzml:
         #保存is_halo_isotopes 为1的isotopologues到self.df_isotopologues
         self.df_isotopologues = df_isotopologues[df_isotopologues['is_halo_isotopes']==1]
         # self.df_isotopologues = df_isotopologues
-  
+    @timeit
     def rois_evaluation(self):
         """对ROI进行halo评估"""
         self.halo_evaluation = halo_evaluation(self.df_isotopologues.copy())
 
-
+    @timeit
     def save_result(self):
         """保存结果"""
         # self.df_rois.to_csv('roi.csv',index=False)
@@ -81,31 +76,16 @@ class my_mzml:
 
 
     def work_flow(self):
-        import time
-        start = time.time()
+
         """mzml数据处理流程"""
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
         self.load_mzml_data()
-        time_load = time.time()
-        print('load mzml data cost time: ',time_load-start)
-        
-        self.save_tic_spectra()
-        time_tic = time.time()
-        print('save tic cost time: ',time_tic-time_load)
-
         self.ROI_identify()
-        time_roi = time.time()
-        print('ROI identify cost time: ',time_roi-time_tic)
         self.extract_features()
-        time_feature = time.time()
-        print('extract features cost time: ',time_feature-time_roi)
         self.rois_evaluation()
-        time_evaluation = time.time()
-        print('evaluation cost time: ',time_evaluation-time_feature)
         self.save_result()
-        time_save = time.time()
-        print('save result cost time: ',time_save-time_evaluation)
+
 
 
         
