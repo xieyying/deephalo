@@ -64,12 +64,17 @@ class ROIs:
     def merge(self,merge_precursor_error = 20, merge_gap_scans = 3):
         #将self.rois按照mz_mean从小到大排序
         # self.rois = sorted(self.rois,key=lambda x:x['mz_mean'])
-        #如果相邻的两行的mz_mean相差小于merge_precursor_error且相邻的两行的counter_list的最大值相差小于merge_gap_scans，则将这两行合并，left_base为两行中left_base最小的值，right_base为两行中right_base最大的值，mz_mean为两行中mz_mean的平均值，MS1_index为两行中MS1_index的合并，counter_list为两行中counter_list的合并，roi_ms2_index为两行中roi_ms2_index的合并
+        #如果相邻的两行的mz_mean相差小于merge_precursor_error且相邻的两行的counter_list的边界值相差小于merge_gap_scans，则将这两行合并，left_base为两行中left_base最小的值，right_base为两行中right_base最大的值，mz_mean为两行中mz_mean的平均值，MS1_index为两行中MS1_index的合并，counter_list为两行中counter_list的合并，roi_ms2_index为两行中roi_ms2_index的合并
+
+        # self.rois = sorted(self.rois,key=lambda x:x['mz_mean'])
         i = 0
         while i < len(self.rois)-1:
             delt_mz = abs(self.rois[i]['mz_mean'] - self.rois[i+1]['mz_mean'])/self.rois[i]['mz_mean']*1e6
             delt_scan = abs(self.rois[i]['counter_list'][-1] - self.rois[i+1]['counter_list'][0])
-            if delt_mz <= merge_precursor_error and delt_scan <= merge_gap_scans:
+            delt_scan2 = abs(self.rois[i]['counter_list'][0] - self.rois[i+1]['counter_list'][-1])
+            #self.rois[i]['counter_list']与self.rois[i+1]['counter_list']的交集
+            counter_list_intersection = list(set(self.rois[i]['counter_list']).intersection(set(self.rois[i+1]['counter_list'])))
+            if delt_mz <= merge_precursor_error and (delt_scan <= merge_gap_scans or delt_scan2 <= merge_gap_scans or counter_list_intersection != []):
                 self.rois[i]['mz_mean'] = (self.rois[i]['mz_mean'] * len(self.rois[i]['MS1_index']) + self.rois[i+1]['mz_mean'] * len(self.rois[i+1]['MS1_index']))/(len(self.rois[i]['MS1_index']) + len(self.rois[i+1]['MS1_index']))
                 self.rois[i]['MS1_index'] = self.rois[i]['MS1_index'] + self.rois[i+1]['MS1_index']
                 self.rois[i]['counter_list'] = self.rois[i]['counter_list'] + self.rois[i+1]['counter_list']
