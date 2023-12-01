@@ -159,6 +159,30 @@ def halo_evaluation(df):
         counter_list = df_['scan'].tolist()    
         #获取该行的class_pred列
         halo_class_list = df_['class_pred'].tolist()
+        #每个scan中的目标precursor,即同位素峰中最强的一个
+        MS1_precursor = df_['mz_a0'].tolist()
+        #roi中每个scan中提取的一组同位素峰的mz
+        isotope_mz = df_[['mz_b3','mz_b2','mz_b1','mz_a0','mz_a1','mz_a2','mz_a3']].values
+        #roi中每个scan中提取的一组同位素峰的intensity
+        isotope_ints = df_[['ints_b3','ints_b2','ints_b1','ints_a0','ints_a1','ints_a2','ints_a3']].values
+        #roi中每个scan中提取的一组同位素峰对应的mz的平均值
+        isotope_mz_mean = isotope_mz.mean(axis=0)
+        #roi中每个scan中提取的一组同位素峰对应的峰强度的平均值
+        isotope_ints_mean = isotope_ints.mean(axis=0)
+
+        #将isotope_mz_mean和isotope_ints_mean合并为一个字典
+        isotope_mz_mean_dict = dict(zip(['mz_b3','mz_b2','mz_b1','mz_a0','mz_a1','mz_a2','mz_a3'],isotope_mz_mean))
+        isotope_ints_mean_dict = dict(zip(['ints_b3','ints_b2','ints_b1','ints_a0','ints_a1','ints_a2','ints_a3'],isotope_ints_mean))
+        #将isotope_mz_mean_dict和isotope_ints_mean_dict合并为一个字典
+        isotope_mz_mean_dict.update(isotope_ints_mean_dict)
+        roi_new_features = mass_spectrum_calc_2(isotope_mz_mean_dict)
+
+        #roi中每个scan中提取的一组同位素峰对应的mz的总和
+        isotope_mz_total = isotope_mz.sum(axis=1)
+        #roi中每个scan中提取的一组同位素峰对应的峰强度的总和
+        isotope_ints_total = isotope_ints.sum(axis=1)
+        
+
         halo_class,halo_score,halo_sub_class,halo_sub_score = roi_halo_evaluation(halo_class_list)
         #获取该行的RT
         rt = df_['RT'].tolist()
@@ -168,7 +192,9 @@ def halo_evaluation(df):
         precursor_ints_sum  = sum(df_['intensity_max1'].tolist())
 
         #添加到df_evaluation中的新行
-        df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'precursor_ints_sum':precursor_ints_sum,'RT_left':rt_left,'RT_right':rt_right,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score})], axis=1)
+        df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'precursor_ints_sum':precursor_ints_sum,'RT_left':rt_left,'RT_right':rt_right,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score,
+                                                             'MS1_precursor':MS1_precursor,'isotope_mz':isotope_mz,'isotope_ints':isotope_ints,'isotope_mz_mean':isotope_mz_mean,'isotope_ints_mean':isotope_ints_mean,'isotope_mz_total':isotope_mz_total,'isotope_ints_total':isotope_ints_total,
+                                                                'roi_new_features':roi_new_features})], axis=1)
     df_evaluation = df_evaluation.T
     # df_evaluation = df_evaluation.reset_index(drop=True)
     return df_evaluation
