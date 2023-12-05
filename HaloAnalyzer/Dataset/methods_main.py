@@ -13,7 +13,7 @@ def formula_clf(formula_dict,type=None) :
     #根据分子式，判断是否可训练
     if formula_dict.get('H') == None or formula_dict.get('C') == None:
         trainable = 'no'
-    elif formula_dict.get('H') < 3 or formula_dict.get('C') < 2:
+    elif formula_dict.get('H') < 1 or formula_dict.get('C') < 1:
         trainable = 'no'
     elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
         trainable = 'no'
@@ -22,15 +22,24 @@ def formula_clf(formula_dict,type=None) :
 
     #根据分子式，判断类别
     if type == 'hydro':
-        group = 4
+        group = 7
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        group = 0
+        if formula_dict['Br'] + formula_dict['Cl']<=5:
+            group = 0
+        else:
+            group = 16
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
-            group = 0
+            if formula_dict['Br']<=5:
+                group = 0
+            else:
+                group = 17
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
-            group = 0            
+            if formula_dict['Cl']<=5:
+                group = 0
+            else:
+                group = 18            
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
             group = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
@@ -38,32 +47,34 @@ def formula_clf(formula_dict,type=None) :
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
             group = 2
     elif ('Se' in formula_dict.keys() ):
-        if formula_dict['Se']<=2:
-            group = 7
+        if formula_dict['Se']<=1:
+            group = 3
         else:
-            group = 11
+            group = 15
     elif ('B' in formula_dict.keys()):
-        if  formula_dict['B']<=2:
-            group = 6
+        if  formula_dict['B']<=1:
+            group = 4
         elif formula_dict['B']<=4:
             group = 12
         else:
             group = 13
     elif ('Fe' in formula_dict.keys()):
-        if formula_dict['Fe']<=3:
+        if formula_dict['Fe']<=1:
             group = 5
         else:
             group = 14
     elif 'S' in formula_dict.keys():
-        if formula_dict['S']<=4:
+        if formula_dict['S']<=3:
             group = 8
-        elif formula_dict['S']==5:
+        elif formula_dict['S']==4:
             group = 9
-        else:
+        elif formula_dict['S']==5:
             group = 10
+        else:
+            group = 11
 
     else:
-        group = 3
+        group = 6
 
     return trainable,group
 
@@ -97,12 +108,7 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
         b_2_int = b_1_int
         b_1_mz = fm_isos.iloc[i]['Relative mass']
         b_1_int = fm_isos.iloc[i]['Intensity %']
-        # if b_1_int >=1:
-        #     b_1_mz = fm_isos.iloc[i]['Relative mass']
-        #     b_1_int = fm_isos.iloc[i]['Intensity %']
-        # else:
-        #     b_1_int = 0
-        #     b_1_mz = 0
+
         i+=1
     
     a_0_mz = fm_isos.iloc[i]['Relative mass']
@@ -160,10 +166,9 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
         return  pd.DataFrame()
     elif type in ['Fe','B','Se','hydro']:
 
-        if not set(formula_dict.keys()).issubset(set(['C','H','O','N','S','P','F','I'])):
+        if not set(formula_dict.keys()).issubset(set(['C','H','O','N','S'])):
             return pd.DataFrame()
 
-    
     #模拟质谱数据
     dict_isos = Isotope_simulation(formula,type,rate)
 
@@ -176,12 +181,12 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
             else:
                 dict_isos[key] = adding_noise_to_intensity(dict_isos[key])
       
+    elif type == 'Se':
+        group = 3
+    elif type == 'B':
+        group = 4
     elif type == 'Fe':
         group = 5
-    elif type == 'B':
-        group = 6
-    elif type == 'Se':
-        group = 7
     
     dict_base = {'formula':formula,'group':group}
     # dict_isos_calc=mass_spectrum_calc(dict_isos)

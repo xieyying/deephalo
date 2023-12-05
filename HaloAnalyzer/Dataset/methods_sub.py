@@ -56,7 +56,7 @@ def adding_noise_to_mass (mass, M=0.0015):
 
 def get_iron_additive_isotopes(formula):
     """get the isotopic distribution of the formula with iron additive"""
-    f=Formula(formula+"Fe")-Formula('H3')
+    f=Formula(formula+"Fe")-Formula('H2')
     return f.spectrum()
 def get_boron_additive_isotopes(formula):
     """get the isotopic distribution of the formula with boron additive"""
@@ -163,12 +163,11 @@ def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
     """get the isotopic distribution of the formula with hydrogen isotope"""
     spectrum1=Formula(formula).spectrum()
     spectrum2=Formula(formula+"H2").spectrum()
-    # print(spectrum1,spectrum2)
 
     min_fraction: float = 1e-16
     # min_intensity: float =1e-16
-    #新建一个spectrum类
 
+    #新建一个spectrum的字典
     spectrum={}
     for key1,items in sorted(spectrum1.items()):
         # print(key1)
@@ -187,8 +186,7 @@ def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
             spectrum[k]=[s_0, s_1,1.0]
         else:
             spectrum[k] = [m, f,1.0]
-    # print(spectrum)
-    # return spectrum
+
     # filter low intensities
     if min_intensity is not None:
         norm = 100 / max(v[1] for v in spectrum.values())
