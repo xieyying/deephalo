@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from .methods import create_dataset
-from .model_build import model,model_sequence
+from .model_build import model
 class my_model:
     '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
     def __init__(self,para) -> None:
@@ -57,12 +57,25 @@ class my_model:
 
     def show_CM(self):
         """显示混淆矩阵"""
+        def my_fun(x):
+            # 分割数据
+            data, last_column = tf.split(x, [x.shape[1] - 1, 1], axis=1)
+            data = tf.cast(data,tf.float32)
+
+            # 计算最后一列的10次方
+            new_last_column = tf.pow(last_column, 10)
+            new_last_column = tf.cast(new_last_column,tf.float32)
+
+            # 合并新的列与原始数据
+            new_x = tf.concat([data, new_last_column], axis=1)
+            return new_x
         # load the model
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
 
         # make predictions on the validation set
 
         X_val = self.X_test
+        X_val = layers.Lambda(my_fun)(X_val)
         Y_val = self.Y_test
         y_pred = model.predict(X_val)
         y_pred = np.argmax(y_pred, axis=1)
@@ -78,7 +91,7 @@ class my_model:
                 "ints_a1",
                 "ints_a2",
                 "ints_a3",
-                "new_a2_a1_10",
+                "new_a2_a1",
             ]
            
         formula_test = np.array(self.val_['formula'].tolist())

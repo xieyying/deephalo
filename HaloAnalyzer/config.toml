@@ -2,11 +2,29 @@
 [datasets]
 #数据库文件路径
 paths = [
-
     [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
         "mol_formula",
     ],
- 
+   [
+        "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+        "MS-Ready_Mol_Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+        "chemical_formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+        "Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+        "formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+        "CHEMICAL_DATA",
+    ],
 
     ]
 #训练集中所包含的元素种类
@@ -30,7 +48,7 @@ feature_list = [
     "ints_a1",
     "ints_a2",
     "ints_a3",
-    "new_a2_a1_10",
+    "new_a2_a1"
 ]
 #训练使用的数据集
 use_noise_data = "False"

@@ -1,9 +1,42 @@
 import keras
 from keras import layers
+import tensorflow as tf
 
 def model(input_shape,  output_shape):
+    def my_fun(x):
+        # 分割数据
+        data, last_column = tf.split(x, [x.shape[1] - 1, 1], axis=1)
+        data = tf.cast(data,tf.float32)
+
+        # 计算最后一列的10次方
+        new_last_column = tf.pow(last_column, 10)
+        new_last_column = tf.cast(new_last_column,tf.float32)
+
+        # 合并新的列与原始数据
+        new_x = tf.concat([data, new_last_column], axis=1)
+        return new_x
+
     """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features")
+    new_input = layers.Lambda(my_fun)(input)
+    share = layers.Dense(128, activation="relu")(new_input)
+    share = layers.Dropout(0.3)(share)
+    share = layers.Dense(64, activation="relu")(share)
+    share = layers.Dense(32, activation="relu")(share)
+    share = layers.Dense(16, activation="relu")(share)
+
+    clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
+
+    clfs = keras.Model(inputs=input, outputs=[clf_output], name="pick_halo_ann")
+
+    return clfs
+
+def copy_model(input_shape,  output_shape):
+
+
+    """自定义模型结构_单输出"""
+    input = keras.Input(shape=(input_shape,), name="features")
+    
     share = layers.Dense(128, activation="relu")(input)
     share = layers.Dropout(0.3)(share)
     share = layers.Dense(64, activation="relu")(share)
@@ -16,26 +49,28 @@ def model(input_shape,  output_shape):
 
     return clfs
 
-def model_sequence(input_shape,  output1_shape, output2_shape, output3_shape):
-    """自定义模型结构_多输出"""
-    input = keras.Input(shape=(input_shape,), name="features")
-    share = layers.Dense(4000, activation="relu")(input)
-    share = layers.Dropout(0.5)(share)
-    share = layers.Dense(2000, activation="relu")(share)
-    share = layers.Dropout(0.5)(share)
-    share = layers.Dense(1000, activation="relu")(share)
-    share = layers.Dropout(0.5,name='share')(share)
+if __name__ == "__main__":
+    import tensorflow as tf
+    from tensorflow import keras
+    def my_fun(x):
+        # 分割数据
+        data, last_column = tf.split(x, [x.shape[1] - 1, 1], axis=1)
+        data = tf.cast(data,tf.float32)
 
-    x = layers.Dense(500, activation="relu")(share)
-    clf_base_output = layers.Dense(output1_shape,activation='softmax', name="base")(x)
+        # 计算最后一列的10次方
+        new_last_column = tf.pow(last_column, 10)
+        new_last_column = tf.cast(new_last_column,tf.float32)
 
-    
-    y = layers.Dense(500, activation="relu")(share)
-    clf_sub_output = layers.Dense(output2_shape,activation='softmax', name="sub")(y)
+        # 合并新的列与原始数据
+        new_x = tf.concat([data, new_last_column], axis=1)
 
-    z = layers.Dense(500, activation="relu")(share)
-    clf_hydro_output = layers.Dense(output3_shape,activation='softmax', name="hydro")(z)
+        return new_x
 
-    clfs = keras.Model(inputs=input, outputs=[clf_base_output, clf_sub_output,clf_hydro_output], name="pick_halo_ann")
+    # x = tf.random.uniform([10000, 9], minval=1, maxval=10, dtype=tf.int32)
+    # new_x = layers.Lambda(my_fun)(x)
 
-    return clfs
+    x = tf.constant([2, 3, 4, 5, 6, 7, 8, 9, 1.003])
+    x = tf.reshape(x, [3, 3])
+    new_x = layers.Lambda(my_fun)(x)
+    print(new_x),print(x)
+    print(4**10,7**10,1.003**10)
