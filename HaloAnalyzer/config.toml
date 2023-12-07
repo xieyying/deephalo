@@ -48,7 +48,8 @@ feature_list = [
     "ints_a1",
     "ints_a2",
     "ints_a3",
-    "new_a2_a1"
+    "new_a2_a1",
+    "new_a1_a0"
 ]
 #训练使用的数据集
 use_noise_data = "False"
@@ -63,8 +64,8 @@ use_hydroisomer_data = "True"
 train_batch = 256
 val_batch = 256
 classes = 9
-epochs = 10
-learning_rate = 0.001
+epochs = 50
+learning_rate = 0.0001
 
 #模型训练权重
 [model_construct_class_weight.classes_weight]
