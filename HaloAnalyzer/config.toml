@@ -49,7 +49,7 @@ feature_list = [
     "ints_a2",
     "ints_a3",
     "new_a2_a1",
-    "new_a1_a0"
+
 ]
 #训练使用的数据集
 use_noise_data = "False"

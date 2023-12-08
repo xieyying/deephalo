@@ -35,7 +35,7 @@ def pipeline_model() -> None:
     para = load_config()
 
     #根据配置文件选择训练数据
-    paths = ['./dataset/base2.csv']
+    paths = ['./dataset/base1.csv']
     if para.use_fe_data == 'True':
         paths.append('./dataset/Fe.csv')
     if para.use_b_data == 'True':

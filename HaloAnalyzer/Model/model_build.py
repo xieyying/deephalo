@@ -3,7 +3,7 @@ from keras import layers
 import tensorflow as tf
 
 def model(input_shape,  output_shape):
-    def my_fun(x):
+    def my_fun2(x):
         data = x[:,:-2]
         last_column = x[:,-1:]
         second_last_column = x[:,-2:-1]
@@ -11,13 +11,17 @@ def model(input_shape,  output_shape):
         new_second_last_column = tf.pow(second_last_column, 10)
         new_x = tf.concat([data, new_last_column], axis=1)
         new_x = tf.concat([new_x, new_second_last_column], axis=1)
-
-
+        return new_x
+    def my_fun1(x):
+        data = x[:,:-1]
+        last_column = x[:,-1:]
+        new_last_column = tf.pow(last_column, 10)
+        new_x = tf.concat([data, new_last_column], axis=1)
         return new_x
 
     """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features")
-    new_input = layers.Lambda(my_fun)(input)
+    new_input = layers.Lambda(my_fun1)(input)
     share = layers.Dense(256, activation="relu")(new_input)
     share = layers.Dropout(0.3)(share)
     share = layers.Dense(128, activation="relu")(new_input)

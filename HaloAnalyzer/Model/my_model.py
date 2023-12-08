@@ -81,7 +81,7 @@ class my_model:
                 "ints_a2",
                 "ints_a3",
                 "new_a2_a1",
-                "a1_a0",
+                # "a1_a0",
             ]
            
         formula_test = np.array(self.val_['formula'].tolist())

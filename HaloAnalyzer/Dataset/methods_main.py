@@ -25,15 +25,15 @@ def formula_clf(formula_dict,type=None) :
         group = 7
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        if formula_dict['B'] or formula_dict['Se'] or formula_dict['Fe']:
-            group = 17
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 19
         elif formula_dict['Br'] + formula_dict['Cl']<=5:
             group = 0
         else:
             group = 16
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
-        if formula_dict['B'] or formula_dict['Se'] or formula_dict['Fe']:
-            group = 17
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 19
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
             if formula_dict['Br']<=5:
                 group = 0
