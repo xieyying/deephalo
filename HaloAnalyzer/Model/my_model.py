@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from .methods import create_dataset
-from .model_build import model
+from .model_build import model,copy_model
 from keras import layers
 class my_model:
     '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
@@ -26,7 +26,7 @@ class my_model:
     def get_model(self):
         """获取自定义模型，并绘制模型结构图"""
         #model_build中可以定义多种模型结构方便切换
-        self.model = model(self.input_shape,self.output_shape)
+        self.model = copy_model(self.input_shape,self.output_shape)
         #绘制模型图
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
