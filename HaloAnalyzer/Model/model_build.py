@@ -61,9 +61,11 @@ def con_model(input_shape,  output_shape):
 
 
     """自定义模型结构_单输出"""
-    input1 = keras.Input(shape=(7,), name="features1")
+    input = keras.Input(shape=(input_shape,), name="features1")
+    input1 = input[:,:-3]
+    input2 = input[:,-3:]
     x = layers.Dense(128, activation="relu")(input1)
-    input2 = keras.Input(shape=(3,), name="features2")
+
     y = layers.Dense(128, activation="relu")(input2)
     share = layers.concatenate([x, y])  
     share = layers.Dense(128, activation="relu")(share)
@@ -74,7 +76,7 @@ def con_model(input_shape,  output_shape):
 
     clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
 
-    clfs = keras.Model(inputs=[input1,input2], outputs=[clf_output], name="pick_halo_ann")
+    clfs = keras.Model(inputs=input, outputs=clf_output, name="pick_halo_ann")
 
     return clfs
 

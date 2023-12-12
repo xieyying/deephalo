@@ -26,7 +26,7 @@ class my_model:
     def get_model(self):
         """获取自定义模型，并绘制模型结构图"""
         #model_build中可以定义多种模型结构方便切换
-        self.model = copy_model(self.input_shape,self.output_shape)
+        self.model = con_model(self.input_shape,self.output_shape)
         #绘制模型图
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
