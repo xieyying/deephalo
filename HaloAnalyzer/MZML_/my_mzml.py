@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 import tensorflow as tf
-from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
+from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopic_peaks,ms2ms1_linked_ROI_identify,\
                     add_predict,add_is_halo_isotopes,halo_evaluation
 from pyteomics import mzml ,mgf
 from ..model_test import timeit
@@ -43,9 +43,7 @@ class my_mzml:
     def extract_features(self):
         """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
-        df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
-        #保存df_isotopologues
-        df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\df.csv',index=False)
+        df_isotopologues = find_isotopic_peaks(df1,self.mzml_data,self.mzml_dict)
         #对isotopologue进行预测
         df_isotopologues = add_predict(df_isotopologues,self.model_path,self.feature_list)
         #添加is_halo_isotopes判断结果

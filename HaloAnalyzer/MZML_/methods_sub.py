@@ -160,7 +160,6 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
 
     质谱DDA采集模式下，信号采集顺序为MS1,而后是与此MS1相对应的一个或多个MS2(根据采集设置而定)
 
-    在waters采集中MS1的function=1
 
     """
  
@@ -190,7 +189,7 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
                     precursor_mz_source = s[1]['precursor']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
                 elif source == 'mzXML':
                     precursor_mz_source = s[1]['precursor'][0]['precursorMz']
-                #找到mz中与precursor_mz相差在0.3的所有mz_list中最高的峰
+                #找到mz中与precursor_mz相差在precursor_error的所有mz_list中最高的峰
                 mz_list1 = mz_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
                 ints_list1 = ints_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
                 precursor_mz = mz_list1[np.argmax(ints_list1)]
@@ -299,7 +298,7 @@ def get_charge(mz_list,ints_list,intensity_max):
     else:
         return 0
 
-def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.02):
+def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.0):
     
     """
     以最高峰为基准，获取与其相差delta_mz的同位素峰的mz和intensity;
@@ -322,54 +321,37 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     以最高峰为基准，获取同位素峰的mz和intensity;
 
     """
-    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
-    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
-    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
-    mz_a0,ints_a0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
-    mz_a1,ints_a1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
-    mz_a2,ints_a2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
-    mz_a3,ints_a3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
+    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-3)
+    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2)
+    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-1)
+    mz_a0,ints_a0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0)
+    mz_a1,ints_a1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1)
+    mz_a2,ints_a2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2)
+    mz_a3,ints_a3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3)
 
     ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
     ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
     
     # 强度小于0.01的intensity和mz都设置为0，防止背景信号影响
-    if ints_b1 < 0.001:
-        mz_b1 = 0
-        ints_b1 = 0
-        mz_b2 = 0
-        ints_b2 = 0
+    if ints_b3 < 0.01:
         mz_b3 = 0
         ints_b3 = 0
-    else:
-        if ints_b2 < 0.04:
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-        else:
-            if ints_b3 < 0.0002:
-                mz_b3 = 0
-                ints_b3 = 0
-    # 根据b2判断b1是否为杂信号
-    # 根据卤化物统计b2为0b1最小为0.223073，根据全部base统计b2为0时b1最小值为0.202336
-    if ints_b2 ==0:
-        if ints_b1 < 0.15:
-            mz_b1 = 0
-            ints_b1 = 0
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-    
-    if ints_a1 < 0.02:
+    if ints_b2 < 0.01:
+        mz_b2 = 0
+        ints_b2 = 0
+    if ints_b1 < 0.01:
+        mz_b1 = 0
+        ints_b1 = 0
+    if ints_a1 < 0.01:
         mz_a1 = 0
         ints_a1 = 0
+    if ints_a2 < 0.01:
         mz_a2 = 0
         ints_a2 = 0
+    if ints_a3 < 0.01:
         mz_a3 = 0
         ints_a3 = 0
-    
+
     #以字典的形式返回
     return {'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3}
 

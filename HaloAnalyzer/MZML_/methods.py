@@ -78,7 +78,7 @@ def get_calc_targets(df_rois):
     df1.to_csv('calc_targets.csv')
     return df1     
 
-def find_isotopologues(df1,mzml_data,mzml_dict):
+def find_isotopic_peaks(df1,mzml_data,mzml_dict):
     df = pd.DataFrame()
     for i in range(len(df1)):
         scan_id = df1['scan'][i]
@@ -93,18 +93,18 @@ def find_isotopologues(df1,mzml_data,mzml_dict):
                 dict_mz_max = get_mz_max(mz,intensity,target_mz)#需要修正误差范围
                 if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2']:
                     charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
-                    dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
+                    dict_isotopic_spectrum = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
                 else:
                     #charge为0，a0,a1,a2,a3,b1,b2均为0
                     charge = 0
-                    dict_isotoplogues = {'mz_b3':0,'ints_b3':0,'mz_b2':0,'ints_b2':0,'mz_b1':0,'ints_b1':0,'mz_a0':0,'ints_a0':0,'mz_a1':0,'ints_a1':0,'mz_a2':0,'ints_a2':0,'mz_a3':0,'ints_a3':0}
+                    dict_isotopic_spectrum = {'mz_b3':0,'ints_b3':0,'mz_b2':0,'ints_b2':0,'mz_b1':0,'ints_b1':0,'mz_a0':0,'ints_a0':0,'mz_a1':0,'ints_a1':0,'mz_a2':0,'ints_a2':0,'mz_a3':0,'ints_a3':0}
   
-                dict_new = mass_spectrum_calc_2(dict_isotoplogues)
+                dict_new = mass_spectrum_calc_2(dict_isotopic_spectrum)
                 if charge != 0:
-                    #合并dict_base,dict_mz_max,dict_isotoplogues
+                    #合并dict_base,dict_mz_max,dict_isotopic_spectrum
                     dict_all = dict_base.copy()
                     dict_all.update(dict_mz_max)
-                    dict_all.update(dict_isotoplogues)
+                    dict_all.update(dict_isotopic_spectrum)
                     dict_all.update(dict_new)
                     df = pd.concat([df, pd.Series(dict_all)], axis=1)
             except:
