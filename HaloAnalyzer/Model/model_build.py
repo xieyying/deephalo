@@ -58,12 +58,27 @@ def copy_model(input_shape,  output_shape):
     return clfs
 
 def con_model(input_shape,  output_shape):
+    # def my_fun2(x):
+    #     data = x[:,:-3]
+    #     last_column = x[:,-1:]
+    #     second_last_column = x[:,-2:-1]
+    #     third_last_column = x[:,-3:-2]
 
+    #     new_last_column = tf.pow(last_column, 10)
+    #     new_second_last_column = tf.pow(second_last_column, 10)
+    #     new_third_last_column = tf.pow(third_last_column, 10)
+
+    #     new_x = tf.concat([data, new_last_column], axis=1)
+    #     new_x = tf.concat([new_x, new_second_last_column], axis=1)
+    #     new_x = tf.concat([new_x, new_third_last_column], axis=1)
+    #     return new_x
 
     """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features1")
+    # input = layers.Lambda(my_fun2)(input)
     input1 = input[:,:-3]
     input2 = input[:,-3:]
+    
     x = layers.Dense(128, activation="relu")(input1)
 
     y = layers.Dense(128, activation="relu")(input2)
