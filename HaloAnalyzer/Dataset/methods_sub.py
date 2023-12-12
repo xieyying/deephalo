@@ -149,15 +149,28 @@ def mass_spectrum_calc_2(dict_features) -> dict:
     else:
         new_a2_a1 = 1.002
         new_a2_a0 = 2.002
-
     new_a2_a0_10 = (new_a2_a0-1)**10
-    new_a2_a1_10 = new_a2_a1**10    
+    new_a2_a1_10 = new_a2_a1**10 
+
+    if new_a1_mz !=0:
+        new_a1_a0 = new_a1_mz - new_a0_mz
+    else:    
+        new_a1_a0 = 1.002
+    new_a1_a0_10 = new_a1_a0**10
+
+    a2= dict_features['mz_a2']
+    a1= dict_features['mz_a1']
+    if a2 !=0:
+        a2_a1 = a2 - a1
+    else:
+        a2_a1 = 1.002
+    a2_a1_10 = a2_a1**10
 
     #以字典的形式返回
     return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
             'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
             'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
-            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10}
+            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10,'a2_a1':a2_a1,'a2_a1_10':a2_a1_10,'new_a1_a0':new_a1_a0,'new_a1_a0_10':new_a1_a0_10}
 
 def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
     """get the isotopic distribution of the formula with hydrogen isotope"""

@@ -7,13 +7,13 @@ from .methods_sub import get_iron_additive_isotopes,get_boron_additive_isotopes,
 
 def formula_clf(formula_dict,type=None) :
     """
-    Returns a classifier based on the formula given.
+    Returns a class based on the formula given.
     """
 
     #根据分子式，判断是否可训练
     if formula_dict.get('H') == None or formula_dict.get('C') == None:
         trainable = 'no'
-    elif formula_dict.get('H') < 1 or formula_dict.get('C') < 1:
+    elif formula_dict.get('H') < 3 or formula_dict.get('C') < 1:
         trainable = 'no'
     elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
         trainable = 'no'
@@ -27,23 +27,23 @@ def formula_clf(formula_dict,type=None) :
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
         if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
             group = 19
-        elif formula_dict['Br'] + formula_dict['Cl']<=5:
-            group = 0
+        # elif formula_dict['Br'] + formula_dict['Cl']<=5:
+        #     group = 0
         else:
-            group = 16
+            group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
             group = 19
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
-            if formula_dict['Br']<=5:
-                group = 0
-            else:
-                group = 17
+        #     if formula_dict['Br']<=5:
+            group = 0
+        #     else:
+        #         group = 17
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
-            if formula_dict['Cl']<=5:
-                group = 0
-            else:
-                group = 18            
+        #     if formula_dict['Cl']<=5:
+            group = 0
+        #     else:
+        #         group = 18            
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
             group = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
@@ -51,19 +51,19 @@ def formula_clf(formula_dict,type=None) :
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
             group = 2
     elif ('Se' in formula_dict.keys() ):
-        if formula_dict['Se']<=1:
+        if formula_dict['Se']==1:
             group = 3
         else:
             group = 15
     elif ('B' in formula_dict.keys()):
-        if  formula_dict['B']<=1:
+        if  formula_dict['B']==1:
             group = 4
         elif formula_dict['B']<=4:
             group = 12
         else:
             group = 13
     elif ('Fe' in formula_dict.keys()):
-        if formula_dict['Fe']<=1:
+        if formula_dict['Fe']==1:
             group = 5
         else:
             group = 14
@@ -170,7 +170,7 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
         return  pd.DataFrame()
     elif type in ['Fe','B','Se','hydro']:
 
-        if not set(formula_dict.keys()).issubset(set(['C','H','O','N','S'])):
+        if not set(formula_dict.keys()).issubset(set(['C','H','O','N'])):
             return pd.DataFrame()
 
     #模拟质谱数据

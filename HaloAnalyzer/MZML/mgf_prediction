@@ -1,3 +1,5 @@
+import sys
+sys.path.append(r'\Users\xyy\Desktop\python\HaloAnalyzer')
 
 from pyteomics import mzml ,mgf
 import numpy as np
@@ -5,6 +7,82 @@ import pandas as pd
 from molmass import Formula
 import tensorflow as tf
 import os
+from HaloAnalyzer.Model import model_build
+
+# your code here
+def formula_clf(formula_dict,type=None) :
+    """
+    Returns a classifier based on the formula given.
+    """
+
+    #根据分子式，判断是否可训练
+    if formula_dict.get('H') == None or formula_dict.get('C') == None:
+        trainable = 'no'
+    elif formula_dict.get('H') < 1 or formula_dict.get('C') < 1:
+        trainable = 'no'
+    elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
+        trainable = 'no'
+    else:
+        trainable = 'yes'
+
+    #根据分子式，判断类别
+    if type == 'hydro':
+        group = 7
+
+    elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 17
+        else:
+            group = 0
+
+    elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 17
+        elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+           
+            group = 0
+
+        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
+            group = 0
+          
+        elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
+            group = 1
+        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
+            group = 1
+        elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
+            group = 2
+    elif ('Se' in formula_dict.keys() ):
+        if formula_dict['Se']==1:
+            group = 3
+        else:
+            group = 15
+    elif ('B' in formula_dict.keys()):
+        if  formula_dict['B']==1:
+            group = 4
+        elif formula_dict['B']<=4:
+            group = 12
+        else:
+            group = 13
+    elif ('Fe' in formula_dict.keys()):
+        if formula_dict['Fe']==1:
+            group = 5
+        else:
+            group = 14
+    elif 'S' in formula_dict.keys():
+        if formula_dict['S']<=3:
+            group = 8
+        elif formula_dict['S']==4:
+            group = 8
+        elif formula_dict['S']==5:
+            group = 8
+        else:
+            group = 8
+
+    else:
+        group = 6
+
+    return trainable,group
+
 
 def mass_spectrum_calc_2(dict_features) -> dict:
     """校正质谱数据"""
@@ -25,15 +103,25 @@ def mass_spectrum_calc_2(dict_features) -> dict:
     else:
         new_a2_a1 = 1.002
         new_a2_a0 = 2.002
+    
+    if new_a1_mz != 0:
+        new_a1_a0 = new_a1_mz - new_a0_mz
+    else:
+        new_a1_a0 = 1.002
 
     new_a2_a0_10 = (new_a2_a0-1)**10
-    new_a2_a1_10 = new_a2_a1**10    
+    new_a2_a1_10 = new_a2_a1**10
+    new_a2_a1_15 = new_a2_a1**15
+    new_a1_a0_30 = new_a1_a0**30
+    new_a2_a1_20 = new_a2_a1**20 
+    new_a1_a0_10 = new_a1_a0**10
 
     #以字典的形式返回
     return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
             'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
             'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
-            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10}
+            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10,'new_a2_a1_15':new_a2_a1_15,'new_a1_a0_30':new_a1_a0_30,\
+                'new_a2_a1_20':new_a2_a1_20,'new_a1_a0':new_a1_a0,'new_a1_a0_10':new_a1_a0_10}
 
 
 #误差范围也需要同步传递
@@ -114,7 +202,7 @@ def get_charge(mz_list,ints_list,intensity_max):
     else:
         return 0
 
-def get_one_isotopologue(mz_list,ints_list,mz_max,charge,delta_mz,error=0.01):
+def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.01):
     
     """
     以最高峰为基准，获取与其相差delta_mz的同位素峰的mz和intensity;
@@ -132,18 +220,18 @@ def get_one_isotopologue(mz_list,ints_list,mz_max,charge,delta_mz,error=0.01):
         ints = 0
     return mz,ints
 
-def get_isotoplogues(mz_max,mz_list,ints_list,charge):
+def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     """
     以最高峰为基准，获取同位素峰的mz和intensity;
 
     """
-    mz_b3,ints_b3 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,-2.993)
-    mz_b2,ints_b2 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,-2.000)
-    mz_b1,ints_b1 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,-0.998)
-    mz_a0,ints_a0 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,0.000)
-    mz_a1,ints_a1 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,1.001)
-    mz_a2,ints_a2 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,2.002)
-    mz_a3,ints_a3 = get_one_isotopologue(mz_list,ints_list,mz_max,charge,3.003)
+    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
+    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
+    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
+    mz_a0,ints_a0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
+    mz_a1,ints_a1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
+    mz_a2,ints_a2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
+    mz_a3,ints_a3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
 
     ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
     ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
@@ -192,42 +280,14 @@ def get_isotoplogues(mz_max,mz_list,ints_list,charge):
         ints_a2 = 0
         mz_a3 = 0
         ints_a3 = 0
-    # else:
-    #     if ints_a2 < 0.02:
-    #         mz_a2 = 0
-    #         ints_a2 = 0
-    #         mz_a3 = 0
-    #         ints_a3 = 0
- 
-    # 根据mass difference的统计结果去除掉杂信号
-    # min_b2_b3: 0.9918878979353281 min_b2_b1 0.9963876962114284 min_a0_b1: 0.991865793428417
-    # max_b2_b3: 0.9988176779197602 max_b2_b1 1.003708772568018 max_a0_b1: 1.0034293999274269
-    # error = 10 mDa
-    # if mz_b1 != 0:
-    #     if mz_a0-mz_b1 < 0.987 or mz_a0-mz_b1 > 1.008:
-    #         mz_b1 = 0
-    #         ints_b1 = 0
-    #         mz_b2 = 0
-    #         ints_b2 = 0
-    #         mz_b3 = 0
-    #         ints_b3 = 0
-    #     else:
-    #         if mz_b2 != 0:
-    #             if mz_b1-mz_b2 < 0.991 or mz_b1-mz_b2 > 1.009:
-    #                 mz_b2 = 0
-    #                 ints_b2 = 0
-    #                 mz_b3 = 0
-    #                 ints_b3 = 0
-    #             else:
-    #                 if mz_b3 != 0:
-    #                     if mz_a0-mz_b3 < 0.986 or mz_a0-mz_b3 > 1.0488:
-    #                         mz_b3 = 0
-    #                         ints_b3 = 0
-    
-
+    if mz_a2!=0 and mz_a1!=0:
+        a2_a1 = mz_a2-mz_a1
+    else:
+        a2_a1 = 1.002
+    a2_a1_10 = a2_a1**10
 
     #以字典的形式返回
-    return {'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3}
+    return {'a2_a1':a2_a1,'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3,'a2_a1_10':a2_a1_10}
 
 def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
     """
@@ -349,12 +409,21 @@ class mgf_pred():
     def __init__(self,file) -> None:
         self.path = file
         self.spectra = mgf.MGF(file)
+        
 
 
     def get_new(self):
+       
+        mgf_extracted = []
+
+        mgf_patterns = []
+        
    
         df = pd.DataFrame()
+        ts = 0
         for spectrum in self.spectra:
+            ts+=1
+            mgf_  ={}
             mz = spectrum['m/z array']
             ints = spectrum['intensity array']
 
@@ -376,6 +445,9 @@ class mgf_pred():
             # print(formula)
 
             #强度最低峰
+            if ints.size == 0:
+                print(formula,'ints is empty')
+                continue
             min_int = ints.min()
 
              # 找到最强峰的index
@@ -399,15 +471,29 @@ class mgf_pred():
             charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
             if charge!=0:
                 # if charge_t != charge:
-                #     # print('charge is not equal')
+                #     print('charge is not equal')
                 #     continue
-                dict_isotoplogues = get_isotoplogues(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
+                
+                dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
+                is_halo = is_halo_isotopes(dict_isotoplogues['ints_b3'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_a0'],dict_isotoplogues['ints_a1'],dict_isotoplogues['ints_a2'],dict_isotoplogues['ints_a3'])
+                if is_halo == 1:
+                    mgf_extracted.append(spectrum)
+                    mz_iso = [dict_isotoplogues['mz_b3'],dict_isotoplogues['mz_b2'],dict_isotoplogues['mz_b1'],dict_isotoplogues['mz_a0'],dict_isotoplogues['mz_a1'],dict_isotoplogues['mz_a2'],dict_isotoplogues['mz_a3']]
+                    ints_iso = [dict_isotoplogues['ints_b3'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_a0'],dict_isotoplogues['ints_a1'],dict_isotoplogues['ints_a2'],dict_isotoplogues['ints_a3']]
+                    mgf_['params'] = spectrum['params']
+                    # 非零mz和intensity
+                    mgf_['m/z array'] = np.array(mz_iso)[np.array(mz_iso)!=0]
+                    mgf_['m/z array'] =mgf_['m/z array'] * charge
+                    mgf_['intensity array'] = np.array(ints_iso)[np.array(ints_iso)!=0]
+                    # mgf_['m/z array'] = np.array(mz_iso)
+                    # mgf_['intensity array'] = np.array(ints_iso)
+                    mgf_patterns.append(mgf_)
             else:
                 # print('charge is 0')
                 continue
             monoisotope = get_max(Formula(formula).spectrum().asdict())
-            is_halo = is_halo_isotopes(dict_isotoplogues['ints_b3'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_a0'],dict_isotoplogues['ints_a1'],dict_isotoplogues['ints_a2'],dict_isotoplogues['ints_a3'])
-           
+            true_class = formula_clf(Formula(formula).composition().dataframe().to_dict()['Count'])[1]
+
 
             #应该将函数的返回值修改为字典，可以避免重复修改此处代码    
             dict_new = mass_spectrum_calc_2(dict_isotoplogues)
@@ -417,17 +503,42 @@ class mgf_pred():
             dict_new['mz_precursor'] = precursor_mz
             dict_new['name'] = name
             dict_new['is_halo'] = is_halo
+            dict_new['true_class'] = true_class
             dict_all = dict_isotoplogues.copy()
             dict_all.update(dict_new)
             df = pd.concat([df, pd.Series(dict_all)], axis=1)
-           
+
         df = df.T
-        df = df[df['charge']!=0]
-        df = df[df['is_halo']==1]
-        df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\myxo_abstracted_isotopes_features1.csv',index=False)
+        # df = df[df['charge']!=0]
+        # df = df[df['is_halo']==1]
+        # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\myxo_abstracted_isotopes_features1.csv',index=False)
         # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\isotopes features.csv',index=False)
         # print(df)
-        return df
+        return df,mgf_extracted,mgf_patterns,ts
+
+    def get_halo_spectrum(self):
+        halo_formula = []
+        
+        mgf_halo = []
+
+        for spectrum in self.spectra:
+            # formula = spectrum['params']['ch$formula']
+            try:
+                formula = spectrum['params']['ch$formula']
+                name = spectrum['params']['ch$name']
+
+            except:
+                # for myxo
+                formula = spectrum['params']['formula']
+                name = spectrum['params']['compound_name']
+
+            true_class = formula_clf(Formula(formula).composition().dataframe().to_dict()['Count'])[1]
+            if true_class in [0,1,2]:
+                mgf_halo.append(spectrum)
+                halo_formula.append(formula)
+
+        return mgf_halo, halo_formula
+
 
 def add_predict(df,model_path,features_list):
     
@@ -447,27 +558,29 @@ def add_predict(df,model_path,features_list):
     return df
 
 if __name__ == '__main__':
+    
     feature_list = [
-    "ints_b3",
-    "ints_b2",
-    "ints_b1",
-    "ints_a0",
-    "ints_a1",
-    "ints_a2",
-    "ints_a3",
-    "new_a2_a1_10"
+        "ints_b3",
+        "ints_b2",
+        "ints_b1",
+        "ints_a0",
+        "ints_a1",
+        "ints_a2",
+        "ints_a3",
+        "new_a2_a1_10",
+        "new_a1_a0_10",
+        "a2_a1_10",
     ]
-    model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main9\trained_models\pick_halo_ann.h5'
-    # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main8_filter_001\trained_models\pick_halo_ann.h5'
-    # # file = r"D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\myxo_original.mgf"
-    # # file = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\myxo_abstracted_isotopes.mgf'
-    # file =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_MSSJ_MS1_HR.mgf'
-    # # file =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_MPI_MS1.mgf'
-    # # file =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_Univ_toyamaMS1.mgf'
+    # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main10\trained_models\pick_halo_ann.h5'
+    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\pick_halo_ann.h5'
+    # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\picked_models\pick_halo_ann_test1.h5'
 
-    # # file =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_BS_MS1.mgf'
+    # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
+    # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
 
-    path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\result1'
+    # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\massbank'
+    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf'
+    
     files = os.listdir(path)
     for file in files:
         f = os.path.join(path,file)
@@ -476,17 +589,51 @@ if __name__ == '__main__':
             continue
         print(file)
         a= mgf_pred(f)
-        df=a.get_new()
+        # mgf_, formula = a.get_halo_spectrum()
+        # mgf.write(mgf_,f[:-4]+'_halo.mgf')
+        # print(formula)
+        # print(len(formula))
+
+        df,mgf_extracted,mgf_patterns,ts=a.get_new()
         df = add_predict(df,model,feature_list)
         df.to_csv(f[:-4]+'_features.csv',index=False)
-        print(df)
-        print(f)
+        # mgf.write(mgf_extracted,f[:-4]+'_extracted.mgf')
+        # mgf.write(mgf_patterns,f[:-4]+'_patterns.mgf')
+        
+        # print(df)
+        #遍历整个df
+        n = 0
+        tn=0
+        wrong_formula = []
+        mgf_patterns_right =[]
+        mgf_extracted_wrong = []
+        for i in range(len(df)):
+            t = df['true_class'].tolist()[i]
+            p = df['class_pred'].tolist()[i]
+            # print(t,p)
+            if t != p:
+                wrong_formula.append(df['formula'].tolist()[i])
+                #打印这一行
+                # print(df.iloc[i, :]     .T)
+                print(t,p)
+                n+=1
+          
+            if t ==0:
+                tn+=1
+
+        # for s in mgf_patterns:
+        #     if s['params']['ch$formula'] not in wrong_formula:
+        #         mgf_patterns_right.append(s)
+        # for sp in mgf_extracted:
+        #     if sp['params']['ch$formula'] in wrong_formula:
+        #         mgf_extracted_wrong.append(sp)
+                # print(sp)
+        print('----------------')
+        
+        # mgf.write(mgf_patterns_right,f[:-4]+'_patterns_right.mgf')
+        # mgf.write(mgf_extracted_wrong,f[:-4]+'_extracted_wrong.mgf')
+        
+        print('total spectra: ',ts,'total: ', len(df), '; wrong', n,'multi_halo: ',tn)
+        
         print(f,'done')
 
-
-    # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\myxo_original_features_predicted.csv',index=False)
-
-    # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_MSSJ_MS1_HR.csv',index=False)
-    # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_MPI_MS1.csv',index=False)
-    # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_Univ_toyamaMS1.csv',index=False)
-    # df.to_csv('D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\MassBank_BS_MS1.csv',index=False)

@@ -2,29 +2,15 @@
 [datasets]
 #数据库文件路径
 paths = [
-    [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
+
+       [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
         "mol_formula",
     ],
-   [
-        "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
-        "MS-Ready_Mol_Formula",
-    ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
-        "chemical_formula",
-    ],
-    [
+        [
         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
         "Formula",
     ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
-        "formula",
-    ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
-        "CHEMICAL_DATA",
-    ],
+
 
     ]
 #训练集中所包含的元素种类
@@ -35,7 +21,7 @@ mz_end = 3000
 #基于真是数据库生成的噪音数据量倍率
 repeat_for_noise = 1
 #模拟hydro所用的rate
-rate_for_hydro = [0.33,0.66,0.99,1.32,1.65]
+rate_for_hydro = [0.33,0.66,0.99]
 
 #模型训练参数
 [model_data]
@@ -49,7 +35,8 @@ feature_list = [
     "ints_a2",
     "ints_a3",
     "new_a2_a1_10",
-
+    "new_a1_a0_10",
+    'a2_a1_10',
 ]
 #训练使用的数据集
 use_noise_data = "False"
@@ -69,14 +56,15 @@ learning_rate = 0.001
 
 #模型训练权重
 [model_construct_class_weight.classes_weight]
-0 = 1
-1 = 1
-2 = 1
-3 = 1
-4 = 1
-5 = 1
-6 = 1
-7 = 2
+0 = 1.6
+1 = 1.2
+2 = 0.63
+3 = 2.4
+4 = 2.4
+5 = 2.4
+6 = 0.58
+7 = 0.83
+8 = 0.59
 
 #使用asari进行峰识别的参数
 [asari]
@@ -91,7 +79,7 @@ min_peak_height = 5000
 vendor = ''
 min_intensity = 100 #并非相对强度
 precursor_error = 0.3
-ROI_identify_method = 'ms1ms2_linked'
+ROI_identify_method = 'DDA'
 min_element_roi = 3 #roi识别中MS1_index的最少元素数量
 min_element_sum = 3 #halo_eval中count_list中最少元素数量
 

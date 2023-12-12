@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from .methods import create_dataset
-from .model_build import model,copy_model
+from .model_build import model,copy_model,con_model
 from keras import layers
 class my_model:
     '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
@@ -61,7 +61,8 @@ class my_model:
 
         # load the model
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
-
+        # rankdir='LR' is used to make the graph horizontal.
+        tf.keras.utils.plot_model(model, show_shapes=True, rankdir="LR")
         # make predictions on the validation set
 
         X_val = self.X_test
@@ -80,8 +81,9 @@ class my_model:
                 "ints_a1",
                 "ints_a2",
                 "ints_a3",
-                "new_a2_a1",
-                # "a1_a0",
+                "new_a2_a1_10",
+                "new_a1_a0_10",
+                'a2_a1_10',
             ]
            
         formula_test = np.array(self.val_['formula'].tolist())

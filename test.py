@@ -19,5 +19,9 @@ path = r"C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\dataset\ba
 
 df = pd.read_csv(path)
 #group 0-8
-df = df[df['group']<=8]
-df.to_csv(r"C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\dataset\base1.csv",index=False)
+# 将group9改为group8
+# df['group'] = df['group'].replace(9,8)
+# df = df[df['group']<=8]
+# df.to_csv(r"C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\dataset\base1.csv",index=False)
+
+df = df[df['group']==4]

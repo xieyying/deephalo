@@ -74,18 +74,18 @@ class dataset():
             pool.close()
             df = pd.concat(dfs,ignore_index=True)
             self.df_data = df
-        elif type == 'noise':
+        # elif type == 'noise':
             
-            #重复repeats次
-            self.data = pd.concat([self.data]*repeats,ignore_index=True)
+        #     #重复repeats次
+        #     self.data = pd.concat([self.data]*repeats,ignore_index=True)
         
-            #加噪音数据集
-            pool = Pool()
-            func = partial(create_data, type=type)
-            dfs = pool.map(func, [formula for formula in self.data['formula']])
-            pool.close()
-            df = pd.concat(dfs, ignore_index=True)
-            self.df_data = df
+        #     #加噪音数据集
+        #     pool = Pool()
+        #     func = partial(create_data, type=type)
+        #     dfs = pool.map(func, [formula for formula in self.data['formula']])
+        #     pool.close()
+        #     df = pd.concat(dfs, ignore_index=True)
+        #     self.df_data = df
 
         elif type =='hydro':
             df = pd.DataFrame()

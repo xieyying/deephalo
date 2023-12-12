@@ -40,19 +40,46 @@ def copy_model(input_shape,  output_shape):
 
 
     """自定义模型结构_单输出"""
-    input = keras.Input(shape=(input_shape,), name="features")
-    
-    share = layers.Dense(128, activation="relu")(input)
-    share = layers.Dropout(0.3)(share)
+    input_ = keras.Input(shape=(input_shape,), name="features")
+    share = layers.Dense(512, activation="relu")(input_)
+    share = layers.Dropout(0.5)(share) 
+    share = layers.Dense(256, activation="relu")(share)
+    share = layers.Dropout(0.2)(share)    
+    share = layers.Dense(128, activation="relu")(share)
+    share = layers.Dropout(0.1)(share)
     share = layers.Dense(64, activation="relu")(share)
     share = layers.Dense(32, activation="relu")(share)
     share = layers.Dense(16, activation="relu")(share)
 
     clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
 
-    clfs = keras.Model(inputs=input, outputs=[clf_output], name="pick_halo_ann")
+    clfs = keras.Model(inputs=input_, outputs=[clf_output], name="pick_halo_ann")
 
     return clfs
+
+def con_model(input_shape,  output_shape):
+
+
+    """自定义模型结构_单输出"""
+    input1 = keras.Input(shape=(7,), name="features1")
+    x = layers.Dense(128, activation="relu")(input1)
+    input2 = keras.Input(shape=(3,), name="features2")
+    y = layers.Dense(128, activation="relu")(input2)
+    share = layers.concatenate([x, y])  
+    share = layers.Dense(128, activation="relu")(share)
+    share = layers.Dropout(.2)(share)
+    share = layers.Dense(64, activation="relu")(share)
+    share = layers.Dense(32, activation="relu")(share)
+    share = layers.Dense(16, activation="relu")(share)
+
+    clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
+
+    clfs = keras.Model(inputs=[input1,input2], outputs=[clf_output], name="pick_halo_ann")
+
+    return clfs
+
+
+
 
 if __name__ == "__main__":
     import tensorflow as tf

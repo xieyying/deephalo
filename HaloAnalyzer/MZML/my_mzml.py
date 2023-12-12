@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 import tensorflow as tf
-from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
+from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopic_peaks,ms2ms1_linked_ROI_identify,\
                     add_predict,add_is_halo_isotopes,halo_evaluation
 from pyteomics import mzml ,mgf
 from ..model_test import timeit
@@ -35,15 +35,15 @@ class my_mzml:
     def ROI_identify(self):
         """ROI的识别：asari或ms2_linked others"""
         method = self.mzml_dict['ROI_identify_method']
-        if method == 'asari':
+        if method == 'MS':
             self.df_rois = asari_ROI_identify(self.path,self.asari_dict)
-        elif method == 'ms1ms2_linked':
+        elif method == 'DDA':
             self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict,self.path)
     @timeit
     def extract_features(self):
         """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
-        df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
+        df_isotopologues = find_isotopic_peaks(df1,self.mzml_data,self.mzml_dict)
         #对isotopologue进行预测
         df_isotopologues = add_predict(df_isotopologues,self.model_path,self.feature_list)
         #添加is_halo_isotopes判断结果
