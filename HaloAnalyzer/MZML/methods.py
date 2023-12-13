@@ -97,7 +97,7 @@ def find_isotopologues(df1,mzml_data,mzml_dict):
                 else:
                     #charge为0，a0,a1,a2,a3,b1,b2均为0
                     charge = 0
-                    dict_isotoplogues = {'mz_b3':0,'ints_b3':0,'mz_b2':0,'ints_b2':0,'mz_b1':0,'ints_b1':0,'mz_a0':0,'ints_a0':0,'mz_a1':0,'ints_a1':0,'mz_a2':0,'ints_a2':0,'mz_a3':0,'ints_a3':0}
+                    dict_isotoplogues = {'mz_b3':0,'ints_b_3':0,'mz_b_2':0,'ints_b_2':0,'mz_b_1':0,'ints_b_1':0,'mz_b0':0,'ints_b0':0,'mz_b1':0,'ints_b1':0,'mz_b2':0,'ints_b2':0,'mz_b3':0,'ints_b3':0}
   
                 dict_new = mass_spectrum_calc_2(dict_isotoplogues)
                 if charge != 0:
@@ -132,16 +132,16 @@ def add_predict(df,model_path,features_list):
 
 def add_is_halo_isotopes(df):
     is_halo_isotopes_list = []
-    #提取每行的ints_b2,ints_b1,ints_a1,ints_a2,ints_a3
+    #提取每行的ints_b2,ints_b1,ints_b1,ints_b2,ints_b3
     for i in range(len(df)):
-        ints_b3 = df['ints_b3'].iloc[i]
-        ints_b2 = df['ints_b2'].iloc[i]
+        ints_b_3 = df['ints_b_3'].iloc[i]
+        ints_b_2 = df['ints_b_2'].iloc[i]
+        ints_b_1 = df['ints_b_1'].iloc[i]
+        ints_b0 = df['ints_b0'].iloc[i]
         ints_b1 = df['ints_b1'].iloc[i]
-        ints_a0 = df['ints_a0'].iloc[i]
-        ints_a1 = df['ints_a1'].iloc[i]
-        ints_a2 = df['ints_a2'].iloc[i]
-        ints_a3 = df['ints_a3'].iloc[i]
-        is_halo_isotopes_list.append(is_halo_isotopes(ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3))
+        ints_b2 = df['ints_b2'].iloc[i]
+        ints_b3 = df['ints_b3'].iloc[i]
+        is_halo_isotopes_list.append(is_halo_isotopes(ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3))
     df['is_halo_isotopes'] = is_halo_isotopes_list
     
     return df
@@ -160,19 +160,19 @@ def halo_evaluation(df):
         #获取该行的class_pred列
         halo_class_list = df_['class_pred'].tolist()
         #每个scan中的目标precursor,即同位素峰中最强的一个
-        MS1_precursor = df_['mz_a0'].tolist()
+        MS1_precursor = df_['mz_b0'].tolist()
         #roi中每个scan中提取的一组同位素峰的mz
-        isotope_mz = df_[['mz_b3','mz_b2','mz_b1','mz_a0','mz_a1','mz_a2','mz_a3']].values
+        isotope_mz = df_[['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3']].values
         #roi中每个scan中提取的一组同位素峰的intensity
-        isotope_ints = df_[['ints_b3','ints_b2','ints_b1','ints_a0','ints_a1','ints_a2','ints_a3']].values
+        isotope_ints = df_[['ints_b_3','ints_b_2','ints_b_1','ints_b0','ints_b1','ints_b2','ints_b3']].values
         #roi中每个scan中提取的一组同位素峰对应的mz的平均值
         isotope_mz_mean = isotope_mz.mean(axis=0)
         #roi中每个scan中提取的一组同位素峰对应的峰强度的平均值
         isotope_ints_mean = isotope_ints.mean(axis=0)
 
         #将isotope_mz_mean和isotope_ints_mean合并为一个字典
-        isotope_mz_mean_dict = dict(zip(['mz_b3','mz_b2','mz_b1','mz_a0','mz_a1','mz_a2','mz_a3'],isotope_mz_mean))
-        isotope_ints_mean_dict = dict(zip(['ints_b3','ints_b2','ints_b1','ints_a0','ints_a1','ints_a2','ints_a3'],isotope_ints_mean))
+        isotope_mz_mean_dict = dict(zip(['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3'],isotope_mz_mean))
+        isotope_ints_mean_dict = dict(zip(['ints_b_3','ints_b_2','ints_b_1','ints_b0','ints_b1','ints_b2','ints_b3'],isotope_ints_mean))
         #将isotope_mz_mean_dict和isotope_ints_mean_dict合并为一个字典
         isotope_mz_mean_dict.update(isotope_ints_mean_dict)
         roi_new_features = mass_spectrum_calc_2(isotope_mz_mean_dict)

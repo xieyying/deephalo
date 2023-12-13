@@ -80,97 +80,97 @@ def other_requirements_trainable_clf(formula):
 
 def mass_spectrum_calc(dict_isos):
     # 目前没用到
-    b_2_mz = dict_isos['mz_b2']
-    b_1_mz = dict_isos['mz_b1']
-    a0_mz = dict_isos['mz_a0']
-    a1_mz = dict_isos['mz_a1']
-    a2_mz = dict_isos['mz_a2']
-    a3_mz = dict_isos['mz_a3']
-    b_2 = dict_isos['ints_b2']
-    b_1 = dict_isos['ints_b1']
-    a0 = dict_isos['ints_a0']
-    a1 = dict_isos['ints_a1']
-    a2 = dict_isos['ints_a2']
-    a3 = dict_isos['ints_a3']
+    b_2_mz = dict_isos['mz_b_2']
+    b_1_mz = dict_isos['mz_b_1']
+    b0_mz = dict_isos['mz_b0']
+    b1_mz = dict_isos['mz_b1']
+    b2_mz = dict_isos['mz_b2']
+    b3_mz = dict_isos['mz_b3']
+    b_2 = dict_isos['ints_b_2']
+    b_1 = dict_isos['ints_b_1']
+    b0 = dict_isos['ints_b0']
+    b1 = dict_isos['ints_b1']
+    b2 = dict_isos['ints_b2']
+    b3 = dict_isos['ints_b3']
 
     #校正质谱数据   
-    if a1_mz>0.1:
-        a1_a0 = a1_mz - a0_mz
+    if b1_mz>0.1:
+        b1_b0 = b1_mz - b0_mz
     else:
-        a1_a0 = 0
-    if a2_mz>0.1:
-        a2_a0 = a2_mz - a0_mz
-        a2_a1 = a2_mz - a1_mz
+        b1_b0 = 0
+    if b2_mz>0.1:
+        b2_b0 = b2_mz - b0_mz
+        b2_b1 = b2_mz - b1_mz
     else:
-        a2_a0 = 0
-        a2_a1 = 0
+        b2_b0 = 0
+        b2_b1 = 0
     
-    if a3_mz>0.1:
-        a3_a0 = a3_mz - a0_mz
-        a3_a1 = a3_mz - a1_mz
-        a3_a2 = a3_mz - a2_mz
+    if b3_mz>0.1:
+        b3_b0 = b3_mz - b0_mz
+        b3_b1 = b3_mz - b1_mz
+        b3_b2 = b3_mz - b2_mz
     else:
-        a3_a0 = 0
-        a3_a1 = 0
-        a3_a2 = 0
+        b3_b0 = 0
+        b3_b1 = 0
+        b3_b2 = 0
     
     if b_1_mz<0.1:
-        a0_b1 = 0
+        b0_b_1 = 0
     else:
-        a0_b1 = a0_mz-b_1_mz
+        b0_b_1 = b0_mz-b_1_mz
 
     if b_2_mz<0.1:
-        b1_b2 = 0
+        b_1_b_2 = 0
     else:
-        b1_b2 = b_1_mz-b_2_mz
+        b_1_b_2 = b_1_mz-b_2_mz
     
-    a0_norm = a0/2000
-    return {'mz_b2':b_2_mz,'mz_b1':b_1_mz,'mz_a0':a0_mz,'mz_a1':a1_mz,'mz_a2':a2_mz,'mz_a3':a3_mz,
-            'ints_b2':b_2,'ints_b1':b_1,'ints_a0':a0,'ints_a1':a1,'ints_a2':a2,'ints_a3':a3,
-            'a1_a0':a1_a0,'a2_a0':a2_a0,'a2_a1':a2_a1,'a0_b1':a0_b1,'b1_b2':b1_b2,
-            'a0_norm':a0_norm,'a3_a0':a3_a0,'a3_a1':a3_a1,'a3_a2':a3_a2}
+    b0_norm = b0/2000
+    return {'mz_b_2':b_2_mz,'mz_b_1':b_1_mz,'mz_b0':b0_mz,'mz_b1':b1_mz,'mz_b2':b2_mz,'mz_b3':b3_mz,
+            'ints_b_2':b_2,'ints_b_1':b_1,'ints_b0':b0,'ints_b1':b1,'ints_b2':b2,'ints_b3':b3,
+            'b1_b0':b1_b0,'b2_b0':b2_b0,'b2_b1':b2_b1,'b0_b_1':b0_b_1,'b_1_b_2':b_1_b_2,
+            'b0_norm':b0_norm,'b3_b0':b3_b0,'b3_b1':b3_b1,'b3_b2':b3_b2}
 
 def mass_spectrum_calc_2(dict_features) -> dict:
     """校正质谱数据"""
-    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为new_a0的质谱数据
-    mz_list = [dict_features['mz_b3'],dict_features['mz_b2'],dict_features['mz_b1'],dict_features['mz_a0'],dict_features['mz_a1'],dict_features['mz_a2'],dict_features['mz_a3']]
-    ints_list = [dict_features['ints_b3'],dict_features['ints_b2'],dict_features['ints_b1'],1,dict_features['ints_a1'],dict_features['ints_a2'],dict_features['ints_a3']]
+    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为m0的质谱数据
+    mz_list = [dict_features['mz_b_3'],dict_features['mz_b_2'],dict_features['mz_b_1'],dict_features['mz_b0'],dict_features['mz_b1'],dict_features['mz_b2'],dict_features['mz_b3']]
+    ints_list = [dict_features['ints_b_3'],dict_features['ints_b_2'],dict_features['ints_b_1'],1,dict_features['ints_b1'],dict_features['ints_b2'],dict_features['ints_b3']]
     for i in range(len(ints_list)):
         if ints_list[i] != 0:
             index = i
             break
-    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
-    new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
+    m0_mz,m1_mz,m2_mz,m3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
+    m0_ints,m1_ints,m2_ints,m3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
     
 
-    if new_a2_mz !=0:
-        new_a2_a1 = new_a2_mz - new_a1_mz
-        new_a2_a0 = new_a2_mz - new_a0_mz
+    if m2_mz !=0:
+        m2_m1 = m2_mz - m1_mz
+        m2_m0 = m2_mz - m0_mz
     else:
-        new_a2_a1 = 1.002
-        new_a2_a0 = 2.002
-    new_a2_a0_10 = (new_a2_a0-1)**10
-    new_a2_a1_10 = new_a2_a1**10 
+        m2_m1 = 1.002
+        m2_m0 = 2.002
+    m2_m0_10 = (m2_m0-1)**10
+    m2_m1_10 = m2_m1**10 
 
-    if new_a1_mz !=0:
-        new_a1_a0 = new_a1_mz - new_a0_mz
+    if m1_mz !=0:
+        m1_m0 = m1_mz - m0_mz
     else:    
-        new_a1_a0 = 1.002
-    new_a1_a0_10 = new_a1_a0**10
+        m1_m0 = 1.002
+    m1_m0_10 = m1_m0**10
 
-    a2= dict_features['mz_a2']
-    a1= dict_features['mz_a1']
-    if a2 !=0:
-        a2_a1 = a2 - a1
+    b2= dict_features['mz_b2']
+    b1= dict_features['mz_b1']
+    if b2 !=0:
+        b2_b1 = b2 - b1
     else:
-        a2_a1 = 1.002
-    a2_a1_10 = a2_a1**10
+        b2_b1 = 1.002
+    b2_b1_10 = b2_b1**10
 
     #以字典的形式返回
-    return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
-            'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
-            'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
-            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10,'a2_a1':a2_a1,'a2_a1_10':a2_a1_10,'new_a1_a0':new_a1_a0,'new_a1_a0_10':new_a1_a0_10}
+    return {'m0_mz':m0_mz,'m1_mz':m1_mz,'m2_mz':m2_mz,'m3_mz':m3_mz,
+            'm0_ints':m0_ints,'m1_ints':m1_ints,'m2_ints':m2_ints,'m3_ints':m3_ints,
+            'm2_m1':m2_m1,'m2_m0':m2_m0,
+            'm2_m0_10':m2_m0_10,'m2_m1_10':m2_m1_10,'b2_b1':b2_b1,'b2_b1_10':b2_b1_10,'m1_b0':m1_m0,'m1_m0_10':m1_m0_10}
 
 def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
     """get the isotopic distribution of the formula with hydrogen isotope"""

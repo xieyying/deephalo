@@ -19,12 +19,12 @@ def pipeline_dataset() -> None:
     for data in para.datasets:
         datas.append(dataset(data[0],data[1]).data)
     raw_data = datasets(datas)
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
     # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'noise',repeats=para.repeat_for_noise)
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
 
     # data.data_statistics_customized()
 

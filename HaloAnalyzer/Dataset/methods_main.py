@@ -115,47 +115,47 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
 
         i+=1
     
-    a_0_mz = fm_isos.iloc[i]['Relative mass']
-    a_0_int = fm_isos.iloc[i]['Intensity %']
+    b0_mz = fm_isos.iloc[i]['Relative mass']
+    b0_int = fm_isos.iloc[i]['Intensity %']
 
     try:
     
-        a_1_mz = fm_isos.iloc[i+1]['Relative mass']
-        a_1_int = fm_isos.iloc[i+1]['Intensity %']
+        b1_mz = fm_isos.iloc[i+1]['Relative mass']
+        b1_int = fm_isos.iloc[i+1]['Intensity %']
     
     except:
-        a_1_mz = 0
-        a_1_int = 0
+        b1_mz = 0
+        b1_int = 0
 
     try:
     
-        a_2_mz = fm_isos.iloc[i+2]['Relative mass']
-        a_2_int = fm_isos.iloc[i+2]['Intensity %']
+        b2_mz = fm_isos.iloc[i+2]['Relative mass']
+        b2_int = fm_isos.iloc[i+2]['Intensity %']
         
     except:
-        a_2_mz = 0
-        a_2_int = 0
+        b2_mz = 0
+        b2_int = 0
 
     try:
         
-        a_3_mz = fm_isos.iloc[i+3]['Relative mass']
-        a_3_int = fm_isos.iloc[i+3]['Intensity %']
+        b3_mz = fm_isos.iloc[i+3]['Relative mass']
+        b3_int = fm_isos.iloc[i+3]['Intensity %']
 
     except:
-        a_3_mz = 0
-        a_3_int = 0
+        b3_mz = 0
+        b3_int = 0
     try:
-        a_4_mz = fm_isos.iloc[i+4]['Relative mass']
-        a_4_int = fm_isos.iloc[i+4]['Intensity %']
+        b4_mz = fm_isos.iloc[i+4]['Relative mass']
+        b4_int = fm_isos.iloc[i+4]['Intensity %']
     except:
-        a_4_mz = 0
-        a_4_int = 0
+        b4_mz = 0
+        b4_int = 0
 
-    return {'mz_b3':b_3_mz,'mz_b2':b_2_mz,'mz_b1':b_1_mz,'mz_a0':a_0_mz,\
-            'mz_a1':a_1_mz,'mz_a2':a_2_mz,'mz_a3':a_3_mz,'mz_a4':a_4_mz,\
-            'ints_b3':b_3_int/100,'ints_b2':b_2_int/100,'ints_b1':b_1_int/100,\
-            'ints_a0':a_0_int/100,'ints_a1':a_1_int/100,'ints_a2':a_2_int/100,\
-            'ints_a3':a_3_int/100,'ints_a4':a_4_int/100} 
+    return {'mz_b_3':b_3_mz,'mz_b_2':b_2_mz,'mz_b_1':b_1_mz,'mz_b0':b0_mz,\
+            'mz_b1':b1_mz,'mz_b2':b2_mz,'mz_b3':b3_mz,'mz_b4':b4_mz,\
+            'ints_b_3':b_3_int/100,'ints_b_2':b_2_int/100,'ints_b_1':b_1_int/100,\
+            'ints_b0':b0_int/100,'ints_b1':b1_int/100,'ints_b2':b2_int/100,\
+            'ints_b3':b3_int/100,'ints_b4':b4_int/100} 
 
 def create_data(formula,type='base',rate=None) -> pd.DataFrame:
     """基于分子式及其类型，模拟质谱数据，返回模拟质谱数"""
@@ -180,7 +180,7 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
         #为质谱数据添加噪音
         #更新dict_isos中的数据，逐个增加噪音
         for key in dict_isos.keys():
-            if key in ['mz_b3','mz_b2','mz_b1','mz_a0','mz_a1','mz_a2','mz_a3','mz_a4']:
+            if key in ['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3','mz_b4']:
                 dict_isos[key] = adding_noise_to_mass(dict_isos[key])
             else:
                 dict_isos[key] = adding_noise_to_intensity(dict_isos[key])

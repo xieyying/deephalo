@@ -323,65 +323,65 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     以最高峰为基准，获取同位素峰的mz和intensity;
 
     """
-    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
-    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
-    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
-    mz_a0,ints_a0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
-    mz_a1,ints_a1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
-    mz_a2,ints_a2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
-    mz_a3,ints_a3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
+    mz_b_3,ints_b_3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
+    mz_b_2,ints_b_2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
+    mz_b_1,ints_b_1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
+    mz_b0,ints_b0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
+    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
+    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
+    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
 
-    ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
-    ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
+    ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = ints_b_3/ints_b0,\
+    ints_b_2/ints_b0,ints_b_1/ints_b0,ints_b0/ints_b0,ints_b1/ints_b0,ints_b2/ints_b0,ints_b3/ints_b0
     
     # 根据base数据统计结果去除掉低强度信号，防止背景信号影响
-    # min_int_b1: 0.001998024679028； min_int_b2: 0.0446544604098983；min_int_b3: 0.000217286018714 
+    # min_int_b_1: 0.001998024679028； min_int_b_2: 0.0446544604098983；min_int_b_3: 0.000217286018714 
     # min_int_a1: 0.0218262955587414 min_int_a2: 0.0001238175919807 min_int_a3: 1.244083605286354e-06
-    if ints_b1 < 0.001:
+    if ints_b_1 < 0.001:
+        mz_b_1 = 0
+        ints_b_1 = 0
+        mz_b_2 = 0
+        ints_b_2 = 0
+        mz_b_3 = 0
+        ints_b_3 = 0
+    else:
+        if ints_b_2 < 0.04:
+            mz_b_2 = 0
+            ints_b_2 = 0
+            mz_b_3 = 0
+            ints_b_3 = 0
+        else:
+            if ints_b_3 < 0.0002:
+                mz_b_3 = 0
+                ints_b_3 = 0
+    # 根据b2判断b1是否为杂信号
+    # 根据全部base统计b2为0时b1最小值为0.202336
+    if ints_b_2 ==0:
+        if ints_b_1 < 0.19:
+            mz_b_1 = 0
+            ints_b_1 = 0
+            mz_b_2 = 0
+            ints_b_2 = 0
+            mz_b_3 = 0
+            ints_b_3 = 0
+    # 根据base数据统计结果，a1最小值为0.0218
+    if ints_b1 < 0.02:
         mz_b1 = 0
         ints_b1 = 0
         mz_b2 = 0
         ints_b2 = 0
         mz_b3 = 0
         ints_b3 = 0
-    else:
-        if ints_b2 < 0.04:
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-        else:
-            if ints_b3 < 0.0002:
-                mz_b3 = 0
-                ints_b3 = 0
-    # 根据b2判断b1是否为杂信号
-    # 根据全部base统计b2为0时b1最小值为0.202336
-    if ints_b2 ==0:
-        if ints_b1 < 0.19:
-            mz_b1 = 0
-            ints_b1 = 0
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-    # 根据base数据统计结果，a1最小值为0.0218
-    if ints_a1 < 0.02:
-        mz_a1 = 0
-        ints_a1 = 0
-        mz_a2 = 0
-        ints_a2 = 0
-        mz_a3 = 0
-        ints_a3 = 0
     
     #以字典的形式返回
-    return {'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3}
+    return {'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3}
 
-def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
+def is_halo_isotopes(b_3,b_2,b_1,b0,b1,b2,b3):
     """
-    根据六个个同位素峰的强度,判断是否为同位素峰
-    判断主要依据卤化物的同位素峰强度的统计结果
+    根据七个同位素峰的强度,判断是否为同位素峰
+    判断依据为base数据模拟质谱的统计结果
     """
-    if a1>0.02:
+    if b1>0.02:
         if b_3 == 0:
             if b_2 == 0:
                 is_isotope = 1

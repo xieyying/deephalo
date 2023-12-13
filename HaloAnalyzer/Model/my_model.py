@@ -74,23 +74,23 @@ class my_model:
         wrong_data = X_val[wrong_index]
 
         cols  = [
-                "ints_b3",
-                "ints_b2",
+                "ints_b_3",
+                "ints_b_2",
+                "ints_b_1",
+                "ints_b0",
                 "ints_b1",
-                "ints_a0",
-                "ints_a1",
-                "ints_a2",
-                "ints_a3",
-                "new_a2_a1_10",
-                "new_a1_a0_10",
-                'a2_a1_10',
+                "ints_b2",
+                "ints_b3",
+                "m2_m1_10",
+                "m1_m0_10",
+                'b2_b1_10',
             ]
-           
+
         formula_test = np.array(self.val_['formula'].tolist())
-        new_a0 = np.array(self.val_['new_a0_mz'].tolist())
+        m0 = np.array(self.val_['m0_mz'].tolist())
         wrong_data = pd.DataFrame(wrong_data,columns=cols)
         wrong_data['formula'] = pd.Series(formula_test[wrong_index])
-        wrong_data['new_a0_mz'] = pd.Series(new_a0[wrong_index])
+        wrong_data['m0_mz'] = pd.Series(m0[wrong_index])
         wrong_data['true_classes'] = pd.Series(Y_val[wrong_index])
         wrong_data['pred_classes'] = pd.Series(y_pred[wrong_index])
         
