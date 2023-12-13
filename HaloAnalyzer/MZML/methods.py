@@ -126,7 +126,7 @@ def add_predict(df,model_path,features_list):
     # classes = tf.math.argmax(res[0],1).numpy()
     classes_pred = np.argmax(res, axis=1)
     #将预测结果添加到df_features中
-    df['class_pred'] = classes_pred
+    df.loc[:, 'class_pred'] = classes_pred
 
     return df
 

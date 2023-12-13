@@ -44,15 +44,14 @@ class my_mzml:
         """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
         df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
-        #保存df_isotopologues
-        df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\df.csv',index=False)
-        #对isotopologue进行预测
-        df_isotopologues = add_predict(df_isotopologues,self.model_path,self.feature_list)
         #添加is_halo_isotopes判断结果
         df_isotopologues = add_is_halo_isotopes(df_isotopologues)
         #保存is_halo_isotopes 为1的isotopologues到self.df_isotopologues
-        self.df_isotopologues = df_isotopologues[df_isotopologues['is_halo_isotopes']==1]
-        # self.df_isotopologues = df_isotopologues
+        df_isotopologues = df_isotopologues[df_isotopologues['is_halo_isotopes']==1]
+        self.df_isotopologues = df_isotopologues.copy()
+        #对isotopologue进行预测
+        df_isotopologues = add_predict(self.df_isotopologues,self.model_path,self.feature_list)
+
     @timeit
     def rois_evaluation(self):
         """对ROI进行halo评估"""

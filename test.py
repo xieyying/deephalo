@@ -1,6 +1,7 @@
 from molmass import Formula
 import pandas as pd
 from pyteomics import mgf,mzml
+
 import os
 
 # path = r"C:\Users\xyy\Desktop\python\HaloAnalyzer_training\0_2_0_test\dataset"
@@ -25,3 +26,13 @@ df = pd.read_csv(path)
 # df.to_csv(r"C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\dataset\base1.csv",index=False)
 
 df = df[df['group']==4]
+
+file = r'D:\python\wangmengyuan\dataset\mzmls\cmx_11_23_M3_p9_bottle_1.mzML'
+
+data = mzml.read(file,use_index=True,read_schema=True)
+data = pd.DataFrame(data)
+data = data[data['ms level'].isin([1, 2])].copy()
+data['rt'] = data['scanList']['scan'][0]['scan start time'] * 60
+data['precursor'] = data.get('precursorList')
+data = data[['index', 'ms level', 'm/z array', 'intensity array', 'total ion current', 'rt', 'precursor']]
+data.columns = ['scan', 'ms level', 'm/z array', 'intensity array', 'tic', 'rt', 'precursor']

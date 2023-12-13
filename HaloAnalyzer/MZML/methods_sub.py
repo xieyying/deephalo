@@ -85,8 +85,6 @@ class ROIs:
             else:
                 i += 1
         
-                
-
     def get_roi_df(self):
         df = pd.DataFrame(self.rois)
         return df
@@ -107,10 +105,12 @@ class my_data:
         new_data = []
         if self.source == 'mzML':
             for s in self.data:
-                new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
+                if s['ms level'] in [1,2]:
+                    new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
         elif self.source == 'mzXML':
             for s in self.data:
-                new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
+                if s['msLevel'] in [1,2]:
+                    new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
         self.data = pd.DataFrame(new_data)
     @timeit
     def get_by_level(self,level):
@@ -156,9 +156,10 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
     precursor_error = mzml_dict['precursor_error']
 
     """
-    将MS1和MS2连接起来，返回一个dataframe，包含MS2的index以及与之对应的MS1的index
+    将MS1和MS2连接起来，返回一个dataframe，包含MS2的index以及与之对应的MS1的index，以及经过MS1图谱校正的MS2的precursor_mz
 
     质谱DDA采集模式下，信号采集顺序为MS1,而后是与此MS1相对应的一个或多个MS2(根据采集设置而定)
+    根据MS2的precursor_mz，在设定误差内找到与之对应的MS1的mz，从而对MS2的precursor进行校正
 
     在waters采集中MS1的function=1
 
@@ -333,7 +334,9 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
     ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
     
-    # 强度小于0.01的intensity和mz都设置为0，防止背景信号影响
+    # 根据base数据统计结果去除掉低强度信号，防止背景信号影响
+    # min_int_b1: 0.001998024679028； min_int_b2: 0.0446544604098983；min_int_b3: 0.000217286018714 
+    # min_int_a1: 0.0218262955587414 min_int_a2: 0.0001238175919807 min_int_a3: 1.244083605286354e-06
     if ints_b1 < 0.001:
         mz_b1 = 0
         ints_b1 = 0
@@ -352,16 +355,16 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
                 mz_b3 = 0
                 ints_b3 = 0
     # 根据b2判断b1是否为杂信号
-    # 根据卤化物统计b2为0b1最小为0.223073，根据全部base统计b2为0时b1最小值为0.202336
+    # 根据全部base统计b2为0时b1最小值为0.202336
     if ints_b2 ==0:
-        if ints_b1 < 0.15:
+        if ints_b1 < 0.19:
             mz_b1 = 0
             ints_b1 = 0
             mz_b2 = 0
             ints_b2 = 0
             mz_b3 = 0
             ints_b3 = 0
-    
+    # 根据base数据统计结果，a1最小值为0.0218
     if ints_a1 < 0.02:
         mz_a1 = 0
         ints_a1 = 0
@@ -378,27 +381,6 @@ def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
     根据六个个同位素峰的强度,判断是否为同位素峰
     判断主要依据卤化物的同位素峰强度的统计结果
     """
-    # if a1>0.02:
-    #     if b_2 == 0:
-    #         if b_1==0:
-    #             is_isotope = 1
-    #         else:
-    #             if  b_1 > 0.5:
-    #                 is_isotope = 1
-    #             else:
-    #                 is_isotope = 0
-    #     else:
-    #         if b_2>0.3:
-    #             if b_1>0.02:
-    #                is_isotope = 1
-    #             else:
-    #                 is_isotope = 0
-    #         else:
-    #             is_isotope = 0
-    # else:
-    #     is_isotope =0
-
-    # return is_isotope
     if a1>0.02:
         if b_3 == 0:
             if b_2 == 0:
