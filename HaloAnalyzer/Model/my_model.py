@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from .methods import create_dataset
-from .model_build import model,copy_model,con_model
+from .model_build import model,copy_model,con_model,model_noise,transfer_model
 from keras import layers
 class my_model:
     '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
@@ -26,7 +26,7 @@ class my_model:
     def get_model(self):
         """获取自定义模型，并绘制模型结构图"""
         #model_build中可以定义多种模型结构方便切换
-        self.model = con_model(self.input_shape,self.output_shape)
+        self.model = model_noise(self.input_shape,self.output_shape)
         #绘制模型图
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
@@ -55,6 +55,31 @@ class my_model:
         #显示图例
         plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
         self.model.save(r'./trained_models/pick_halo_ann.h5')
+
+    def train_transfer(self):
+        opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        base_model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
+        base_model = keras.Model(inputs=base_model.input, outputs=base_model.get_layer('dense_2').output)
+        base_model.trainable = False
+        self.trans_model = transfer_model(self.input_shape,self.output_shape,base_model)
+
+        #Train the top layer
+        self.trans_model.compile(optimizer=opt,
+                                 loss={'classes': 'SparseCategoricalCrossentropy'},
+                                    loss_weights={'classes': self.classes_weight},
+                                    metrics=['accuracy'])
+        self.trans_model.summary()
+
+        self.trans_model.fit(self.train_dataset, epochs=5, validation_data=self.val_dataset)
+        
+        #Do a round of fine-tuning of the entire model
+        base_model.trainable = True
+        self.trans_model.summary()
+        self.trans_model.compile(optimizer=keras.optimizers.Adam(1e-5),
+                                 loss={'classes': 'SparseCategoricalCrossentropy'},
+                                    metrics=['accuracy'])
+        self.trans_model.fit(self.train_dataset, epochs=2, validation_data=self.val_dataset)
+        self.trans_model.save(r'./trained_models/pick_halo_transfer.h5')
 
     def show_CM(self):
         """显示混淆矩阵"""
@@ -109,7 +134,8 @@ class my_model:
             os.mkdir('./trained_models')
         self.load_dataset()
         self.get_model()
-        self.train()
+        # self.train()
+        self.train_transfer()
         self.show_CM()
 
 if __name__ == '__main__':

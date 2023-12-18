@@ -21,10 +21,10 @@ def pipeline_dataset() -> None:
     raw_data = datasets(datas)
     raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
     # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'noise',repeats=para.repeat_for_noise)
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
 
     # data.data_statistics_customized()
 
@@ -35,7 +35,7 @@ def pipeline_model() -> None:
     para = load_config()
 
     #根据配置文件选择训练数据
-    paths = ['./dataset/base1.csv']
+    paths = ['./dataset/base.csv']
     if para.use_fe_data == 'True':
         paths.append('./dataset/Fe.csv')
     if para.use_b_data == 'True':

@@ -95,8 +95,39 @@ def con_model(input_shape,  output_shape):
 
     return clfs
 
+def model_noise(input_shape,  output_shape):
+    """自定义模型结构_单输出"""
+    input = keras.Input(shape=(input_shape,), name="features1")
+    #添加高斯噪声
+    input = layers.GaussianNoise(0.05)(input)
+    # input = layers.Lambda(my_fun2)(input)
+    input1 = input[:,:-3]
+    input2 = input[:,-3:]
+    
+    x = layers.Dense(128, activation="relu")(input1)
 
+    y = layers.Dense(128, activation="relu")(input2)
+    share = layers.concatenate([x, y])  
+    share = layers.Dense(128, activation="relu")(share)
+    share = layers.Dropout(.3)(share)
+    share = layers.Dense(64, activation="relu")(share)
+    share = layers.Dense(32, activation="relu")(share)
+    share = layers.Dense(16, activation="relu")(share)
 
+    clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
+
+    clfs = keras.Model(inputs=input, outputs=clf_output, name="pick_halo_ann")
+
+    return clfs
+
+def transfer_model(input_shape, output_shape, base_model):
+    """自定义模型结构_单输出"""
+    input = keras.Input(shape=(input_shape,), name="features")
+    share = base_model(input,training=False)
+    share = layers.Dense(32, activation="relu")(share)
+    clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
+    clfs = keras.Model(inputs=input, outputs=clf_output, name="pick_halo_ann")
+    return clfs
 
 if __name__ == "__main__":
     import tensorflow as tf
