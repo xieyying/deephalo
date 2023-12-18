@@ -84,44 +84,48 @@ def formula_clf(formula_dict,type=None) :
     return trainable,group
 
 
+
 def mass_spectrum_calc_2(dict_features) -> dict:
     """校正质谱数据"""
-    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为new_a0的质谱数据
-    mz_list = [dict_features['mz_b3'],dict_features['mz_b2'],dict_features['mz_b1'],dict_features['mz_a0'],dict_features['mz_a1'],dict_features['mz_a2'],dict_features['mz_a3']]
-    ints_list = [dict_features['ints_b3'],dict_features['ints_b2'],dict_features['ints_b1'],1,dict_features['ints_a1'],dict_features['ints_a2'],dict_features['ints_a3']]
+    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为m0的质谱数据
+    mz_list = [dict_features['mz_b_3'],dict_features['mz_b_2'],dict_features['mz_b_1'],dict_features['mz_b0'],dict_features['mz_b1'],dict_features['mz_b2'],dict_features['mz_b3']]
+    ints_list = [dict_features['ints_b_3'],dict_features['ints_b_2'],dict_features['ints_b_1'],1,dict_features['ints_b1'],dict_features['ints_b2'],dict_features['ints_b3']]
     for i in range(len(ints_list)):
         if ints_list[i] != 0:
             index = i
             break
-    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
-    new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
+    m0_mz,m1_mz,m2_mz,m3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
+    m0_ints,m1_ints,m2_ints,m3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
     
 
-    if new_a2_mz !=0:
-        new_a2_a1 = new_a2_mz - new_a1_mz
-        new_a2_a0 = new_a2_mz - new_a0_mz
+    if m2_mz !=0:
+        m2_m1 = m2_mz - m1_mz
+        m2_m0 = m2_mz - m0_mz
     else:
-        new_a2_a1 = 1.002
-        new_a2_a0 = 2.002
-    
-    if new_a1_mz != 0:
-        new_a1_a0 = new_a1_mz - new_a0_mz
-    else:
-        new_a1_a0 = 1.002
+        m2_m1 = 1.002
+        m2_m0 = 2.002
+    m2_m0_10 = (m2_m0-1)**10
+    m2_m1_10 = m2_m1**10 
 
-    new_a2_a0_10 = (new_a2_a0-1)**10
-    new_a2_a1_10 = new_a2_a1**10
-    new_a2_a1_15 = new_a2_a1**15
-    new_a1_a0_30 = new_a1_a0**30
-    new_a2_a1_20 = new_a2_a1**20 
-    new_a1_a0_10 = new_a1_a0**10
+    if m1_mz !=0:
+        m1_m0 = m1_mz - m0_mz
+    else:    
+        m1_m0 = 1.002
+    m1_m0_10 = m1_m0**10
+
+    b2= dict_features['mz_b2']
+    b1= dict_features['mz_b1']
+    if b2 !=0:
+        b2_b1 = b2 - b1
+    else:
+        b2_b1 = 1.002
+    b2_b1_10 = b2_b1**10
 
     #以字典的形式返回
-    return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
-            'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
-            'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
-            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10,'new_a2_a1_15':new_a2_a1_15,'new_a1_a0_30':new_a1_a0_30,\
-                'new_a2_a1_20':new_a2_a1_20,'new_a1_a0':new_a1_a0,'new_a1_a0_10':new_a1_a0_10}
+    return {'m0_mz':m0_mz,'m1_mz':m1_mz,'m2_mz':m2_mz,'m3_mz':m3_mz,
+            'm0_ints':m0_ints,'m1_ints':m1_ints,'m2_ints':m2_ints,'m3_ints':m3_ints,
+            'm2_m1':m2_m1,'m2_m0':m2_m0,
+            'm2_m0_10':m2_m0_10,'m2_m1_10':m2_m1_10,'b2_b1':b2_b1,'b2_b1_10':b2_b1_10,'m1_m0':m1_m0,'m1_m0_10':m1_m0_10}
 
 
 #误差范围也需要同步传递
@@ -225,69 +229,58 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     以最高峰为基准，获取同位素峰的mz和intensity;
 
     """
-    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
-    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
-    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
-    mz_a0,ints_a0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
-    mz_a1,ints_a1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
-    mz_a2,ints_a2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
-    mz_a3,ints_a3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
+    mz_b_3,ints_b_3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
+    mz_b_2,ints_b_2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
+    mz_b_1,ints_b_1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
+    mz_b0,ints_b0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
+    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
+    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
+    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
 
-    ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
-    ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
-    mz_b3,mz_b2,mz_b1,mz_a0,mz_a1,mz_a2,mz_a3 = mz_b3*charge,mz_b2*charge,mz_b1*charge,mz_a0*charge,mz_a1*charge,mz_a2*charge,mz_a3*charge
+    ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = ints_b_3/ints_b0,\
+    ints_b_2/ints_b0,ints_b_1/ints_b0,ints_b0/ints_b0,ints_b1/ints_b0,ints_b2/ints_b0,ints_b3/ints_b0
     
     # 根据base数据统计结果去除掉低强度信号，防止背景信号影响
-    # min_int_b3: 0.000217286018714 min_int_b1: 0.001998024679028 min_int_b2: 0.0446544604098983 
+    # min_int_b_1: 0.001998024679028； min_int_b_2: 0.0446544604098983；min_int_b_3: 0.000217286018714 
     # min_int_a1: 0.0218262955587414 min_int_a2: 0.0001238175919807 min_int_a3: 1.244083605286354e-06
-
-    # 根据base数据中含卤素化合物的统计结果去除掉低强度信号，防止背景信号影响
-    # min_int_b3: 0.004641895871693 min_int_b1: 0.0075301904935026 min_int_b2: 0.0510192731491299 
-    # min_int_a1: 0.0219387819677692 min_int_a2: 0.0265888647368106 min_int_a3: 0.000947965881822
-
-    if ints_b1 < 0.001:
+    if ints_b_1 < 0.001:
+        mz_b_1 = 0
+        ints_b_1 = 0
+        mz_b_2 = 0
+        ints_b_2 = 0
+        mz_b_3 = 0
+        ints_b_3 = 0
+    else:
+        if ints_b_2 < 0.04:
+            mz_b_2 = 0
+            ints_b_2 = 0
+            mz_b_3 = 0
+            ints_b_3 = 0
+        else:
+            if ints_b_3 < 0.0002:
+                mz_b_3 = 0
+                ints_b_3 = 0
+    # 根据b2判断b1是否为杂信号
+    # 根据全部base统计b2为0时b1最小值为0.202336
+    if ints_b_2 ==0:
+        if ints_b_1 < 0.19:
+            mz_b_1 = 0
+            ints_b_1 = 0
+            mz_b_2 = 0
+            ints_b_2 = 0
+            mz_b_3 = 0
+            ints_b_3 = 0
+    # 根据base数据统计结果，a1最小值为0.0218
+    if ints_b1 < 0.02:
         mz_b1 = 0
         ints_b1 = 0
         mz_b2 = 0
         ints_b2 = 0
         mz_b3 = 0
         ints_b3 = 0
-    else:
-        if ints_b2 < 0.04:
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-        else:
-            if ints_b3 < 0.0002:
-                mz_b3 = 0
-                ints_b3 = 0
-    # 根据b2判断b1是否为杂信号
-    # 根据卤化物统计b2为0b1最小为0.223073，根据全部base统计b2为0时b1最小值为0.202336
-    if ints_b2 ==0:
-        if ints_b1 < 0.15:
-            mz_b1 = 0
-            ints_b1 = 0
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
     
-    if ints_a1 < 0.02:
-        mz_a1 = 0
-        ints_a1 = 0
-        mz_a2 = 0
-        ints_a2 = 0
-        mz_a3 = 0
-        ints_a3 = 0
-    if mz_a2!=0 and mz_a1!=0:
-        a2_a1 = mz_a2-mz_a1
-    else:
-        a2_a1 = 1.002
-    a2_a1_10 = a2_a1**10
-
     #以字典的形式返回
-    return {'a2_a1':a2_a1,'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3,'a2_a1_10':a2_a1_10}
+    return {'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3}
 
 def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
     """
@@ -557,83 +550,124 @@ def add_predict(df,model_path,features_list):
 
     return df
 
+def transfer_style_csv(file_path):
+    df = pd.read_csv(file_path)
+    df_full = pd.DataFrame()
+    for i in range(len(df)):
+        df_tem ={}
+        ints = df['isotope_ints_mean'][i].replace('[', '').replace(']', '').split(' ')
+        ints = [float(i) for i in ints]
+        ints = np.array(ints)
+        df_tem['ints_b_3'],df_tem['ints_b_2'],df_tem['ints_b_1'],df_tem['ints_b0'],df_tem['ints_b1'],df_tem['ints_b2'],df_tem['ints_b3'] = ints[0],ints[1],ints[2],ints[3],ints[4],ints[5],ints[6]
+        # print(ints_b_3,ints_b_2,ints_b_1,ints_a_0,ints_a_1,ints_a_2,ints_a_3)
+
+        mz = df['isotope_mz_mean'][i].replace('[', '').replace(']', '').split(' ')
+        mz = [float(i) for i in mz]
+        mz = np.array(mz)
+
+        charge = get_charge(mz,ints,mz[3])
+        df_tem['mz_b_3'],df_tem['mz_b_2'],df_tem['mz_b_1'],df_tem['mz_b0'],df_tem['mz_b1'],df_tem['mz_b2'],df_tem['mz_b3'] = mz[0]*charge,mz[1]*charge,mz[2]*charge,mz[3]*charge,mz[4]*charge,mz[5]*charge,mz[6]*charge
+        
+        # df_tem_ = df_tem.copy()
+        df_new = mass_spectrum_calc_2(df_tem)
+        #update df 
+        df_tem.update(df_new)
+        df_full = pd.concat([df_full,pd.Series(df_tem)],axis=1)
+    df_full = df_full.T
+    #横向合并df和df_full
+    df_full = df_full.reset_index(drop=True)
+    df = df.reset_index(drop=True)
+    df_full = pd.concat([df, df_full], axis=1)
+        
+    return      df_full 
+
+
 if __name__ == '__main__':
     
+    file = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\test_mzml_prediction\GrisgenomycinA_04_halo_evaluation.csv'
+
+    df = transfer_style_csv(file)
+
     feature_list = [
-        "ints_b3",
-        "ints_b2",
+        "ints_b_3",
+        "ints_b_2",
+        "ints_b_1",
+        "ints_b0",
         "ints_b1",
-        "ints_a0",
-        "ints_a1",
-        "ints_a2",
-        "ints_a3",
-        "new_a2_a1",
-        "new_a1_a0",
-        "a2_a1",
+        "ints_b2",
+        "ints_b3",
+        "m2_m1",
+        "m1_m0",
+        "b2_b1",
     ]
-    # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main10\trained_models\pick_halo_ann.h5'
     model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\trained_models\pick_halo_ann.h5'
-    # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\picked_models\pick_halo_ann_test1.h5'
 
-    # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
-    # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
+    df = add_predict(df,model,feature_list)
+    df.to_csv(file[:-4]+'_features.csv',index=False)
+    print(df)
 
-    # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\massbank'
-    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf'
+    # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\trained_models\pick_halo_ann.h5'
+    # # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\picked_models\pick_halo_ann_test1.h5'
+
+    # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
+    # # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
+
+    # # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\massbank'
+    # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf'
     
-    files = os.listdir(path)
-    for file in files:
-        f = os.path.join(path,file)
-        # 以mgf结尾
-        if not f.endswith('.mgf'):
-            continue
-        print(file)
-        a= mgf_pred(f)
-        # mgf_, formula = a.get_halo_spectrum()
-        # mgf.write(mgf_,f[:-4]+'_halo.mgf')
-        # print(formula)
-        # print(len(formula))
+    # files = os.listdir(path)
+    # for file in files:
+    #     f = os.path.join(path,file)
+    #     # 以mgf结尾
+    #     if not f.endswith('.mgf'):
+    #         continue
+    #     print(file)
+    #     a= mgf_pred(f)
+    #     # mgf_, formula = a.get_halo_spectrum()
+    #     # mgf.write(mgf_,f[:-4]+'_halo.mgf')
+    #     # print(formula)
+    #     # print(len(formula))
 
-        df,mgf_extracted,mgf_patterns,ts=a.get_new()
-        df = add_predict(df,model,feature_list)
-        df.to_csv(f[:-4]+'_features.csv',index=False)
-        # mgf.write(mgf_extracted,f[:-4]+'_extracted.mgf')
-        # mgf.write(mgf_patterns,f[:-4]+'_patterns.mgf')
+    #     df,mgf_extracted,mgf_patterns,ts=a.get_new()
+    #     df = add_predict(df,model,feature_list)
+    #     df.to_csv(f[:-4]+'_features.csv',index=False)
+    #     # mgf.write(mgf_extracted,f[:-4]+'_extracted.mgf')
+    #     # mgf.write(mgf_patterns,f[:-4]+'_patterns.mgf')
         
-        # print(df)
-        #遍历整个df
-        n = 0
-        tn=0
-        wrong_formula = []
-        mgf_patterns_right =[]
-        mgf_extracted_wrong = []
-        for i in range(len(df)):
-            t = df['true_class'].tolist()[i]
-            p = df['class_pred'].tolist()[i]
-            # print(t,p)
-            if t != p:
-                wrong_formula.append(df['formula'].tolist()[i])
-                #打印这一行
-                # print(df.iloc[i, :]     .T)
-                print(t,p)
-                n+=1
+    #     # print(df)
+    #     #遍历整个df
+    #     n = 0
+    #     tn=0
+    #     wrong_formula = []
+    #     mgf_patterns_right =[]
+    #     mgf_extracted_wrong = []
+    #     for i in range(len(df)):
+    #         t = df['true_class'].tolist()[i]
+    #         p = df['class_pred'].tolist()[i]
+    #         # print(t,p)
+    #         if t != p:
+    #             wrong_formula.append(df['formula'].tolist()[i])
+    #             #打印这一行
+    #             # print(df.iloc[i, :]     .T)
+    #             print(t,p)
+    #             n+=1
           
-            if t ==0:
-                tn+=1
+    #         if t ==0:
+    #             tn+=1
 
-        # for s in mgf_patterns:
-        #     if s['params']['ch$formula'] not in wrong_formula:
-        #         mgf_patterns_right.append(s)
-        # for sp in mgf_extracted:
-        #     if sp['params']['ch$formula'] in wrong_formula:
-        #         mgf_extracted_wrong.append(sp)
-                # print(sp)
-        print('----------------')
+    #     # for s in mgf_patterns:
+    #     #     if s['params']['ch$formula'] not in wrong_formula:
+    #     #         mgf_patterns_right.append(s)
+    #     # for sp in mgf_extracted:
+    #     #     if sp['params']['ch$formula'] in wrong_formula:
+    #     #         mgf_extracted_wrong.append(sp)
+    #             # print(sp)
+    #     print('----------------')
         
-        # mgf.write(mgf_patterns_right,f[:-4]+'_patterns_right.mgf')
-        # mgf.write(mgf_extracted_wrong,f[:-4]+'_extracted_wrong.mgf')
+    #     # mgf.write(mgf_patterns_right,f[:-4]+'_patterns_right.mgf')
+    #     # mgf.write(mgf_extracted_wrong,f[:-4]+'_extracted_wrong.mgf')
         
-        print('total spectra: ',ts,'total: ', len(df), '; wrong', n,'multi_halo: ',tn)
+    #     print('total spectra: ',ts,'total: ', len(df), '; wrong', n,'multi_halo: ',tn)
         
-        # print(f,'done')
+    #     # print(f,'done')
 

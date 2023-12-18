@@ -90,14 +90,15 @@ def find_isotopologues(df1,mzml_data,mzml_dict):
             target_mz = df1['mz_list'][i][j]
             dict_base = {'scan':scan_id,'RT':rt,'id_roi':target_roi,'target_mz':target_mz}
             try:
-                dict_mz_max = get_mz_max(mz,intensity,target_mz)#需要修正误差范围
-                if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2']:
+                dict_mz_max = get_mz_max(mz,intensity,target_mz)  #需要修正误差范围
+                if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >=10000:  # 10000这个参数应设置为可调参数，需要在parameter中设置(强度太低的峰同位素识别不准 )
                     charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
                     dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
                 else:
                     #charge为0，a0,a1,a2,a3,b1,b2均为0
                     charge = 0
-                    dict_isotoplogues = {'mz_b3':0,'ints_b_3':0,'mz_b_2':0,'ints_b_2':0,'mz_b_1':0,'ints_b_1':0,'mz_b0':0,'ints_b0':0,'mz_b1':0,'ints_b1':0,'mz_b2':0,'ints_b2':0,'mz_b3':0,'ints_b3':0}
+                    dict_isotoplogues = {'mz_b3':0,'ints_b_3':0,'mz_b_2':0,'ints_b_2':0,'mz_b_1':0,'ints_b_1':0,'mz_b0':0,'ints_b0':0,'mz_b1':0,'ints_b1':0,'mz_b2':0,'ints_b2':0,'mz_b3':0,'ints_b3':0,
+                                         'ints_b_3_raw':0,'ints_b_2_raw':0,'ints_b_1_raw':0,'ints_b0_raw':0,'ints_b1_raw':0,'ints_b2_raw':0,'ints_b3_raw':0}
   
                 dict_new = mass_spectrum_calc_2(dict_isotoplogues)
                 if charge != 0:
@@ -114,6 +115,54 @@ def find_isotopologues(df1,mzml_data,mzml_dict):
     # df.to_csv('iso_0.csv')
     return df
 
+def correct_isotopic_peaks_base(arr1, arr2, arr3):
+    """Perform a re-calibration of isotopic peaks according to the Region of Interest (ROI). If any of the isotopic peaks b_3, b_2, or 
+    b_1 within a group inside the ROI has an intensity of 0, indicating no detection, then the intensity and mass-to-charge ratio (mz) 
+    at the corresponding position in all groups of isotopic peaks within that ROI will be set to 0. This implies that if any of these 
+    specific isotopic peaks are not detected, all corresponding positions in the isotopic groups within that ROI are treated as not detected as well."""
+
+    for i in range(3):
+        if 0 in arr1[:, i]:
+            arr1[:, i] = 0
+            arr2[:, i] = 0
+            arr3[:, i] = 0
+    return arr1, arr2, arr3
+
+def correct_isotopic_peaks(df):
+
+    '''Re-calibrate the isotopic peaks based on the ROI. If b_3, b_2, or b_1 in a group within the ROI has an intensity of 0, 
+    then the intensity and mz of the same position in all groups of isotopic peaks in that ROI will be set to 0.'''
+
+    df_cor = pd.DataFrame()
+
+    # 去掉df中的列m0_mz	m1_mz	m2_mz	m3_mz	m0_ints	m1_ints	m2_ints	m3_ints	m2_m1	m2_m0	m2_m0_10	m2_m1_10	b2_b1	b2_b1_10	m1_m0	m1_m0_10
+    df = df.drop(['m0_mz','m1_mz','m2_mz','m3_mz','m0_ints','m1_ints','m2_ints','m3_ints','m2_m1','m2_m0','m2_m0_10','m2_m1_10','b2_b1','b2_b1_10','m1_m0','m1_m0_10'],axis=1)
+    #循环self.df_features中的每一行，将target_roi相同的scan，class_pred分别整合到一个list中
+    #获取self.df_features中的target_roi列的唯一值
+    target_roi_list = df['id_roi'].unique()
+    for id in target_roi_list:
+        #获取target_roi为id的行
+        df_ = df[df['id_roi']==id].copy()
+        #roi中每个scan中提取的一组同位素峰的mz
+        isotope_mz = df_[['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3']].values
+        #roi中每个scan中提取的一组同位素峰的intensity
+        isotope_ints = df_[['ints_b_3','ints_b_2','ints_b_1','ints_b0','ints_b1','ints_b2','ints_b3']].values
+        isotope_ints_raw = df_[['ints_b_3_raw','ints_b_2_raw','ints_b_1_raw','ints_b0_raw','ints_b1_raw','ints_b2_raw','ints_b3_raw']].values
+
+        isotope_ints,isotope_ints_raw,isotope_mz = correct_isotopic_peaks_base(isotope_ints,isotope_ints_raw,isotope_mz)
+        
+        #还原
+        df_.loc[:, ['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3']] = isotope_mz
+        df_.loc[:, ['ints_b_3','ints_b_2','ints_b_1','ints_b0','ints_b1','ints_b2','ints_b3']] = isotope_ints
+        df_.loc[:, ['ints_b_3_raw','ints_b_2_raw','ints_b_1_raw','ints_b0_raw','ints_b1_raw','ints_b2_raw','ints_b3_raw']] = isotope_ints_raw
+        df_cor = pd.concat([df_cor,df_],axis=0)
+    df_cor = df_cor.reset_index(drop=True)
+    #利用mass_spectrum_calc_2对df_cor中的数据进行校正
+    df_new = df_cor.apply(mass_spectrum_calc_2,axis=1)
+    df_new = pd.DataFrame(df_new.tolist())
+    df_cor = pd.concat([df_cor,df_new],axis=1)
+    return df_cor
+    
 def add_predict(df,model_path,features_list):
     
     #加载tf模型
@@ -165,10 +214,11 @@ def halo_evaluation(df):
         isotope_mz = df_[['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3']].values
         #roi中每个scan中提取的一组同位素峰的intensity
         isotope_ints = df_[['ints_b_3','ints_b_2','ints_b_1','ints_b0','ints_b1','ints_b2','ints_b3']].values
+        isotope_ints_raw = df_[['ints_b_3_raw','ints_b_2_raw','ints_b_1_raw','ints_b0_raw','ints_b1_raw','ints_b2_raw','ints_b3_raw']].values
         #roi中每个scan中提取的一组同位素峰对应的mz的平均值
         isotope_mz_mean = isotope_mz.mean(axis=0)
         #roi中每个scan中提取的一组同位素峰对应的峰强度的平均值
-        isotope_ints_mean = isotope_ints.mean(axis=0)
+        isotope_ints_mean = isotope_ints_raw.mean(axis=0)
 
         #将isotope_mz_mean和isotope_ints_mean合并为一个字典
         isotope_mz_mean_dict = dict(zip(['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3'],isotope_mz_mean))
@@ -178,9 +228,9 @@ def halo_evaluation(df):
         roi_new_features = mass_spectrum_calc_2(isotope_mz_mean_dict)
 
         #roi中每个scan中提取的一组同位素峰对应的mz的总和
-        isotope_mz_total = isotope_mz.sum(axis=1)
+        # isotope_mz_total = isotope_mz.sum(axis=1)
         #roi中每个scan中提取的一组同位素峰对应的峰强度的总和
-        isotope_ints_total = isotope_ints.sum(axis=1)
+        isotope_ints_total = isotope_ints_raw.sum(axis=1)
         
 
         halo_class,halo_score,halo_sub_class,halo_sub_score = roi_halo_evaluation(halo_class_list)
@@ -193,7 +243,7 @@ def halo_evaluation(df):
 
         #添加到df_evaluation中的新行
         df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'precursor_ints_sum':precursor_ints_sum,'RT_left':rt_left,'RT_right':rt_right,'counter_list':counter_list,'halo_class_list':halo_class_list,'halo_class':halo_class,'halo_score':halo_score,'halo_sub_class':halo_sub_class,'halo_sub_score':halo_sub_score,
-                                                             'MS1_precursor':MS1_precursor,'isotope_mz':isotope_mz,'isotope_ints':isotope_ints,'isotope_mz_mean':isotope_mz_mean,'isotope_ints_mean':isotope_ints_mean,'isotope_mz_total':isotope_mz_total,'isotope_ints_total':isotope_ints_total,
+                                                             'MS1_precursor':MS1_precursor,'isotope_mz':isotope_mz,'isotope_ints':isotope_ints,'isotope_ints_raw':isotope_ints_raw,'isotope_mz_mean':isotope_mz_mean,'isotope_ints_mean':isotope_ints_mean,'isotope_ints_total':isotope_ints_total,
                                                                 'roi_new_features':roi_new_features})], axis=1)
     df_evaluation = df_evaluation.T
     # df_evaluation = df_evaluation.reset_index(drop=True)

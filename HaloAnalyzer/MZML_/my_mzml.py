@@ -54,8 +54,8 @@ class my_mzml:
     @timeit
     def rois_evaluation(self):
         """对ROI进行halo评估"""
+        df = df[df['counter_list_x'].map(lambda x: len(x)) >= self.mzml_dict['min_element_sum']]
         self.halo_evaluation = halo_evaluation(self.df_isotopologues.copy())
-
     @timeit
     def save_result(self):
         """保存结果"""

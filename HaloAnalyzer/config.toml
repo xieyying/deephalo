@@ -6,7 +6,26 @@ paths = [
        [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
         "mol_formula",
     ],
-
+   [
+        "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+        "MS-Ready_Mol_Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+        "chemical_formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+        "Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+        "formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+        "CHEMICAL_DATA",
+    ],
 
     ]
 #训练集中所包含的元素种类
@@ -17,7 +36,7 @@ mz_end = 3000
 #基于真是数据库生成的噪音数据量倍率
 repeat_for_noise = 1
 #模拟hydro所用的rate
-rate_for_hydro = [0.33,0.66,0.99]
+rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,1.99,2.3,4,5]
 
 #模型训练参数
 [model_data]
@@ -30,25 +49,25 @@ feature_list = [
     "ints_b1",
     "ints_b2",
     "ints_b3",
-    "m2_m1_10",
-    "m1_m0_10",
-    'b2_b1_10',
+    "m2_m1",
+    "m1_m0",
+    "b2_b1",
 ]
 #训练使用的数据集
-use_noise_data = "False"
-use_add_fe_data = "False"
-use_add_b_data =  "False"
-use_add_se_data =  "False"
+use_noise_data = "True"
+use_add_fe_data = "True"
+use_add_b_data =  "True"
+use_add_se_data =  "True"
 use_add_s_data  = "False"
-use_hydroisomer_data = "False"
+use_hydroisomer_data = "True"
 
 #模型训练参数
 [model_construct]
-train_batch = 256
-val_batch = 256
-classes = 9
-epochs = 10
-learning_rate = 0.001
+train_batch = 1024
+val_batch = 1024
+classes = 8
+epochs = 15
+learning_rate = 0.0005
 
 #模型训练权重
 [model_construct_class_weight.classes_weight]
@@ -59,8 +78,7 @@ learning_rate = 0.001
 4 = 2.4
 5 = 2.4
 6 = 0.58
-7 = 0.83
-8 = 0.59
+7 = 0.2
 
 #使用asari进行峰识别的参数
 [asari]

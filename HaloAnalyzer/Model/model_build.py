@@ -84,7 +84,7 @@ def con_model(input_shape,  output_shape):
     y = layers.Dense(128, activation="relu")(input2)
     share = layers.concatenate([x, y])  
     share = layers.Dense(128, activation="relu")(share)
-    share = layers.Dropout(.2)(share)
+    share = layers.Dropout(.3)(share)
     share = layers.Dense(64, activation="relu")(share)
     share = layers.Dense(32, activation="relu")(share)
     share = layers.Dense(16, activation="relu")(share)

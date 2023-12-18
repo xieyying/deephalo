@@ -37,7 +37,7 @@ def create_dataset_copy(features,paths,batch_size):
         df_ = pd.read_csv(path)
         df = pd.concat([df,df_],axis=0)
 
-    train_,val_ = train_test_split(df,test_size=0.2,random_state=6)
+    train_,val_ = train_test_split(df,test_size=0.05,random_state=6)
     train = train_[features]
     val = val_[features]
 

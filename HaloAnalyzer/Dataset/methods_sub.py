@@ -170,7 +170,7 @@ def mass_spectrum_calc_2(dict_features) -> dict:
     return {'m0_mz':m0_mz,'m1_mz':m1_mz,'m2_mz':m2_mz,'m3_mz':m3_mz,
             'm0_ints':m0_ints,'m1_ints':m1_ints,'m2_ints':m2_ints,'m3_ints':m3_ints,
             'm2_m1':m2_m1,'m2_m0':m2_m0,
-            'm2_m0_10':m2_m0_10,'m2_m1_10':m2_m1_10,'b2_b1':b2_b1,'b2_b1_10':b2_b1_10,'m1_b0':m1_m0,'m1_m0_10':m1_m0_10}
+            'm2_m0_10':m2_m0_10,'m2_m1_10':m2_m1_10,'b2_b1':b2_b1,'b2_b1_10':b2_b1_10,'m1_m0':m1_m0,'m1_m0_10':m1_m0_10}
 
 def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
     """get the isotopic distribution of the formula with hydrogen isotope"""
@@ -210,3 +210,83 @@ def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
                 spectrum[massnumber][2] = value[1]*norm
     # print(spectrum)
     return Spectrum(spectrum)
+
+if __name__ =='__main__':
+
+    import os
+    import pandas as pd
+    
+    # #添加噪音
+    # df_new =pd.DataFrame()
+    
+    # key_mz=['m2_m1','m1_m0','b2_b1']
+    # key_ints = ['ints_b_3', 'ints_b_2','ints_b_1','ints_b0',"ints_b1",'ints_b2','ints_b3']
+    # path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset'
+    # path2 = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise'
+    # files = os.listdir(path)
+    # for f in files:
+    #     if f.endswith('.csv'):
+    #         f_path = os.path.join(path,f)
+    #         df = pd.read_csv(f_path)
+            
+    #         for i in range(3):
+    #             df_ =pd.DataFrame()
+    #             m2_m1 = df['m2_m1']
+    #             m1_m0 = df ['m1_m0']
+    #             b2_b1 = df['b2_b1']
+
+    #             ints_b_3 = df['ints_b_3']
+    #             ints_b_2 = df['ints_b_2']
+    #             ints_b_1 = df['ints_b_1']
+    #             ints_b0 = df['ints_b0']
+    #             ints_b1 = df['ints_b1']
+    #             ints_b2 = df['ints_b2']
+    #             ints_b3 = df['ints_b3']
+                
+
+    #             df_['m2_m1'] = adding_noise_to_mass(m2_m1, 0.003)
+    #             df_['m1_m0'] = adding_noise_to_mass(m1_m0,0.003)
+    #             df_['b2_b1'] = adding_noise_to_mass(b2_b1,0.003)
+
+    #             df_['m2_m1_10'] = df['m2_m1']**10
+    #             df_['m1_m0_10'] = df['m1_m0']**10
+    #             df_['b2_b1'] = df['b2_b1']**10
+
+    #             df_["ints_b_3"] = adding_noise_to_intensity(ints_b_3, 0.005,0.005)
+    #             df_["ints_b_2"] = adding_noise_to_intensity(ints_b_2, 0.005,0.005)
+    #             df_["ints_b_1"] = adding_noise_to_intensity(ints_b_1, 0.005,0.005)
+    #             df_["ints_b0"] = adding_noise_to_intensity(ints_b0, 0.005,0.005)
+    #             df_["ints_b1"] = adding_noise_to_intensity(ints_b1, 0.005,0.005)
+    #             df_["ints_b2"] = adding_noise_to_intensity(ints_b2, 0.005,0.005)
+    #             df_["ints_b3"] = adding_noise_to_intensity(ints_b3, 0.005,0.005)
+    #             df_['group'] = df['group']
+
+
+    #             df_new  = pd.concat([df_new,df_],ignore_index = True)
+    # df_new.to_csv(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise.csv')
+
+
+                
+    path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise\test'
+    files = os.listdir(path)
+    df_ = pd.DataFrame()
+    for f in files:
+        
+        if f.endswith('.csv'):
+            f_path = os.path.join(path,f)
+            print(f_path)
+            df = pd.read_csv(f_path)
+            df_ = pd.concat([df_,df],ignore_index=True)
+    df_.to_csv(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise.csv',index=False)
+        
+
+
+
+
+
+
+
+
+
+
+    # (Intensity,sigma_IR=0.05, sigma_IA=0.00005):

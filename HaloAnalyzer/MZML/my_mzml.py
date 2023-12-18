@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import tensorflow as tf
 from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
-                    add_predict,add_is_halo_isotopes,halo_evaluation
+                    add_predict,add_is_halo_isotopes,halo_evaluation,correct_isotopic_peaks
 from pyteomics import mzml ,mgf
 from ..model_test import timeit
 class my_mzml:
@@ -20,6 +20,7 @@ class my_mzml:
         self.save_isotopolgues = r'./test_mzml_prediction/'+  para['path'].split('.mzML')[0].split('\\')[-1] + '_isotopolgues.csv'
         self.save_halo_evaluation = r'./test_mzml_prediction/' +  para['path'].split('.mzML')[0].split('\\')[-1] + '_halo_evaluation.csv'
         self.save_mgf = r'./test_mzml_prediction/' +  para['path'].split('.mzML')[0].split('\\')[-1] +'_roi_ms2.mgf'
+
 
         
     #加载数据
@@ -44,6 +45,10 @@ class my_mzml:
         """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
         df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
+        # correct df_isotopologues
+        df_isotopologues = correct_isotopic_peaks(df_isotopologues)
+        #保存df_isotopologues
+        df_isotopologues.to_csv(self.save_isotopolgues,index=False)
         #添加is_halo_isotopes判断结果
         df_isotopologues = add_is_halo_isotopes(df_isotopologues)
         #保存is_halo_isotopes 为1的isotopologues到self.df_isotopologues
@@ -55,7 +60,9 @@ class my_mzml:
     @timeit
     def rois_evaluation(self):
         """对ROI进行halo评估"""
-        self.halo_evaluation = halo_evaluation(self.df_isotopologues.copy())
+        df = self.df_isotopologues.copy()
+        # df = df[df['counter_list_x'].map(lambda x: len(x)) >= self.mzml_dict['min_element_sum']]
+        self.halo_evaluation = halo_evaluation(df)
 
     @timeit
     def save_result(self):

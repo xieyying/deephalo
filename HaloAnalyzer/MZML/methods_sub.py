@@ -105,12 +105,22 @@ class my_data:
         new_data = []
         if self.source == 'mzML':
             for s in self.data:
-                if s['ms level'] in [1,2]:
-                    new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
+                try:
+                    if s['ms level'] in [1,2]:
+                        new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
+                    else:
+                        continue
+                except:
+                    continue
         elif self.source == 'mzXML':
             for s in self.data:
-                if s['msLevel'] in [1,2]:
-                    new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
+                try:
+                    if s['msLevel'] in [1,2]:
+                        new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
+                    else:
+                        continue
+                except:
+                    continue
         self.data = pd.DataFrame(new_data)
     @timeit
     def get_by_level(self,level):
@@ -169,12 +179,14 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
     MS1_MS2_connected['MS1'] = []
     MS1_MS2_connected['MS2'] = []
     MS1_MS2_connected['precursor'] = []
+    MS1_MS2_connected['precursor_ints'] = []
     MS1_MS2_connected['rt'] = []
     MS1_MS2_connected['MS1_counter'] = []
     MS1_MS1_index = []
     MS1_rt = []
     MS1_counter_list = []
     MS1_counter=-1
+    
     
     for s in spectra.iterrows():
         try:
@@ -195,6 +207,7 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
                 mz_list1 = mz_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
                 ints_list1 = ints_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
                 precursor_mz = mz_list1[np.argmax(ints_list1)]
+                precusor_ints = ints_list1[np.argmax(ints_list1)]
 
                 MS1_MS2_connected['MS1_counter'].append(MS1_counter_list[-1])
                 MS1_MS2_connected['rt'].append(MS1_rt[-1])
@@ -202,6 +215,7 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
 
                 MS1_MS2_connected['MS2'].append(s[1]['scan'])
                 MS1_MS2_connected['precursor'].append(precursor_mz)
+                MS1_MS2_connected['precursor_ints'].append(precusor_ints)
             else:
                 continue
         except:
@@ -209,6 +223,8 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
 
     # transfer MS1_MS2_connected to a dataframe
     MS1_MS2_connected = pd.DataFrame(MS1_MS2_connected)
+
+    MS1_MS2_connected = MS1_MS2_connected[MS1_MS2_connected['precursor_ints']>=0000]
 
     return MS1_MS2_connected
 
@@ -331,6 +347,8 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
     mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
 
+    ints_b_3_raw,ints_b_2_raw,ints_b_1_raw,ints_b0_raw,ints_b1_raw,ints_b2_raw,ints_b3_raw = ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3
+
     ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = ints_b_3/ints_b0,\
     ints_b_2/ints_b0,ints_b_1/ints_b0,ints_b0/ints_b0,ints_b1/ints_b0,ints_b2/ints_b0,ints_b3/ints_b0
     
@@ -374,7 +392,9 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
         ints_b3 = 0
     
     #以字典的形式返回
-    return {'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3}
+    return {'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,
+    'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3,'ints_b_3_raw':ints_b_3_raw,
+    'ints_b_2_raw':ints_b_2_raw,'ints_b_1_raw':ints_b_1_raw,'ints_b0_raw':ints_b0_raw,'ints_b1_raw':ints_b1_raw,'ints_b2_raw':ints_b2_raw,'ints_b3_raw':ints_b3_raw}
 
 def is_halo_isotopes(b_3,b_2,b_1,b0,b1,b2,b3):
     """

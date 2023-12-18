@@ -11,12 +11,15 @@ def formula_clf(formula_dict,type=None) :
     """
 
     #根据分子式，判断是否可训练
-    if formula_dict.get('H') == None or formula_dict.get('C') == None:
+    if formula_dict.get('R') != None:
+        trainable = 'no'
+    elif formula_dict.get('H') == None or formula_dict.get('C') == None:
         trainable = 'no'
     elif formula_dict.get('H') < 3 or formula_dict.get('C') < 1:
         trainable = 'no'
     elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
         trainable = 'no'
+
     else:
         trainable = 'yes'
 

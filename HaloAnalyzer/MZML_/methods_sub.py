@@ -215,9 +215,12 @@ def fliter_mzml_data(ms1_spectra,min_intensity):
     rt = ms1_spectra['rt']
     mz = ms1_spectra['m/z array']
     intensity = ms1_spectra['intensity array']
+    base = intensity.min()
     #只保留intensity大于min_intensity的峰
     mz = mz[intensity>min_intensity]
     intensity = intensity[intensity>min_intensity]
+    #减去基线
+    intensity = intensity - base
     return rt,mz,intensity
 
 #误差范围也需要同步传递
