@@ -10,7 +10,7 @@ class ROIs:
         self.rois = []
         self.max_roi = 0
     
-    def update(self,update_dict,roi_precusor_error = 20, gap_scans = 3):
+    def update(self,update_dict,roi_precusor_error = 20, gap_scans = 8):
 
         #如果self.rois为空，则将update_dict['precursor']作为一个新的roi
         if self.rois == []:
@@ -96,14 +96,14 @@ class my_data:
         self.path = path
         self.source = path.split('.')[-1]
     def read(self):
-        if self.source == 'mzML':
+        if self.source in ['mzML','mzml'] :
             self.data = mzml.read(self.path,use_index=True,read_schema=True)
-        elif self.source == 'mzXML':
+        elif self.source ==['mzXML','mzxml'] :
             self.data = mzxml.read(self.path,use_index=True,read_schema=True)
     @timeit
     def create(self):
         new_data = []
-        if self.source == 'mzML':
+        if self.source in ['mzML','mzml']:
             for s in self.data:
                 try:
                     if s['ms level'] in [1,2]:
@@ -112,7 +112,7 @@ class my_data:
                         continue
                 except:
                     continue
-        elif self.source == 'mzXML':
+        elif self.source in ['mzXML','mzxml']:
             for s in self.data:
                 try:
                     if s['msLevel'] in [1,2]:
@@ -199,9 +199,9 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
                 MS1_counter_list.append(MS1_counter)
                 
             elif s[1]['ms level'] == 2:
-                if source == 'mzML':
+                if source in ['mzML', 'mzml']:
                     precursor_mz_source = s[1]['precursor']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
-                elif source == 'mzXML':
+                elif source in ['mzXML','mzxml']:
                     precursor_mz_source = s[1]['precursor'][0]['precursorMz']
                 #找到mz中与precursor_mz相差在0.3的所有mz_list中最高的峰
                 mz_list1 = mz_list[np.abs(mz_list-precursor_mz_source)<precursor_error]
@@ -224,7 +224,7 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
     # transfer MS1_MS2_connected to a dataframe
     MS1_MS2_connected = pd.DataFrame(MS1_MS2_connected)
 
-    MS1_MS2_connected = MS1_MS2_connected[MS1_MS2_connected['precursor_ints']>=0000]
+    MS1_MS2_connected = MS1_MS2_connected[MS1_MS2_connected['precursor_ints']>=10000]
 
     return MS1_MS2_connected
 
@@ -334,6 +334,89 @@ def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.02):
         ints = 0
     return mz,ints
 
+def filter_isotopic_peaks(isotope_ints_np_array):
+    """
+    根据base数据统计结果去除掉低强度信号，防止背景信号影响
+    min_int_b_1: 0.001998024679028； min_int_b_2: 0.0446544604098983；min_int_b_3: 0.000217286018714 
+    min_int_b1: 0.0218262955587414 min_int_b2: 0.0001238175919807 min_int_b3: 1.244083605286354e-06
+    下图由AI生成，感觉不太对？？？
+
+            Start
+        |
+        V
+        ints_b_1 < 0.001?
+        |       |
+        | Yes   | No
+        V       V
+        Set ints_b_1, ints_b_2, ints_b_3 to 0   ints_b_2 < 0.04?
+        |       |       |                     |       |
+        |       |       | Yes                 | No    V
+        |       |       V                     ints_b_3 < 0.0002?
+        |       |   Set ints_b_2, ints_b_3 to 0   |       |
+        |       |       |                         | Yes   | No
+        |       |       |                         V       V
+        |       |       |                     Set ints_b_3 to 0   Continue
+        |       |       |
+        |       |       |
+        V       V       V
+        ints_b_2 == 0?
+        |       |
+        | Yes   | No
+        V       V
+        ints_b_1 < 0.19?   Continue
+        |       |
+        | Yes   | No
+        V       V
+        Set ints_b_1, ints_b_2, ints_b_3 to 0   Continue
+        |
+        |
+        V
+        ints_b1 < 0.02?
+        |       |
+        | Yes   | No
+        V       V
+        Set ints_b1, ints_b2, ints_b3 to 0   Continue
+        |
+        |
+        V
+        ints_b2 == 0?
+        |       |
+        | Yes   | No
+        V       V
+        Set ints_b3 to 0   End
+            """
+
+    ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = isotope_ints_np_array
+
+    if ints_b_1 < 0.001:
+        ints_b_1 = 0
+        ints_b_2 = 0
+        ints_b_3 = 0
+    else:
+        if ints_b_2 < 0.04:
+            ints_b_2 = 0
+            ints_b_3 = 0
+        else:
+            if ints_b_3 < 0.0002:
+                ints_b_3 = 0
+    # 根据b2判断b1是否为杂信号
+    # 根据全部base统计b2为0时b1最小值为0.202336
+    if ints_b_2 ==0:
+        if ints_b_1 < 0.19:
+            ints_b_1 = 0
+            ints_b_2 = 0
+            ints_b_3 = 0
+    # 根据base数据统计结果，a1最小值为0.0218
+    if ints_b1 < 0.02:
+        ints_b1 = 0
+        ints_b2 = 0
+        ints_b3 = 0
+    if ints_b2 ==0:
+        ints_b3 = 0
+    isotope_ints_np_array_filter = np.array([ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3])
+
+    return isotope_ints_np_array_filter
+
 def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     """
     以最高峰为基准，获取同位素峰的mz和intensity;
@@ -352,55 +435,27 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = ints_b_3/ints_b0,\
     ints_b_2/ints_b0,ints_b_1/ints_b0,ints_b0/ints_b0,ints_b1/ints_b0,ints_b2/ints_b0,ints_b3/ints_b0
     
-    # 根据base数据统计结果去除掉低强度信号，防止背景信号影响
-    # min_int_b_1: 0.001998024679028； min_int_b_2: 0.0446544604098983；min_int_b_3: 0.000217286018714 
-    # min_int_a1: 0.0218262955587414 min_int_a2: 0.0001238175919807 min_int_a3: 1.244083605286354e-06
-    if ints_b_1 < 0.001:
-        mz_b_1 = 0
-        ints_b_1 = 0
-        mz_b_2 = 0
-        ints_b_2 = 0
-        mz_b_3 = 0
-        ints_b_3 = 0
-    else:
-        if ints_b_2 < 0.04:
-            mz_b_2 = 0
-            ints_b_2 = 0
-            mz_b_3 = 0
-            ints_b_3 = 0
+    ints_array= filter_isotopic_peaks(np.array([ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3]))
+    mz_array = np.array([mz_b_3,mz_b_2,mz_b_1,mz_b0,mz_b1,mz_b2,mz_b3])
+    for i in range(7):
+        if ints_array[i] == 0:
+            mz_array[i] = 0
         else:
-            if ints_b_3 < 0.0002:
-                mz_b_3 = 0
-                ints_b_3 = 0
-    # 根据b2判断b1是否为杂信号
-    # 根据全部base统计b2为0时b1最小值为0.202336
-    if ints_b_2 ==0:
-        if ints_b_1 < 0.19:
-            mz_b_1 = 0
-            ints_b_1 = 0
-            mz_b_2 = 0
-            ints_b_2 = 0
-            mz_b_3 = 0
-            ints_b_3 = 0
-    # 根据base数据统计结果，a1最小值为0.0218
-    if ints_b1 < 0.02:
-        mz_b1 = 0
-        ints_b1 = 0
-        mz_b2 = 0
-        ints_b2 = 0
-        mz_b3 = 0
-        ints_b3 = 0
+            pass
+    mz_b_3,mz_b_2,mz_b_1,mz_b0,mz_b1,mz_b2,mz_b3 = mz_array
+    ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = ints_array
     
     #以字典的形式返回
     return {'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,
     'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3,'ints_b_3_raw':ints_b_3_raw,
-    'ints_b_2_raw':ints_b_2_raw,'ints_b_1_raw':ints_b_1_raw,'ints_b0_raw':ints_b0_raw,'ints_b1_raw':ints_b1_raw,'ints_b2_raw':ints_b2_raw,'ints_b3_raw':ints_b3_raw}
+    'ints_b_2_raw':ints_b_2_raw,'ints_b_1_raw':ints_b_1_raw,'ints_b0_raw':ints_b0_raw,'ints_b1_raw':ints_b1_raw,'ints_b2_raw':ints_b2_raw,'ints_b3_raw':ints_b3_raw,'charge':charge}
 
-def is_halo_isotopes(b_3,b_2,b_1,b0,b1,b2,b3):
+def is_isotopes(b_3,b_2,b_1,b0,b1,b2,b3):
     """
     根据七个同位素峰的强度,判断是否为同位素峰
     判断依据为base数据模拟质谱的统计结果
     """
+    # 根据base1卤化物ints_b1最小为0.0265888647368106
     if b1>0.02:
         if b_3 == 0:
             if b_2 == 0:
@@ -440,49 +495,57 @@ def calculate_zig_zag(I):
     # score = (4-8/N-zigzag)/(4-8/N)*100
     return score
 
-def roi_halo_evaluation(I):
+def roi_scan_based_halo_evaluation(I):
     """
     根据一个ROI中所有scan的分类结果，判断该ROI为halo的概率
     I:list，为一个ROI中所有scan的分类结果
     """
     # Get the common classes in the ROI
     com_class = list(Counter(I).keys())
+    counter = Counter(I)
+    # 统计I中0,1,2所占的比例
+    scan_based_halo_ratio = sum(1 for i in I if i in {0, 1, 2}) / len(I)
 
     # Determine the halo classification for the ROI
     if any(i in com_class for i in [0, 1, 2]):
+        scan_based_halo_class = 'halo'
         if len(com_class) == 1:
-            halo_score = 100
-            halo_sub_score = 100
-            halo_class = 'halo'
-            halo_sub_class = com_class[0]
+            scan_based_halo_score = 100
+            scan_based_halo_sub_score = 100
+            scan_based_halo_sub_class = com_class[0]
         else:
             if {0, 1, 2}.issuperset(set(com_class)):
-                halo_class = 'halo'
-                halo_score = 100
-                halo_sub_class =max(Counter(I).items(), key=lambda x: x[1])[0]
-                halo_sub_score = calculate_zig_zag(I)
+                scan_based_halo_score = 100
+                scan_based_halo_sub_class =max(counter.items(), key=lambda x: x[1])[0]
+                scan_based_halo_sub_class_ratio = counter[scan_based_halo_sub_class] / len(I)
+                scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
             else:
+                
                 I_new = [1 if i in [0,1,2] else 0 for i in I]
-                if I_new.count(1) == I_new.count(0):
-                    max_class = 1
-                else:
-                    max_class = max(Counter(I_new).items(), key=lambda x: x[1])[0]
+                # if I_new.count(1) == I_new.count(0):
+                #     max_class = 1
+                # else:
+                #     max_class = max(Counter(I_new).items(), key=lambda x: x[1])[0]
 
-                halo_class = ['halo' if max_class == 1 else 'non-halo'][0]
-                if halo_class == 'halo':
-                    halo_score = calculate_zig_zag(I_new)
-                else:
-                    halo_class = 'halo'
-                    halo_score = 100-calculate_zig_zag(I_new)
+                # scan_based_halo_class = ['halo' if max_class == 1 else 'non-halo'][0]
+                
+                scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
+                # if scan_based_halo_class == 'halo':
+                #     scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_class_ratio
+                # else:
+                #     scan_based_halo_class = 'halo'
+                #     scan_based_halo_score = calculate_zig_zag(I_new)
 
-                halo_sub_class = "None"
-                halo_sub_score = "None"
+                scan_based_halo_sub_class = "None"
+                scan_based_halo_sub_score = "None"
     else:
-        halo_class = 'non-halo'
-        halo_score = 0
-        halo_sub_class = 'None'
-        halo_sub_score = 'None'
-    return halo_class,halo_score,halo_sub_class,halo_sub_score
+        scan_based_halo_class = 'non-halo'
+        scan_based_halo_score = 0
+        scan_based_halo_sub_class = 'None'
+        scan_based_halo_sub_score = 'None'
+    return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio
+            
+   
 
 if __name__ == "__main__":
     def ms2ms1_linked_ROI_identify(spectra,mzml_dict):

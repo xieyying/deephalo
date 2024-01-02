@@ -86,42 +86,42 @@ def formula_clf(formula_dict,type=None) :
 
 def mass_spectrum_calc_2(dict_features) -> dict:
     """校正质谱数据"""
-    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为new_a0的质谱数据
-    mz_list = [dict_features['mz_b3'],dict_features['mz_b2'],dict_features['mz_b1'],dict_features['mz_a0'],dict_features['mz_a1'],dict_features['mz_a2'],dict_features['mz_a3']]
-    ints_list = [dict_features['ints_b3'],dict_features['ints_b2'],dict_features['ints_b1'],1,dict_features['ints_a1'],dict_features['ints_a2'],dict_features['ints_a3']]
+    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为m0的质谱数据
+    mz_list = [dict_features['mz_b_3'],dict_features['mz_b_2'],dict_features['mz_b_1'],dict_features['mz_b0'],dict_features['mz_b1'],dict_features['mz_b2'],dict_features['mz_b3']]
+    ints_list = [dict_features['ints_b_3'],dict_features['ints_b_2'],dict_features['ints_b_1'],1,dict_features['ints_b1'],dict_features['ints_b2'],dict_features['ints_b3']]
     for i in range(len(ints_list)):
         if ints_list[i] != 0:
             index = i
             break
-    new_a0_mz,new_a1_mz,new_a2_mz,new_a3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
-    new_a0_ints,new_a1_ints,new_a2_ints,new_a3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
+    m0_mz,m1_mz,m2_mz,m3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
+    m0_ints,m1_ints,m2_ints,m3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
     
 
-    if new_a2_mz !=0:
-        new_a2_a1 = new_a2_mz - new_a1_mz
-        new_a2_a0 = new_a2_mz - new_a0_mz
+    if m2_mz !=0:
+        m2_m1 = m2_mz - m1_mz
+        m2_m0 = m2_mz - m0_mz
     else:
-        new_a2_a1 = 1.002
-        new_a2_a0 = 2.002
-    
-    if new_a1_mz != 0:
-        new_a1_a0 = new_a1_mz - new_a0_mz
-    else:
-        new_a1_a0 = 1.002
+        m2_m1 = 1.002
+        m2_m0 = 2.002
 
-    new_a2_a0_10 = (new_a2_a0-1)**10
-    new_a2_a1_10 = new_a2_a1**10
-    new_a2_a1_15 = new_a2_a1**15
-    new_a1_a0_30 = new_a1_a0**30
-    new_a2_a1_20 = new_a2_a1**20 
-    new_a1_a0_10 = new_a1_a0**10
+    if m1_mz !=0:
+        m1_m0 = m1_mz - m0_mz
+    else:    
+        m1_m0 = 1.002
+
+    b2= dict_features['mz_b2']
+    b1= dict_features['mz_b1']
+    if b2 !=0:
+        b2_b1 = b2 - b1
+    else:
+        b2_b1 = 1.002
+    
 
     #以字典的形式返回
-    return {'new_a0_mz':new_a0_mz,'new_a1_mz':new_a1_mz,'new_a2_mz':new_a2_mz,'new_a3_mz':new_a3_mz,
-            'new_a0_ints':new_a0_ints,'new_a1_ints':new_a1_ints,'new_a2_ints':new_a2_ints,'new_a3_ints':new_a3_ints,
-            'new_a2_a1':new_a2_a1,'new_a2_a0':new_a2_a0,
-            'new_a2_a0_10':new_a2_a0_10,'new_a2_a1_10':new_a2_a1_10,'new_a2_a1_15':new_a2_a1_15,'new_a1_a0_30':new_a1_a0_30,\
-                'new_a2_a1_20':new_a2_a1_20,'new_a1_a0':new_a1_a0,'new_a1_a0_10':new_a1_a0_10}
+    return {'m0_mz':m0_mz,'m1_mz':m1_mz,'m2_mz':m2_mz,'m3_mz':m3_mz,
+            'm0_ints':m0_ints,'m1_ints':m1_ints,'m2_ints':m2_ints,'m3_ints':m3_ints,
+            'm2_m1':m2_m1,'m2_m0':m2_m0,
+            'b2_b1':b2_b1,'m1_m0':m1_m0,}
 
 
 #误差范围也需要同步传递
@@ -225,17 +225,17 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     以最高峰为基准，获取同位素峰的mz和intensity;
 
     """
-    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
-    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
-    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
-    mz_a0,ints_a0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
-    mz_a1,ints_a1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
-    mz_a2,ints_a2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
-    mz_a3,ints_a3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
+    mz_b_3,ints_b_3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.993)
+    mz_b_2,ints_b_2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-2.000)
+    mz_b_1,ints_b_1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,-0.998)
+    mz_b0,ints_b0 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,0.000)
+    mz_b1,ints_b1 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,1.001)
+    mz_b2,ints_b2 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,2.002)
+    mz_b3,ints_b3 = get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,3.003)
 
-    ints_b3,ints_b2,ints_b1,ints_a0,ints_a1,ints_a2,ints_a3 = ints_b3/ints_a0,\
-    ints_b2/ints_a0,ints_b1/ints_a0,ints_a0/ints_a0,ints_a1/ints_a0,ints_a2/ints_a0,ints_a3/ints_a0
-    mz_b3,mz_b2,mz_b1,mz_a0,mz_a1,mz_a2,mz_a3 = mz_b3*charge,mz_b2*charge,mz_b1*charge,mz_a0*charge,mz_a1*charge,mz_a2*charge,mz_a3*charge
+    ints_b_3,ints_b_2,ints_b_1,ints_b0,ints_b1,ints_b2,ints_b3 = ints_b_3/ints_b0,\
+    ints_b_2/ints_b0,ints_b_1/ints_b0,ints_b0/ints_b0,ints_b1/ints_b0,ints_b2/ints_b0,ints_b3/ints_b0
+    mz_b_3,mz_b_2,mz_b_1,mz_b0,mz_b1,mz_b2,mz_b3 = mz_b_3*charge,mz_b_2*charge,mz_b_1*charge,mz_b0*charge,mz_b1*charge,mz_b2*charge,mz_b3*charge
     
     # 根据base数据统计结果去除掉低强度信号，防止背景信号影响
     # min_int_b3: 0.000217286018714 min_int_b1: 0.001998024679028 min_int_b2: 0.0446544604098983 
@@ -245,49 +245,49 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     # min_int_b3: 0.004641895871693 min_int_b1: 0.0075301904935026 min_int_b2: 0.0510192731491299 
     # min_int_a1: 0.0219387819677692 min_int_a2: 0.0265888647368106 min_int_a3: 0.000947965881822
 
-    if ints_b1 < 0.001:
+    if ints_b_1 < 0.001:
+        mz_b_1 = 0
+        ints_b_1 = 0
+        mz_b_2 = 0
+        ints_b_2 = 0
+        mz_b_3 = 0
+        ints_b_3 = 0
+    else:
+        if ints_b_2 < 0.04:
+            mz_b_2 = 0
+            ints_b_2 = 0
+            mz_b_3 = 0
+            ints_b_3 = 0
+        else:
+            if ints_b_3 < 0.0002:
+                mz_b_3 = 0
+                ints_b_3 = 0
+    # 根据b2判断b1是否为杂信号
+    # 根据卤化物统计b2为0b1最小为0.223073，根据全部base统计b2为0时b1最小值为0.202336
+    if ints_b_2 ==0:
+        if ints_b_1 < 0.15:
+            mz_b_1 = 0
+            ints_b_1 = 0
+            mz_b_2 = 0
+            ints_b_2 = 0
+            mz_b_3 = 0
+            ints_b_3 = 0
+    
+    if ints_b1 < 0.02:
         mz_b1 = 0
         ints_b1 = 0
         mz_b2 = 0
         ints_b2 = 0
         mz_b3 = 0
         ints_b3 = 0
+    if mz_b2!=0 and mz_b1!=0:
+        b2_b1 = mz_b2-mz_b1
     else:
-        if ints_b2 < 0.04:
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-        else:
-            if ints_b3 < 0.0002:
-                mz_b3 = 0
-                ints_b3 = 0
-    # 根据b2判断b1是否为杂信号
-    # 根据卤化物统计b2为0b1最小为0.223073，根据全部base统计b2为0时b1最小值为0.202336
-    if ints_b2 ==0:
-        if ints_b1 < 0.15:
-            mz_b1 = 0
-            ints_b1 = 0
-            mz_b2 = 0
-            ints_b2 = 0
-            mz_b3 = 0
-            ints_b3 = 0
-    
-    if ints_a1 < 0.02:
-        mz_a1 = 0
-        ints_a1 = 0
-        mz_a2 = 0
-        ints_a2 = 0
-        mz_a3 = 0
-        ints_a3 = 0
-    if mz_a2!=0 and mz_a1!=0:
-        a2_a1 = mz_a2-mz_a1
-    else:
-        a2_a1 = 1.002
-    a2_a1_10 = a2_a1**10
+        b2_b1 = 1.002
+    b2_b1_10 = b2_b1**10
 
     #以字典的形式返回
-    return {'a2_a1':a2_a1,'mz_b3':mz_b3,'ints_b3':ints_b3,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_a0':mz_a0,'ints_a0':ints_a0,'mz_a1':mz_a1,'ints_a1':ints_a1,'mz_a2':mz_a2,'ints_a2':ints_a2,'mz_a3':mz_a3,'ints_a3':ints_a3,'a2_a1_10':a2_a1_10}
+    return {'b2_b1':b2_b1,'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3,'b2_b1_10':b2_b1_10}
 
 def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
     """
@@ -475,11 +475,11 @@ class mgf_pred():
                 #     continue
                 
                 dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
-                is_halo = is_halo_isotopes(dict_isotoplogues['ints_b3'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_a0'],dict_isotoplogues['ints_a1'],dict_isotoplogues['ints_a2'],dict_isotoplogues['ints_a3'])
+                is_halo = is_halo_isotopes(dict_isotoplogues['ints_b_3'],dict_isotoplogues['ints_b_2'],dict_isotoplogues['ints_b_1'],dict_isotoplogues['ints_b0'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b3'])
                 if is_halo == 1:
                     mgf_extracted.append(spectrum)
-                    mz_iso = [dict_isotoplogues['mz_b3'],dict_isotoplogues['mz_b2'],dict_isotoplogues['mz_b1'],dict_isotoplogues['mz_a0'],dict_isotoplogues['mz_a1'],dict_isotoplogues['mz_a2'],dict_isotoplogues['mz_a3']]
-                    ints_iso = [dict_isotoplogues['ints_b3'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_a0'],dict_isotoplogues['ints_a1'],dict_isotoplogues['ints_a2'],dict_isotoplogues['ints_a3']]
+                    mz_iso = [dict_isotoplogues['mz_b_3'],dict_isotoplogues['mz_b_2'],dict_isotoplogues['mz_b_1'],dict_isotoplogues['mz_b0'],dict_isotoplogues['mz_b1'],dict_isotoplogues['mz_b2'],dict_isotoplogues['mz_b3']]
+                    ints_iso = [dict_isotoplogues['ints_b_3'],dict_isotoplogues['ints_b_2'],dict_isotoplogues['ints_b_1'],dict_isotoplogues['ints_b0'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b3']]
                     mgf_['params'] = spectrum['params']
                     # 非零mz和intensity
                     mgf_['m/z array'] = np.array(mz_iso)[np.array(mz_iso)!=0]
@@ -542,8 +542,15 @@ class mgf_pred():
 
 def add_predict(df,model_path,features_list):
     
-    #加载tf模型
+#加载tf模型
+    # root_csw_weights = [0.00808743,0.00690296, 0.0050516,  0.00997609, 0.00953029, 0.010005,0.00342269, 0.00334737]
+    # def root_csw_loss(y_true, y_pred):
+    #     weights = tf.gather(root_csw_weights, tf.cast(y_true, tf.int32))
+    #     weights = tf.cast(weights, tf.float32)
+    #     return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+    # clf = tf.keras.models.load_model(model_path,custom_objects={'root_csw_loss': root_csw_loss})
     clf = tf.keras.models.load_model(model_path)
+    
     #加载特征
 
     querys = df[features_list].values
@@ -560,26 +567,27 @@ def add_predict(df,model_path,features_list):
 if __name__ == '__main__':
     
     feature_list = [
-        "ints_b3",
-        "ints_b2",
+        "ints_b_3",
+        "ints_b_2",
+        "ints_b_1",
+        "ints_b0",
         "ints_b1",
-        "ints_a0",
-        "ints_a1",
-        "ints_a2",
-        "ints_a3",
-        "new_a2_a1",
-        "new_a1_a0",
-        "a2_a1",
+        "ints_b2",
+        "ints_b3",
+        "m2_m1",
+        "m1_m0",
+        "b2_b1",
+        
     ]
     # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main10\trained_models\pick_halo_ann.h5'
-    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\trained_models\pick_halo_ann.h5'
+    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_5\trained_models\pick_halo_ann.h5'
     # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\picked_models\pick_halo_ann_test1.h5'
 
     # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
     # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
 
     # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\massbank'
-    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf'
+    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
     
     files = os.listdir(path)
     for file in files:
@@ -614,7 +622,7 @@ if __name__ == '__main__':
             if t != p:
                 wrong_formula.append(df['formula'].tolist()[i])
                 #打印这一行
-                # print(df.iloc[i, :]     .T)
+                print(df.iloc[i, :]     .T)
                 print(t,p)
                 n+=1
           
@@ -637,3 +645,11 @@ if __name__ == '__main__':
         
         # print(f,'done')
 
+# 0 = 0.00808743
+# 1 = 0.00690296
+# 2 = 0.0050516
+# 3 = 0.00997609
+# 4 = 0.00953029
+# 5 = 0.010005
+# 6 = 0.00342269
+# 7 = 1

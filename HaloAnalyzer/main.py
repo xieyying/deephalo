@@ -21,10 +21,10 @@ def pipeline_dataset() -> None:
     raw_data = datasets(datas)
     raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
     # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'noise',repeats=para.repeat_for_noise)
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
-    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
+    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
 
     # data.data_statistics_customized()
 
@@ -35,7 +35,7 @@ def pipeline_model() -> None:
     para = load_config()
 
     #根据配置文件选择训练数据
-    paths = ['./dataset/base.csv']
+    paths = ['./dataset/base1.csv']
     if para.use_fe_data == 'True':
         paths.append('./dataset/Fe.csv')
     if para.use_b_data == 'True':
@@ -58,35 +58,93 @@ def pipeline_model() -> None:
     model = my_model(model_para)
     model.work_flow()
 
-#Find Halo Pipeline
-def pipeline_find_halo(mzml_path) -> None:
-    """find halo in mzml file"""
+def get_parameters(mzml_path):
     para = load_config()
     mzml_para = {'path':mzml_path,
-                 'feature_list':para.features_list,
-                 'asari':para.asari_dict,
-                 'mzml':para.mzml_dict,}
-    data = my_mzml(mzml_para)
-    data.work_flow()
+                'feature_list':para.features_list,
+                'asari':para.asari_dict,
+                'mzml':para.mzml_dict,}
+    return mzml_para
 
-
-def batch_find_halo(folder_path) -> None:
-    """find halo in mzml files"""
+def blank_analyze_mzml(blank_path)-> None:
+    """analyze blank mzml file"""
     para = load_config()
-
-    # get all mzml files
-    mzml_files = []
-    for root, dirs, files in os.walk(folder_path):
+    blank_files = []
+    for root, dirs, files in os.walk(blank_path):
         for file in files:
-            if file.endswith('.mzML'):
-                mzml_files.append(os.path.join(root, file))
-    for f in mzml_files:
+            if file.endswith('.mzML') or file.endswith('.mzml') or file.endswith('.mzXML') or file.endswith('.mzxml'):
+                blank_files.append(os.path.join(root, file))
+    for f in blank_files:
         mzml_para = {'path':f,
                     'feature_list':para.features_list,
                     'asari':para.asari_dict,
                     'mzml':para.mzml_dict,}
-        data = my_mzml(mzml_para)
-        data.work_flow()
+        try:
+            data = my_mzml(mzml_para)
+            data.blank_analyses()
+            data.blank_combine()
+        except:
+            print('Encounter error in dealing with :',f)
+            pass
+
+
+#Find Halo Pipeline
+def pipeline_find_halo_no_blank(mzml_path) -> None:
+    """find halo in mzml file"""
+   
+    mzml_para = get_parameters(mzml_path)
+    data = my_mzml(mzml_para)
+    data.work_flow_no_blank()
+
+
+def batch_find_halo_no_blank(folder_path) -> None:
+    """find halo in mzml files"""
+    # get all mzml files
+    mzml_files = []
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.mzML') or file.endswith('.mzml') or file.endswith('.mzXML') or file.endswith('.mzxml'):
+                mzml_files.append(os.path.join(root, file))
+    #错误文件
+    for f in mzml_files:
+        try:
+            pipeline_find_halos_no_blank(f)
+        except:
+            print('Encounter error in dealing with :',f)
+            #
+            pass
+
+def pipeline_find_halo_substrate_blank(mzml_path) -> None:
+    """find halo in mzml file"""
+
+    mzml_para = get_parameters(mzml_path)
+    data = my_mzml(mzml_para)
+    data.work_flow_subtract_blank()    
+
+def batch_find_halo_substrate_blank(folder_path) -> None:
+    """find halo in mzml files"""
+    
+    # get all mzml files
+    mzml_files = []
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.mzML') or file.endswith('.mzml') or file.endswith('.mzXML') or file.endswith('.mzxml'):
+                mzml_files.append(os.path.join(root, file))
+    #错误文件
+    error_file = []
+    for f in mzml_files:
+        # try:
+            pipeline_find_halo_substrate_blank(f)
+        # except:
+        #     print('Encounter error in dealing with :',f)
+        #     error_file.append(f)
+        #     pass
+    # 错误文件写入
+    with open(r'test_mzml_prediction/error_file.txt','w') as f:
+       for i in error_file:
+          f.write(i+'\n')
+
+
 
 #extract ms2 of rois
 def pipeline_extract_ms2_of_rois(mzml_path,project_path,rois:list):

@@ -38,7 +38,6 @@ def model(input_shape,  output_shape):
 
 def copy_model(input_shape,  output_shape):
 
-
     """自定义模型结构_单输出"""
     input_ = keras.Input(shape=(input_shape,), name="features")
     share = layers.Dense(512, activation="relu")(input_)
@@ -58,33 +57,18 @@ def copy_model(input_shape,  output_shape):
     return clfs
 
 def con_model(input_shape,  output_shape):
-    # def my_fun2(x):
-    #     data = x[:,:-3]
-    #     last_column = x[:,-1:]
-    #     second_last_column = x[:,-2:-1]
-    #     third_last_column = x[:,-3:-2]
-
-    #     new_last_column = tf.pow(last_column, 10)
-    #     new_second_last_column = tf.pow(second_last_column, 10)
-    #     new_third_last_column = tf.pow(third_last_column, 10)
-
-    #     new_x = tf.concat([data, new_last_column], axis=1)
-    #     new_x = tf.concat([new_x, new_second_last_column], axis=1)
-    #     new_x = tf.concat([new_x, new_third_last_column], axis=1)
-    #     return new_x
 
     """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features1")
     # input = layers.Lambda(my_fun2)(input)
     input1 = input[:,:-3]
     input2 = input[:,-3:]
-    
-    x = layers.Dense(128, activation="relu")(input1)
-
-    y = layers.Dense(128, activation="relu")(input2)
+    x = layers.Dense(16, activation="relu")(input1)
+    y = layers.Dense(256, activation="relu")(input2)
+    # y = layers.Dropout(.3)(y)
     share = layers.concatenate([x, y])  
     share = layers.Dense(128, activation="relu")(share)
-    share = layers.Dropout(.3)(share)
+    share = layers.Dropout(.4)(share)
     share = layers.Dense(64, activation="relu")(share)
     share = layers.Dense(32, activation="relu")(share)
     share = layers.Dense(16, activation="relu")(share)
@@ -99,13 +83,14 @@ def model_noise(input_shape,  output_shape):
     """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features1")
     #添加高斯噪声
-    input = layers.GaussianNoise(0.05)(input)
+    # input = layers.GaussianNoise(0.05)(input)
     # input = layers.Lambda(my_fun2)(input)
     input1 = input[:,:-3]
+    input1 = layers.GaussianNoise(0.01)(input1)
     input2 = input[:,-3:]
-    
+    input2 = layers.GaussianNoise(0.002)(input2)
+    input2 = layers.Lambda(lambda x: x **5-0.1)(input2)
     x = layers.Dense(128, activation="relu")(input1)
-
     y = layers.Dense(128, activation="relu")(input2)
     share = layers.concatenate([x, y])  
     share = layers.Dense(128, activation="relu")(share)

@@ -197,7 +197,7 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
     
     dict_base = {'formula':formula,'group':group}
     # dict_isos_calc=mass_spectrum_calc(dict_isos)
-    dict_isos_calc_new = mass_spectrum_calc_2(dict_isos)
+    dict_isos_calc_new = mass_spectrum_calc_2(dict_isos,1)
 
     #合并dict_base,dict_isos_calc和dict_isos_calc_new
     dict_all = dict_base.copy()

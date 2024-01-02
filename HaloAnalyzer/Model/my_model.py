@@ -1,9 +1,10 @@
 import pandas as pd
 import tensorflow as tf
+from tensorflow.keras.callbacks import EarlyStopping
 import keras,os
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from .methods import create_dataset
 from .model_build import model,copy_model,con_model,model_noise,transfer_model
 from keras import layers
@@ -22,7 +23,32 @@ class my_model:
     def load_dataset(self):
         """加载数据集"""
         self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features,self.paths,self.batch_size)
+       
+        # 计算每个类别的样本数量
+        class_counts = np.bincount(self.Y_test)
 
+        # 计算类别权重
+        # self.class_weights = 1 / class_counts
+
+        # 计算root CSW权重
+        self.root_csw_weights = 1 / np.sqrt(class_counts)
+        # print(self.root_csw_weights)
+
+        # 计算square CSW权重
+        self.square_csw_weights = 1 / (class_counts ** 2)
+        # print(self.square_csw_weights)
+
+        #用tf
+
+        # 计算样本权重
+        # molecular_weights = np.array([sample[0][-1] for sample in self.train_dataset])
+        # #
+        # self.sample_weight = np.where(molecular_weights > 2000, 0.01, 1)
+     
+        # 在训练集合严重集中去掉m0_mz
+        # self.train_dataset = self.train_dataset.map(lambda x, y: (x[:, :-1], y))
+        # self.val_dataset = self.val_dataset.map(lambda x, y: (x[:, :-1], y))
+        
     def get_model(self):
         """获取自定义模型，并绘制模型结构图"""
         #model_build中可以定义多种模型结构方便切换
@@ -33,11 +59,37 @@ class my_model:
     def train(self):
         """训练模型"""
         opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+
+        # 定义一个使用CSW权重的损失函数
+        def csw_loss(y_true, y_pred):
+            weights = tf.gather(self.class_weights, tf.cast(y_true, tf.int32))
+            weights = tf.cast(weights, tf.float32)
+            return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+
+        # 定义一个使用root CSW权重的损失函数
+        def root_csw_loss(y_true, y_pred):
+            weights = tf.gather(self.root_csw_weights, tf.cast(y_true, tf.int32))
+            weights = tf.cast(weights, tf.float32)
+            return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+
+        # 定义一个使用square CSW权重的损失函数
+        def square_csw_loss(y_true, y_pred):
+            weights = tf.gather(self.square_csw_weights, tf.cast(y_true, tf.int32))
+            weights = tf.cast(weights, tf.float32)
+            return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+        
         self.model.compile(optimizer=opt,
-              loss={'classes': 'SparseCategoricalCrossentropy'},
+            loss={'classes': 'SparseCategoricalCrossentropy'},
+            # loss={'classes': root_csw_loss},
                 loss_weights={'classes': self.classes_weight},
-              metrics=['accuracy'])
-        self.history = self.model.fit(self.train_dataset, epochs=self.epochs, validation_data=self.val_dataset)
+            metrics=['accuracy'])
+
+        # 创建EarlyStopping回调
+        early_stopping = EarlyStopping(monitor='val_loss', patience=3)
+
+        self.history = self.model.fit(self.train_dataset, epochs=self.epochs, 
+                                    validation_data=self.val_dataset, 
+                                    callbacks=[early_stopping])  # 添加回调到fit函数
         self.model.summary()
 
         # 显示loss和epoch的关系
@@ -78,7 +130,7 @@ class my_model:
         self.trans_model.compile(optimizer=keras.optimizers.Adam(1e-5),
                                  loss={'classes': 'SparseCategoricalCrossentropy'},
                                     metrics=['accuracy'])
-        self.trans_model.fit(self.train_dataset, epochs=2, validation_data=self.val_dataset)
+        self.trans_model.fit(self.train_dataset, epochs=2, validation_data=self.val_dataset, sample_weight=self.sample_weight)
         self.trans_model.save(r'./trained_models/pick_halo_transfer.h5')
 
     def show_CM(self):
@@ -86,13 +138,42 @@ class my_model:
 
         # load the model
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
+        def csw_loss(y_true, y_pred):
+            weights = tf.gather(self.class_weights, tf.cast(y_true, tf.int32))
+            weights = tf.cast(weights, tf.float32)
+            return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+        # 定义一个使用root CSW权重的损失函数
+        def root_csw_loss(y_true, y_pred):
+            weights = tf.gather(self.root_csw_weights, tf.cast(y_true, tf.int32))
+            weights = tf.cast(weights, tf.float32)
+            return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+        # 定义一个使用square CSW权重的损失函数
+        def square_csw_loss(y_true, y_pred):
+            weights = tf.gather(self.square_csw_weights, tf.cast(y_true, tf.int32))
+            weights = tf.cast(weights, tf.float32)
+            return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
+        # model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5', custom_objects={'root_csw_loss': root_csw_loss})
+
         # rankdir='LR' is used to make the graph horizontal.
         tf.keras.utils.plot_model(model, show_shapes=True, rankdir="LR")
         # make predictions on the validation set
+       
+        # X_val = self.X_test[:, :-1]
 
         X_val = self.X_test
+
         Y_val = self.Y_test
         y_pred = model.predict(X_val)
+
+        # Convert y_pred to a DataFrame
+        df_pred = pd.DataFrame(y_pred)
+
+        # Add Y_val as a new column
+        df_pred['Y_val'] = Y_val
+
+        # Save to csv file
+        df_pred.to_csv(r'./trained_models/prediction.csv',index=False)
+
         y_pred = np.argmax(y_pred, axis=1)
         wrong_index = np.where(Y_val !=y_pred)
     
@@ -106,9 +187,9 @@ class my_model:
                 "ints_b1",
                 "ints_b2",
                 "ints_b3",
-                "m2_m1_10",
-                "m1_m0_10",
-                'b2_b1_10',
+                "m2_m1",
+                "m1_m0",
+                'b2_b1',
             ]
 
         formula_test = np.array(self.val_['formula'].tolist())
@@ -121,11 +202,59 @@ class my_model:
         
         #将wrong_data转为dataframe
         wrong_data.to_csv(r'./trained_models/pick_halo_ann_wrong_data.csv',index=False)
-        # plot the confusion matrices, 1个子图
-        fig, axs = plt.subplots(1, 1, figsize=(15, 5))
-        ConfusionMatrixDisplay.from_predictions(Y_val, y_pred, ax=axs, cmap=plt.cm.terrain)
-        axs.set_title('Classifier')
     
+        # # Compute confusion matrix
+        cm = confusion_matrix(Y_val, y_pred)
+
+        # Compute recall and precision for each class
+        report = classification_report(Y_val, y_pred, output_dict=True,zero_division=0)
+        # Compute recall and precision for each class
+        report = classification_report(Y_val, y_pred, output_dict=True,zero_division=1)
+        recalls = [report[str(i)]['recall'] if str(i) in report else 0 for i in range(cm.shape[0])]
+        precisions = [report[str(i)]['precision'] if str(i) in report else 0 for i in range(cm.shape[0])]
+        F1_sore = [report[str(i)]['f1-score'] if str(i) in report else 0 for i in range(cm.shape[0])]
+
+        # Plot the confusion matrix
+        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+
+        # Plot the confusion matrix
+        ConfusionMatrixDisplay.from_predictions(Y_val, y_pred, ax=axs[0, 0], cmap=plt.cm.terrain)
+        axs[0, 0].set_title('Classifier')
+        # Plot the precision bar chart below the confusion matrix
+        # Plot the precision bar chart below the confusion matrix
+        colors = np.random.rand(len(precisions), 3)
+        axs[1, 0].bar(np.arange(len(precisions)), precisions, color=colors)
+        axs[1, 0].set_title('Precision')
+        axs[1, 0].set_xlabel('Class')
+        axs[1, 0].set_ylabel('Precision')
+        #将数值标注在图上
+        for i, v in enumerate(precisions):
+            axs[1, 0].text(i - 0.25, v + 0.01, str(round(v, 3)), color='black', fontweight='bold')
+
+        # Plot the recall bar chart to the right of the confusion matrix
+        
+        axs[0, 1].barh(np.arange(len(recalls)), recalls, color=colors)
+        axs[0, 1].set_title('Recall')
+        axs[0, 1].set_xlabel('Recall')
+        axs[0, 1].set_ylabel('Class')
+        #将数值标注在图上
+        for i, v in enumerate(recalls):
+            axs[0, 1].text(v + 0.01, i + .25, str(round(v, 3)), color='black', fontweight='bold')
+        axs[0, 1].invert_yaxis()  # Reverse the y-axis so class 0 is on top
+        axs[0, 1].set_xlim(0, 1)  # Set the x-axis range to 0-1
+
+        # Plot the f1-score bar chart below the recall bar chart
+        axs[1, 1].bar(np.arange(len(F1_sore)), F1_sore, color=colors)
+        axs[1, 1].set_title('F1-score')
+        axs[1, 1].set_xlabel('Class')
+        axs[1, 1].set_ylabel('F1-score')
+        #将数值标注在图上
+        for i, v in enumerate(F1_sore):
+            axs[1, 1].text(i - 0.25, v + 0.01, str(round(v, 3)), color='black', fontweight='bold')
+        axs[1, 1].set_ylim(0, 1)
+        # axs[1, 1].set_xlim(0, 1)
+
+        plt.tight_layout()
         plt.show()
     
     def work_flow(self):
@@ -134,8 +263,8 @@ class my_model:
             os.mkdir('./trained_models')
         self.load_dataset()
         self.get_model()
-        # self.train()
-        self.train_transfer()
+        self.train()
+        # self.train_transfer()
         self.show_CM()
 
 if __name__ == '__main__':

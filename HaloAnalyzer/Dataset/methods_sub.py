@@ -130,7 +130,7 @@ def mass_spectrum_calc(dict_isos):
             'b1_b0':b1_b0,'b2_b0':b2_b0,'b2_b1':b2_b1,'b0_b_1':b0_b_1,'b_1_b_2':b_1_b_2,
             'b0_norm':b0_norm,'b3_b0':b3_b0,'b3_b1':b3_b1,'b3_b2':b3_b2}
 
-def mass_spectrum_calc_2(dict_features) -> dict:
+def mass_spectrum_calc_2(dict_features,charge) -> dict:
     """校正质谱数据"""
     # 将以最高峰为a0的质谱数据转化为以mz最小的峰为m0的质谱数据
     mz_list = [dict_features['mz_b_3'],dict_features['mz_b_2'],dict_features['mz_b_1'],dict_features['mz_b0'],dict_features['mz_b1'],dict_features['mz_b2'],dict_features['mz_b3']]
@@ -144,8 +144,8 @@ def mass_spectrum_calc_2(dict_features) -> dict:
     
 
     if m2_mz !=0:
-        m2_m1 = m2_mz - m1_mz
-        m2_m0 = m2_mz - m0_mz
+        m2_m1 = (m2_mz - m1_mz)*charge
+        m2_m0 = (m2_mz - m0_mz)*charge
     else:
         m2_m1 = 1.002
         m2_m0 = 2.002
@@ -153,7 +153,7 @@ def mass_spectrum_calc_2(dict_features) -> dict:
     m2_m1_10 = m2_m1**10 
 
     if m1_mz !=0:
-        m1_m0 = m1_mz - m0_mz
+        m1_m0 = (m1_mz - m0_mz)*charge 
     else:    
         m1_m0 = 1.002
     m1_m0_10 = m1_m0**10
@@ -161,7 +161,7 @@ def mass_spectrum_calc_2(dict_features) -> dict:
     b2= dict_features['mz_b2']
     b1= dict_features['mz_b1']
     if b2 !=0:
-        b2_b1 = b2 - b1
+        b2_b1 = (b2 - b1)*charge
     else:
         b2_b1 = 1.002
     b2_b1_10 = b2_b1**10
