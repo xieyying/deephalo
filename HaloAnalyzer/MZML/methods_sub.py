@@ -11,6 +11,15 @@ class ROIs:
         self.max_roi = 0
     
     def update(self,update_dict,roi_precusor_error = 20, gap_scans = 8):
+        # 备忘：最后需要去除
+        ##分析casmi上的数据(Thermo)这个gap不能设的太低，他们的数据是好几个MS1，然后一个MS2
+        # 	MS1	MS2	precursor	precursor_ints	rt	MS1_counter
+        # 3	297	298	199.0963898	9658294	40.4108166	294
+        # 4	302	303	199.0963593	8947822	41.0541876	298
+        # 5	304	305	199.096344	9081007	41.2276884	299
+        # 6	306	307	199.096344	10746135	41.4011844	300
+        # 7	314	315	199.0962524	6787661	42.3994254	307
+
 
         #如果self.rois为空，则将update_dict['precursor']作为一个新的roi
         if self.rois == []:
