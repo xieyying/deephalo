@@ -41,7 +41,7 @@ def copy_model(input_shape,  output_shape):
     """自定义模型结构_单输出"""
     input_ = keras.Input(shape=(input_shape,), name="features")
     share = layers.Dense(512, activation="relu")(input_)
-    share = layers.Dropout(0.5)(share) 
+    share = layers.Dropout(0.3)(share) 
     share = layers.Dense(256, activation="relu")(share)
     share = layers.Dropout(0.2)(share)    
     share = layers.Dense(128, activation="relu")(share)

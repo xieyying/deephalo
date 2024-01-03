@@ -8,6 +8,8 @@ from molmass import Formula
 import tensorflow as tf
 import os
 from HaloAnalyzer.Model import model_build
+from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay, classification_report
+import matplotlib.pyplot as plt
 
 # your code here
 def formula_clf(formula_dict,type=None) :
@@ -563,6 +565,65 @@ def add_predict(df,model_path,features_list):
     df['class_pred'] = classes_pred
 
     return df
+def confusion_show(df):
+        # # Compute confusion matrix
+        Y_val = df['true_class'].astype('int').values
+        y_pred = df['class_pred'].astype('int').values
+        #y_pred中的7换为6
+        y_pred[y_pred==7] = 6
+        print(type(Y_val),type(y_pred))
+        cm = confusion_matrix(Y_val, y_pred)
+
+        # Compute recall and precision for each class
+        report = classification_report(Y_val, y_pred, output_dict=True,zero_division=0)
+        # Compute recall and precision for each class
+        report = classification_report(Y_val, y_pred, output_dict=True,zero_division=1)
+        recalls = [report[str(i)]['recall'] if str(i) in report else 0 for i in range(cm.shape[0])]
+        precisions = [report[str(i)]['precision'] if str(i) in report else 0 for i in range(cm.shape[0])]
+        F1_sore = [report[str(i)]['f1-score'] if str(i) in report else 0 for i in range(cm.shape[0])]
+
+        # Plot the confusion matrix
+        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+
+        # Plot the confusion matrix
+        ConfusionMatrixDisplay.from_predictions(Y_val, y_pred, ax=axs[0, 0], cmap=plt.cm.terrain)
+        axs[0, 0].set_title('Classifier')
+        # Plot the precision bar chart below the confusion matrix
+        # Plot the precision bar chart below the confusion matrix
+        colors = np.random.rand(len(precisions), 3)
+        axs[1, 0].bar(np.arange(len(precisions)), precisions, color=colors)
+        axs[1, 0].set_title('Precision')
+        axs[1, 0].set_xlabel('Class')
+        axs[1, 0].set_ylabel('Precision')
+        #将数值标注在图上
+        for i, v in enumerate(precisions):
+            axs[1, 0].text(i - 0.25, v + 0.01, str(round(v, 3)), color='black', fontweight='bold')
+
+        # Plot the recall bar chart to the right of the confusion matrix
+        
+        axs[0, 1].barh(np.arange(len(recalls)), recalls, color=colors)
+        axs[0, 1].set_title('Recall')
+        axs[0, 1].set_xlabel('Recall')
+        axs[0, 1].set_ylabel('Class')
+        #将数值标注在图上
+        for i, v in enumerate(recalls):
+            axs[0, 1].text(v + 0.01, i + .25, str(round(v, 3)), color='black', fontweight='bold')
+        axs[0, 1].invert_yaxis()  # Reverse the y-axis so class 0 is on top
+        axs[0, 1].set_xlim(0, 1)  # Set the x-axis range to 0-1
+
+        # Plot the f1-score bar chart below the recall bar chart
+        axs[1, 1].bar(np.arange(len(F1_sore)), F1_sore, color=colors)
+        axs[1, 1].set_title('F1-score')
+        axs[1, 1].set_xlabel('Class')
+        axs[1, 1].set_ylabel('F1-score')
+        #将数值标注在图上
+        for i, v in enumerate(F1_sore):
+            axs[1, 1].text(i - 0.25, v + 0.01, str(round(v, 3)), color='black', fontweight='bold')
+        axs[1, 1].set_ylim(0, 1)
+        # axs[1, 1].set_xlim(0, 1)
+
+        plt.tight_layout()
+        plt.show()
 
 if __name__ == '__main__':
     
@@ -587,7 +648,7 @@ if __name__ == '__main__':
     # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
 
     # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\massbank'
-    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
+    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\isotope_patterns_mgf_merged'
     
     files = os.listdir(path)
     for file in files:
@@ -615,6 +676,7 @@ if __name__ == '__main__':
         wrong_formula = []
         mgf_patterns_right =[]
         mgf_extracted_wrong = []
+        
         for i in range(len(df)):
             t = df['true_class'].tolist()[i]
             p = df['class_pred'].tolist()[i]
@@ -622,7 +684,7 @@ if __name__ == '__main__':
             if t != p:
                 wrong_formula.append(df['formula'].tolist()[i])
                 #打印这一行
-                print(df.iloc[i, :]     .T)
+                # print(df.iloc[i, :]     .T)
                 print(t,p)
                 n+=1
           
@@ -642,7 +704,7 @@ if __name__ == '__main__':
         # mgf.write(mgf_extracted_wrong,f[:-4]+'_extracted_wrong.mgf')
         
         print('total spectra: ',ts,'total: ', len(df), '; wrong', n,'multi_halo: ',tn)
-        
+        confusion_show(df)
         # print(f,'done')
 
 # 0 = 0.00808743

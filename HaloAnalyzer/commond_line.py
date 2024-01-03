@@ -88,18 +88,6 @@ def main():
         else:
             print("Please specify a project path.")
 
-    # Configure the root logger
-    logging.basicConfig(filename=r'./test_mzml_prediction/log.txt', level=logging.INFO)
-    # Define a Handler which writes INFO messages or higher to the sys.stderr
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    # Set a format which is simpler for console use
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console.setFormatter(formatter)
-    # Add the handler to the root logger
-    logging.getLogger('').addHandler(console)
-
-
-
+  
 if __name__ == '__main__':
     main()

@@ -29,16 +29,14 @@ rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,1.99,2.3,4,5]
 [model_data]
 #训练使用的特征列表
 feature_list = [
-    "ints_b_3",
+    
     "ints_b_2",
     "ints_b_1",
     "ints_b0",
     "ints_b1",
     "ints_b2",
     "ints_b3",
-    "m2_m1",
-    "m1_m0",
-    "b2_b1",
+
 
 ]
 #训练使用的数据集
@@ -47,7 +45,7 @@ use_add_fe_data = "True"
 use_add_b_data =  "True"
 use_add_se_data =  "True"
 use_add_s_data  = "False"
-use_hydroisomer_data = "True"
+use_hydroisomer_data = "False"
 
 #模型训练参数
 [model_construct]

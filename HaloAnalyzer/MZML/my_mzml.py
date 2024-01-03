@@ -164,6 +164,18 @@ class my_mzml:
             return
         else:
             self.df.to_csv(self.save_halo_evaluation,index=False)
+    
+    def work_flow_given_roi(self,roi_df):
+        """mzml数据处理流程"""
+        if not os.path.exists('./test_mzml_prediction'):
+            os.mkdir('./test_mzml_prediction')
+
+        self.load_mzml_data()
+        self.df_rois = pd.read_csv(self.save_rois)
+        self.extract_features()
+        self.rois_evaluation()
+        
+
 
                 
 if __name__ == "__main__":
