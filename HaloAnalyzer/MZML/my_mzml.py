@@ -6,6 +6,7 @@ from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_iso
                       add_predict,add_is_isotopes,halo_evaluation,correct_isotopic_peaks,merge_close_values,blank_subtract
 from pyteomics import mzml ,mgf
 from ..model_test import timeit
+from .test_method import get_ROIs
 class my_mzml:
     """自定义mzml类，包含了mzml数据的加载，ROI的识别，特征提取，halo评估等方法"""
     def __init__(self,para) -> None:
@@ -42,6 +43,9 @@ class my_mzml:
         elif method == 'DDA':
             self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict,self.path)
             self.df_rois.to_csv(self.save_rois,index=False)
+        elif method == 'peak_only':
+            self.df_rois = get_ROIs(self.path)
+            
     @timeit
     def extract_features(self):
         """对ROI进行特征提取"""

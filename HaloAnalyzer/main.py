@@ -1,7 +1,7 @@
 #import packages
 import os
 from .Dataset.my_dataset import dataset,datasets
-from .Model.my_model import my_model
+from .Model.my_model import my_model,my_search
 from .MZML.my_mzml import my_mzml
 from .parameters import run_parameters
 from .MZML.methods import extract_ms2_of_rois
@@ -29,13 +29,13 @@ def pipeline_dataset() -> None:
     # data.data_statistics_customized()
 
 #Model Pipeline
-def pipeline_model() -> None:
+def pipeline_model(mode = 'manual') -> None:
     """train model and save model"""
     #加载参数
     para = load_config()
 
     #根据配置文件选择训练数据
-    paths = ['./dataset/base1.csv']
+    paths = ['./dataset/base.csv']
     if para.use_fe_data == 'True':
         paths.append('./dataset/Fe.csv')
     if para.use_b_data == 'True':
@@ -47,16 +47,23 @@ def pipeline_model() -> None:
     if para.use_noise_data == 'True':
         paths.append('./dataset/noise.csv')
 
+    test_path = './dataset/test.csv'
+
     #定义训练参数
     model_para = {'batch_size': para.train_batch,
                   'epochs': para.epochs,
                   'features': para.features_list,
                   'paths': paths,
+                  'test_path': test_path,
                   'classes': para.classes,
                   'weight': para.classes_weight,
                   'learning_rate': para.learning_rate,}
-    model = my_model(model_para)
-    model.work_flow()
+    if mode == 'manual':
+        model = my_model(model_para)
+        model.work_flow()
+    elif mode == 'search':
+        mode = my_search(model_para)
+    
 
 def get_parameters(mzml_path):
     para = load_config()

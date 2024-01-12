@@ -1,13 +1,15 @@
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping
 import keras,os
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
-from .methods import create_dataset
+from .methods import create_dataset,create_dataset_test
 from .model_build import model,copy_model,con_model,model_noise,transfer_model
 from keras import layers
+import keras_tuner as kt
+from functools import partial
 class my_model:
     '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
     def __init__(self,para) -> None:
@@ -16,14 +18,17 @@ class my_model:
         self.epochs = para['epochs']
         self.features = para['features']
         self.paths = para['paths']
+        self.test_path = para['test_path']
         self.input_shape = len(self.features)
         self.output_shape = para['classes']
         self.classes_weight = para['weight']
         self.learning_rate = para['learning_rate']
+
     def load_dataset(self):
         """加载数据集"""
-        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features,self.paths,self.batch_size)
+        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features.copy(),self.paths,self.batch_size)
        
+        self.test_dataset,self.test_df = create_dataset_test(self.features.copy(),self.test_path,self.batch_size)
         # 计算每个类别的样本数量
         class_counts = np.bincount(self.Y_test)
 
@@ -267,6 +272,50 @@ class my_model:
         self.train()
         # self.train_transfer()
         self.show_CM()
+
+def search_model(hp,input_shape,output_shape):
+    model = keras.Sequential(
+        [
+            keras.Input(shape=(input_shape,)),
+            layers.Dense(hp.Int("units_0", 32, 512, step=32), activation="relu"),
+            layers.Dropout(0.5),
+            layers.Dense(output_shape, activation="softmax"),
+        ]
+    
+    )
+    model.compile(hp.Choice("optimizer", ["adam", "adadelta"]), 
+                  loss="sparse_categorical_crossentropy", 
+                  metrics=["accuracy"])
+    return model
+
+
+def my_search(para):
+    batch_size = para['batch_size']
+    paths = para['paths']
+    features = para['features']
+    test_path = para['test_path']
+    input_shape = len(features)
+    output_shape = para['classes']
+    train_dataset,val_dataset,X_test, Y_test,val_ = create_dataset(features.copy(),paths,batch_size)
+    test_dataset,test_df = create_dataset_test(features.copy(),test_path,batch_size)
+    
+    search_model_with_para = partial(search_model, input_shape=input_shape,output_shape=output_shape)
+    tuner = kt.Hyperband(search_model_with_para,
+                     objective="val_accuracy",
+                     max_epochs=2,
+                     factor=3,
+                     directory="my_search",
+                     overwrite=True,
+                     project_name="kt_base")
+    stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+    tuner.search(train_dataset, epochs=10, validation_data=val_dataset,callbacks=[stop_early])
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+    print(best_hps.values)
+    model = tuner.hypermodel.build(best_hps)
+    model.fit(train_dataset, epochs=10, validation_data=val_dataset)
+    model.save(r'./trained_models/pick_halo_ann_search.h5')
+    model.evaluate(test_dataset)
+
 
 if __name__ == '__main__':
     pass

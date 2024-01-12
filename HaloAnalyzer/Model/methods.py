@@ -29,6 +29,14 @@ def create_dataset(features,paths,batch_size):
     val_dataset = val_dataset.shuffle(len(X_test)).batch(batch_size)
     return train_dataset,val_dataset,X_test, Y_test, val_
 
+def create_dataset_test(features,path,batch_size):
+    
+    df = pd.read_csv(path)
+    test_X = df[features].values
+    test_Y = df['true_class'].values
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_X, test_Y)).batch(batch_size)
+    return test_dataset,df
+
 def create_dataset_copy(features,paths,batch_size):
     """创建模型训练所需的数据集，tf.data.Dataset格式"""
     features+=['group']

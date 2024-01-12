@@ -25,6 +25,8 @@ def main():
             help='input directory of blank mzML files for substraction')
     parser.add_argument('-p', '--project', 
             help='project path')
+    parser.add_argument('-m', '--mode', 
+            help='train model mode, manual or search')
     parser.add_argument('-l', '--list_rois',  nargs='+', type=int,
             help='list of rois to extract ms2 spectra')
     parser.add_argument('-ob', '--overwrite_blank', action='store_true',
@@ -41,7 +43,7 @@ def main():
             if args.run == 'create_dataset':
                 pipeline_dataset()
             elif args.run == 'train_model':
-                pipeline_model()
+                pipeline_model(args.mode)
             elif args.run == 'analyze_mzml':
                 blank_path = args.blank
                 mzml_path = args.input
