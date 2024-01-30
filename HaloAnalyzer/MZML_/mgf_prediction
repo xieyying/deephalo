@@ -267,7 +267,7 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     # 根据b2判断b1是否为杂信号
     # 根据卤化物统计b2为0b1最小为0.223073，根据全部base统计b2为0时b1最小值为0.202336
     if ints_b_2 ==0:
-        if ints_b_1 < 0.15:
+        if ints_b_1 < 0.17:
             mz_b_1 = 0
             ints_b_1 = 0
             mz_b_2 = 0
@@ -628,7 +628,7 @@ def confusion_show(df):
 if __name__ == '__main__':
     
     feature_list = [
-        "ints_b_3",
+        # "ints_b_3",
         "ints_b_2",
         "ints_b_1",
         "ints_b0",
@@ -637,17 +637,17 @@ if __name__ == '__main__':
         "ints_b3",
         "m2_m1",
         "m1_m0",
-        "b2_b1",
+        # "b2_b1",
         
     ]
     # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main10\trained_models\pick_halo_ann.h5'
-    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_5\trained_models\pick_halo_ann.h5'
+    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\trained_models\pick_halo_ann.h5'
     # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\picked_models\pick_halo_ann_test1.h5'
 
     # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
     # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
 
-    # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\massbank'
+    # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf'
     path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\isotope_patterns_mgf_merged'
     
     files = os.listdir(path)
@@ -684,7 +684,7 @@ if __name__ == '__main__':
             if t != p:
                 wrong_formula.append(df['formula'].tolist()[i])
                 #打印这一行
-                # print(df.iloc[i, :]     .T)
+                print(df.iloc[i, :]     .T)
                 print(t,p)
                 n+=1
           

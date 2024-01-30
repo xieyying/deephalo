@@ -26,7 +26,7 @@ def main():
     parser.add_argument('-p', '--project', 
             help='project path')
     parser.add_argument('-m', '--mode', 
-            help='train model mode, manual or search')
+            help='train model mode: manual or search')
     parser.add_argument('-l', '--list_rois',  nargs='+', type=int,
             help='list of rois to extract ms2 spectra')
     parser.add_argument('-ob', '--overwrite_blank', action='store_true',

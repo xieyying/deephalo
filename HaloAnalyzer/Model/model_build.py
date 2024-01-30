@@ -85,19 +85,19 @@ def model_noise(input_shape,  output_shape):
     #添加高斯噪声
     # input = layers.GaussianNoise(0.05)(input)
     # input = layers.Lambda(my_fun2)(input)
-    input1 = input[:,:-3]
+    input1 = input[:,:-2]
     input1 = layers.GaussianNoise(0.01)(input1)
-    input2 = input[:,-3:]
+    input2 = input[:,-2:]
     input2 = layers.GaussianNoise(0.002)(input2)
     input2 = layers.Lambda(lambda x: x **5-0.1)(input2)
-    x = layers.Dense(128, activation="relu")(input1)
-    y = layers.Dense(128, activation="relu")(input2)
+    x = layers.Dense(512, activation="relu")(input1)
+    y = layers.Dense(512, activation="relu")(input2)
     share = layers.concatenate([x, y])  
-    share = layers.Dense(128, activation="relu")(share)
-    share = layers.Dropout(.3)(share)
-    share = layers.Dense(64, activation="relu")(share)
-    share = layers.Dense(32, activation="relu")(share)
-    share = layers.Dense(16, activation="relu")(share)
+    share = layers.Dense(512, activation="relu")(share)
+    # share = layers.Dropout(.3)(share)
+    # share = layers.Dense(64, activation="relu")(share)
+    # share = layers.Dense(32, activation="relu")(share)
+    # share = layers.Dense(16, activation="relu")(share)
 
     clf_output = layers.Dense(output_shape,activation='softmax', name="classes")(share)
 
