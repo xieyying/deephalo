@@ -55,12 +55,16 @@ def main():
                         batch_find_halo_substrate_blank(mzml_path)
                     elif os.path.isfile(mzml_path):
                         pipeline_find_halo_substrate_blank(mzml_path)
-                elif os.path.isdir(mzml_path):   
-                    batch_find_halo_no_blank(mzml_path)
-                elif os.path.isfile(mzml_path):
-                    pipeline_find_halo_no_blank(mzml_path)
+                    else:
+                        print("Please specify a mzML file or a folder containing mzML files to analyze.")
                 else:
-                    print("Please specify a mzML file or a folder containing mzML files to analyze.")
+                    if os.path.isdir(mzml_path):
+                        batch_find_halo_no_blank(mzml_path)
+                    elif os.path.isfile(mzml_path):
+                        pipeline_find_halo_no_blank(mzml_path)
+                    else:
+                        print("Please specify a mzML file or a folder containing mzML files to analyze.")
+            
                 # with open(r'test_mzml_prediction/log.txt','w') as f: f.write(mzml_path)
 
             elif args.run == 'viz_result':

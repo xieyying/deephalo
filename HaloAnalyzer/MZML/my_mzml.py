@@ -42,7 +42,7 @@ class my_mzml:
             self.df_rois = asari_ROI_identify(self.path,self.asari_dict)
         elif method == 'DDA':
             self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict,self.path)
-            self.df_rois.to_csv(self.save_rois,index=False)
+            # self.df_rois.to_csv(self.save_rois,index=False)
         elif method == 'peak_only':
             self.df_rois = get_ROIs(self.path)
             
@@ -51,17 +51,17 @@ class my_mzml:
         """对ROI进行特征提取"""
         df1 = get_calc_targets(self.df_rois)
         df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
-        df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_find.csv',index=False)
+        # df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_find.csv',index=False)
         # correct df_isotopologues
         df_isotopologues = correct_isotopic_peaks(df_isotopologues)
-        df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_correct.csv',index=False)
+        # df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_correct.csv',index=False)
      
         #添加is_isotopes判断结果
         df_isotopologues = add_is_isotopes(df_isotopologues)
         #保存is_isotopes 为1的isotopologues到self.df_isotopologues
         df_isotopologues = df_isotopologues[df_isotopologues['is_isotopes']==1]
         df_isotopologues = df_isotopologues.groupby('id_roi').filter(lambda x: len(x) >= 3)
-        df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_correct.csv',index=False)
+        # df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_correct.csv',index=False)
      
         self.df_isotopologues = df_isotopologues.copy()
         #对isotopologue进行预测
@@ -81,10 +81,10 @@ class my_mzml:
         self.halo_evaluation['roi_total_pred'] = roi_total_prediction['class_pred']
 
     @timeit
-    def filter_result(self,H_score=0.8):
+    def filter_result(self,H_score=0.6):
         """保存结果"""
         # self.df_rois.to_csv('roi.csv',index=False)
-        self.df_isotopologues.to_csv(self.save_isotopolgues,index=False)
+        # self.df_isotopologues.to_csv(self.save_isotopolgues,index=False)
       
         #找到self.halo_evaluation和self.df_rois中相同的roi_id
         df = pd.merge(self.halo_evaluation,self.df_rois,on='id_roi')
@@ -97,7 +97,11 @@ class my_mzml:
         roi_mean_halo_score = df['roi_mean_pred']
         
         #如果roi_mean_halo_score为0，1，2则为1，如果为其他则为0
-        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [0,1,2] else 0)
+        # roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [0,1,2] else 0)
+
+        #Se
+        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [3] else 0)
+
         #计算H-score
         df['H-score'] = (df['scan_based_halo_score'])/300 + (roi_mean_halo_score)/3 + (df['scan_based_halo_ratio'])/3
         #筛选H-score大于阈值的结果
@@ -158,11 +162,12 @@ class my_mzml:
             else:
                 df_blank_subtract.to_csv(self.save_halo_evaluation,index=False)
                 # logger.info(self.path,'找到halo化合物')
-    def work_flow_no_blank(self):
+    def work_flow_no_blank(self,H_score=0.8):
         """mzml数据处理流程"""
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
         self.common_work_flow() 
+        self.filter_result(H_score)
         if len(self.df) == 0:
             print('没有找到halo化合物')
             return
