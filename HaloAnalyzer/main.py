@@ -115,7 +115,7 @@ def batch_find_halo_no_blank(folder_path) -> None:
     #错误文件
     for f in mzml_files:
         try:
-            pipeline_find_halos_no_blank(f)
+            pipeline_find_halo_no_blank(f)
         except:
             print('Encounter error in dealing with :',f)
             #
