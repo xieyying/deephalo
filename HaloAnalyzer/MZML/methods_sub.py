@@ -501,7 +501,7 @@ def calculate_zig_zag(I):
 
     # Convert the ZigZag score to a percentage
     score = (4-8/N-zigzag)/(4-8/N)*100
-    # score = (4-8/N-zigzag)/(4-8/N)*100
+   
     return score
 
 def roi_scan_based_halo_evaluation(I):
@@ -554,7 +554,44 @@ def roi_scan_based_halo_evaluation(I):
         scan_based_halo_sub_score = 'None'
     return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio
             
-   
+def roi_scan_based_halo_evaluation_(I):
+    """
+    根据一个ROI中所有scan的分类结果，判断该ROI为halo的概率
+    I:list，为一个ROI中所有scan的分类结果
+    """
+    # Get the common classes in the ROI
+    com_class = list(Counter(I).keys())
+    counter = Counter(I)
+    # 统计I中0,1,2所占的比例
+    scan_based_halo_ratio = sum(1 for i in I if i in {3}) / len(I)
+
+    # Determine the halo classification for the ROI
+    if any(i in com_class for i in [3]):
+        scan_based_halo_class = 'halo'
+        if len(com_class) == 1:
+            scan_based_halo_score = 100
+            scan_based_halo_sub_score = 100
+            scan_based_halo_sub_class = com_class[0]
+        else:
+            if {3}.issuperset(set(com_class)):
+                scan_based_halo_score = 100
+                scan_based_halo_sub_class =max(counter.items(), key=lambda x: x[1])[0]
+                scan_based_halo_sub_class_ratio = counter[scan_based_halo_sub_class] / len(I)
+                scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
+            else:
+                
+                I_new = [1 if i in [3] else 0 for i in I]
+                       
+                scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
+
+                scan_based_halo_sub_class = "None"
+                scan_based_halo_sub_score = "None"
+    else:
+        scan_based_halo_class = 'non-halo'
+        scan_based_halo_score = 0
+        scan_based_halo_sub_class = 'None'
+        scan_based_halo_sub_score = 'None'
+    return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio   
 
 if __name__ == "__main__":
     def ms2ms1_linked_ROI_identify(spectra,mzml_dict):

@@ -96,11 +96,11 @@ class my_mzml:
         df = df.loc[:,cols]
         roi_mean_halo_score = df['roi_mean_pred']
         
-        #如果roi_mean_halo_score为0，1，2则为1，如果为其他则为0
-        # roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [0,1,2] else 0)
+        # 如果roi_mean_halo_score为0，1，2则为1，如果为其他则为0
+        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [0,1,2] else 0)
 
-        #Se
-        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [3] else 0)
+        # #Se
+        # roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [3] else 0)
 
         #计算H-score
         df['H-score'] = (df['scan_based_halo_score'])/300 + (roi_mean_halo_score)/3 + (df['scan_based_halo_ratio'])/3

@@ -33,6 +33,7 @@ feature_list = [
         "ints_b3",
         "m2_m1",
         "m1_m0",
+        "b2_b1",
 ]
 #训练使用的数据集
 use_noise_data = "False"
