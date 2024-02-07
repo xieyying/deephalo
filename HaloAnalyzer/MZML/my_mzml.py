@@ -42,7 +42,7 @@ class my_mzml:
             self.df_rois = asari_ROI_identify(self.path,self.asari_dict)
         elif method == 'DDA':
             self.df_rois = ms2ms1_linked_ROI_identify(self.mzml_data_all,self.mzml_dict,self.path)
-            # self.df_rois.to_csv(self.save_rois,index=False)
+            self.df_rois.to_csv(self.save_rois,index=False)
         elif method == 'peak_only':
             self.df_rois = get_ROIs(self.path)
             
@@ -97,7 +97,7 @@ class my_mzml:
         roi_mean_halo_score = df['roi_mean_pred']
         
         # 如果roi_mean_halo_score为0，1，2则为1，如果为其他则为0
-        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [0,1,2] else 0)
+        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x ssin [0,1,2] else 0)
 
         # #Se
         # roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [3] else 0)

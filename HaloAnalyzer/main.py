@@ -114,12 +114,12 @@ def batch_find_halo_no_blank(folder_path) -> None:
                 mzml_files.append(os.path.join(root, file))
     #错误文件
     for f in mzml_files:
-        try:
+        # try:
             pipeline_find_halo_no_blank(f)
-        except:
-            print('Encounter error in dealing with :',f)
-            #
-            pass
+        # except:
+        #     # print('Encounter error in dealing with :',f)
+        #     #
+        #     pass
 
 def pipeline_find_halo_substrate_blank(mzml_path) -> None:
     """find halo in mzml file"""

@@ -107,7 +107,7 @@ class my_data:
     def read(self):
         if self.source in ['mzML','mzml'] :
             self.data = mzml.read(self.path,use_index=True,read_schema=True)
-        elif self.source ==['mzXML','mzxml'] :
+        elif self.source in ['mzXML','mzxml'] :
             self.data = mzxml.read(self.path,use_index=True,read_schema=True)
     @timeit
     def create(self):

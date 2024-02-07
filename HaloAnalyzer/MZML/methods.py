@@ -6,6 +6,7 @@ import tensorflow as tf
 import time,os
 from ..Dataset.methods_sub import mass_spectrum_calc_2
 from ..model_test import timeit
+from multiprocessing import Pool
 
 # 禁用TensorFlow的日志信息
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -54,29 +55,60 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict,path):
     df.to_csv('roi-ckeck.csv')
 
     return df
+
+# def get_calc_targets(df_rois):
+#     #scan最小值为left_base中的最小值，最大值为right_base中的最大值
+#     scan_min = df_rois['left_base'].min()
+#     right_base = df_rois['right_base'].max()
+#     #scan的范围为left_base和right_base之间的所有值
+#     scan_range = np.arange(scan_min,right_base+1)
+#     #若scan在left_base和right_base之间，则将mz添加到该scan的mz_list中
+#     df1 = pd.DataFrame()
+#     for scan in scan_range:
+#         mz_list = []
+#         roi_list = []
+#         for i in range(len(df_rois)):
+#             if df_rois.loc[i,'left_base'] <=scan<=df_rois.loc[i,'right_base']:
+#                 mz_list.append(df_rois.loc[i,'mz'])
+#                 roi_list.append(df_rois.loc[i,'id_roi'])
+#         df1 = pd.concat([df1, pd.Series({'scan':scan,'mz_list':mz_list,'roi_list':roi_list})], axis=1)
+#     df1 = df1.T
+#     #删除df1中的mz_list为[]的行
+#     df1 = df1[df1['mz_list'].map(lambda x: len(x)) > 0]
+#     df1 = df1.reset_index(drop=True)
+#     df1.to_csv('calc_targets.csv')
+#     return df1 
+
+def process_scan(args):
+    scan, df_rois = args
+    mz_list = []
+    roi_list = []
+    for i in range(len(df_rois)):
+        if df_rois.loc[i,'left_base'] <= scan <= df_rois.loc[i,'right_base']:
+            mz_list.append(df_rois.loc[i,'mz'])
+            roi_list.append(df_rois.loc[i,'id_roi'])
+    return {'scan': scan, 'mz_list': mz_list, 'roi_list': roi_list}
 @timeit
 def get_calc_targets(df_rois):
-    #scan最小值为left_base中的最小值，最大值为right_base中的最大值
     scan_min = df_rois['left_base'].min()
     right_base = df_rois['right_base'].max()
-    #scan的范围为left_base和right_base之间的所有值
-    scan_range = np.arange(scan_min,right_base+1)
-    #若scan在left_base和right_base之间，则将mz添加到该scan的mz_list中
+    scan_range = np.arange(scan_min, right_base+1)
+
     df1 = pd.DataFrame()
-    for scan in scan_range:
-        mz_list = []
-        roi_list = []
-        for i in range(len(df_rois)):
-            if df_rois.loc[i,'left_base'] <=scan<=df_rois.loc[i,'right_base']:
-                mz_list.append(df_rois.loc[i,'mz'])
-                roi_list.append(df_rois.loc[i,'id_roi'])
-        df1 = pd.concat([df1, pd.Series({'scan':scan,'mz_list':mz_list,'roi_list':roi_list})], axis=1)
+
+    with Pool() as p:
+        results = p.map(process_scan, [(scan, df_rois) for scan in scan_range])
+
+    for result in results:
+        if result['mz_list']:  # only add to df1 if mz_list is not empty
+            df1 = pd.concat([df1, pd.Series(result)], axis=1)
+
     df1 = df1.T
-    #删除df1中的mz_list为[]的行
     df1 = df1[df1['mz_list'].map(lambda x: len(x)) > 0]
     df1 = df1.reset_index(drop=True)
     df1.to_csv('calc_targets.csv')
-    return df1     
+
+    return df1    
 
 def find_isotopologues(df1,mzml_data,mzml_dict):
     df = pd.DataFrame()
@@ -114,6 +146,46 @@ def find_isotopologues(df1,mzml_data,mzml_dict):
     df = df.T
  
     return df
+
+from multiprocessing import Pool
+import pandas as pd
+
+def process_scan_find_isotopologues(args):
+    i, df1, mzml_data, mzml_dict = args
+    df = pd.DataFrame()
+    scan_id = df1['scan'][i]
+    rt, mz, intensity = fliter_mzml_data(mzml_data.iloc[scan_id], min_intensity=mzml_dict['min_intensity'])
+    rt = rt / 60
+    for j in range(len(df1['mz_list'][i])):
+        target_roi = df1['roi_list'][i][j]
+        target_mz = df1['mz_list'][i][j]
+        dict_base = {'scan': scan_id, 'RT': rt, 'id_roi': target_roi, 'target_mz': target_mz}
+        try:
+            dict_mz_max = get_mz_max(mz, intensity, target_mz)
+            if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >= 10000:
+                charge = get_charge(dict_mz_max['mz_list2'], dict_mz_max['ints_list2'], dict_mz_max['intensity_max2'])
+                dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'], dict_mz_max['mz_list2'], dict_mz_max['ints_list2'], charge)
+            else:
+                charge = 0
+                dict_isotoplogues = {'mz_b3': 0, 'ints_b_3': 0, 'mz_b_2': 0, 'ints_b_2': 0, 'mz_b_1': 0, 'ints_b_1': 0, 'mz_b0': 0, 'ints_b0': 0, 'mz_b1': 0, 'ints_b1': 0, 'mz_b2': 0, 'ints_b2': 0, 'mz_b3': 0, 'ints_b3': 0,
+                                     'ints_b_3_raw': 0, 'ints_b_2_raw': 0, 'ints_b_1_raw': 0, 'ints_b0_raw': 0, 'ints_b1_raw': 0, 'ints_b2_raw': 0, 'ints_b3_raw': 0}
+
+            if charge != 0:
+                dict_all = dict_base.copy()
+                dict_all.update(dict_mz_max)
+                dict_all.update(dict_isotoplogues)
+                df = pd.concat([df, pd.Series(dict_all)], axis=1)
+        except:
+            pass
+
+    return df
+
+# def find_isotopologues(df1, mzml_data, mzml_dict):
+#     with Pool() as p:
+#         results = p.map( process_scan_find_isotopologues, [(i, df1, mzml_data, mzml_dict) for i in range(len(df1))])
+
+#     df = pd.concat(results, axis=1).T
+#     return df
 
 def correct_isotopic_peaks_base(arr1, arr2, arr3):
     """Perform a re-calibration of isotopic peaks according to the Region of Interest (ROI). If any of the isotopic peaks b_3, b_2, or 
