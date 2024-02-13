@@ -13,11 +13,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tf.get_logger().setLevel('ERROR')
 
 #读取mzml文件
-def load_mzml_file(path,level=1):
-    #如果path是mzml文件，则用pyteomics.mzml读取
+def load_mzml_file(path,mzml_dict,level=1):
     #如果path是mzxml文件，则用pyteomics.mzxml读取
     spectra = my_data(path)
-    spectra.run()
+    spectra.run(mzml_dict['min_intensity'])
     level_spectra = spectra.get_by_level(level)
     return spectra.data,level_spectra
 
@@ -56,136 +55,62 @@ def ms2ms1_linked_ROI_identify(spectra,mzml_dict,path):
 
     return df
 
-# def get_calc_targets(df_rois):
-#     #scan最小值为left_base中的最小值，最大值为right_base中的最大值
-#     scan_min = df_rois['left_base'].min()
-#     right_base = df_rois['right_base'].max()
-#     #scan的范围为left_base和right_base之间的所有值
-#     scan_range = np.arange(scan_min,right_base+1)
-#     #若scan在left_base和right_base之间，则将mz添加到该scan的mz_list中
-#     df1 = pd.DataFrame()
-#     for scan in scan_range:
-#         mz_list = []
-#         roi_list = []
-#         for i in range(len(df_rois)):
-#             if df_rois.loc[i,'left_base'] <=scan<=df_rois.loc[i,'right_base']:
-#                 mz_list.append(df_rois.loc[i,'mz'])
-#                 roi_list.append(df_rois.loc[i,'id_roi'])
-#         df1 = pd.concat([df1, pd.Series({'scan':scan,'mz_list':mz_list,'roi_list':roi_list})], axis=1)
-#     df1 = df1.T
-#     #删除df1中的mz_list为[]的行
-#     df1 = df1[df1['mz_list'].map(lambda x: len(x)) > 0]
-#     df1 = df1.reset_index(drop=True)
-#     df1.to_csv('calc_targets.csv')
-#     return df1 
-
-def process_scan(args):
-    scan, df_rois = args
+def process_scan(scan, df_rois):
     mz_list = []
     roi_list = []
     for i in range(len(df_rois)):
-        if df_rois.loc[i,'left_base'] <= scan <= df_rois.loc[i,'right_base']:
+        if df_rois.loc[i,'left_base'] <=scan<=df_rois.loc[i,'right_base']:
             mz_list.append(df_rois.loc[i,'mz'])
             roi_list.append(df_rois.loc[i,'id_roi'])
-    return {'scan': scan, 'mz_list': mz_list, 'roi_list': roi_list}
+    return {'scan':scan,'mz_list':mz_list,'roi_list':roi_list}
 @timeit
-def get_calc_targets(df_rois):
+def get_calc_targets(df_rois, n_jobs=4): # n_jobs应该在终端设置为可调，目前还没设置
     scan_min = df_rois['left_base'].min()
     right_base = df_rois['right_base'].max()
-    scan_range = np.arange(scan_min, right_base+1)
+    scan_range = np.arange(scan_min,right_base+1)
 
-    df1 = pd.DataFrame()
+    with Pool(n_jobs) as p:
+        results = p.starmap(process_scan, [(scan, df_rois) for scan in scan_range])
 
-    with Pool() as p:
-        results = p.map(process_scan, [(scan, df_rois) for scan in scan_range])
-
-    for result in results:
-        if result['mz_list']:  # only add to df1 if mz_list is not empty
-            df1 = pd.concat([df1, pd.Series(result)], axis=1)
-
-    df1 = df1.T
+    df1 = pd.DataFrame(results)
     df1 = df1[df1['mz_list'].map(lambda x: len(x)) > 0]
     df1 = df1.reset_index(drop=True)
     df1.to_csv('calc_targets.csv')
+    return df1
 
-    return df1    
 
-def find_isotopologues(df1,mzml_data,mzml_dict):
-    df = pd.DataFrame()
-    for i in range(len(df1)):
-        scan_id = df1['scan'][i]
-        rt,mz,intensity = fliter_mzml_data(mzml_data.iloc[scan_id],min_intensity=mzml_dict['min_intensity'])
-        rt = rt/60
-        for j in range(len(df1['mz_list'][i])):
-
-            target_roi = df1['roi_list'][i][j]
-            target_mz = df1['mz_list'][i][j]
-            dict_base = {'scan':scan_id,'RT':rt,'id_roi':target_roi,'target_mz':target_mz}
-            try:
-                dict_mz_max = get_mz_max(mz,intensity,target_mz)  #需要修正误差范围
-                if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >=10000:  # 10000这个参数应设置为可调参数，需要在parameter中设置(强度太低的峰同位素识别不准 )
-                    charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
-                    dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
-                else:
-                    #charge为0，a0,a1,a2,a3,b1,b2均为0
-                    charge = 0
-                    dict_isotoplogues = {'mz_b3':0,'ints_b_3':0,'mz_b_2':0,'ints_b_2':0,'mz_b_1':0,'ints_b_1':0,'mz_b0':0,'ints_b0':0,'mz_b1':0,'ints_b1':0,'mz_b2':0,'ints_b2':0,'mz_b3':0,'ints_b3':0,
-                                         'ints_b_3_raw':0,'ints_b_2_raw':0,'ints_b_1_raw':0,'ints_b0_raw':0,'ints_b1_raw':0,'ints_b2_raw':0,'ints_b3_raw':0}
-  
-                # dict_new = mass_spectrum_calc_2(dict_isotoplogues,charge)
-                if charge != 0:
-                    #合并dict_base,dict_mz_max,dict_isotoplogues
-                    dict_all = dict_base.copy()
-                    dict_all.update(dict_mz_max)
-                    dict_all.update(dict_isotoplogues)
-                    # dict_all.update(dict_new)
-                    df = pd.concat([df, pd.Series(dict_all)], axis=1)
-            except:
-                pass
-
-    df = df.T
- 
-    return df
-
-from multiprocessing import Pool
-import pandas as pd
-
-def process_scan_find_isotopologues(args):
-    i, df1, mzml_data, mzml_dict = args
-    df = pd.DataFrame()
+def process_row(i, df1, mzml_data, mzml_dict):
     scan_id = df1['scan'][i]
-    rt, mz, intensity = fliter_mzml_data(mzml_data.iloc[scan_id], min_intensity=mzml_dict['min_intensity'])
-    rt = rt / 60
+    rt,mz,intensity = fliter_mzml_data(mzml_data.iloc[scan_id],min_intensity=mzml_dict['min_intensity'])
+    rt = rt/60
+    result = []
     for j in range(len(df1['mz_list'][i])):
         target_roi = df1['roi_list'][i][j]
         target_mz = df1['mz_list'][i][j]
-        dict_base = {'scan': scan_id, 'RT': rt, 'id_roi': target_roi, 'target_mz': target_mz}
+        dict_base = {'scan':scan_id,'RT':rt,'id_roi':target_roi,'target_mz':target_mz}
         try:
-            dict_mz_max = get_mz_max(mz, intensity, target_mz)
-            if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >= 10000:
-                charge = get_charge(dict_mz_max['mz_list2'], dict_mz_max['ints_list2'], dict_mz_max['intensity_max2'])
-                dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'], dict_mz_max['mz_list2'], dict_mz_max['ints_list2'], charge)
+            dict_mz_max = get_mz_max(mz,intensity,target_mz)
+            if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >=10000:
+                charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
+                dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
             else:
                 charge = 0
-                dict_isotoplogues = {'mz_b3': 0, 'ints_b_3': 0, 'mz_b_2': 0, 'ints_b_2': 0, 'mz_b_1': 0, 'ints_b_1': 0, 'mz_b0': 0, 'ints_b0': 0, 'mz_b1': 0, 'ints_b1': 0, 'mz_b2': 0, 'ints_b2': 0, 'mz_b3': 0, 'ints_b3': 0,
-                                     'ints_b_3_raw': 0, 'ints_b_2_raw': 0, 'ints_b_1_raw': 0, 'ints_b0_raw': 0, 'ints_b1_raw': 0, 'ints_b2_raw': 0, 'ints_b3_raw': 0}
-
+                # dict_isotoplogues = {'mz_b3':0,'ints_b_3':0,'mz_b_2':0,'ints_b_2':0,'mz_b_1':0,'ints_b_1':0,'mz_b0':0,'ints_b0':0,'mz_b1':0,'ints_b1':0,'mz_b2':0,'ints_b2':0,'mz_b3':0,'ints_b3':0,
+                #                      'ints_b_3_raw':0,'ints_b_2_raw':0,'ints_b_1_raw':0,'ints_b0_raw':0,'ints_b1_raw':0,'ints_b2_raw':0,'ints_b3_raw':0}
             if charge != 0:
                 dict_all = dict_base.copy()
                 dict_all.update(dict_mz_max)
                 dict_all.update(dict_isotoplogues)
-                df = pd.concat([df, pd.Series(dict_all)], axis=1)
+                result.append(dict_all)
         except:
             pass
-
+    return result
+@timeit
+def find_isotopologues(df1, mzml_data, mzml_dict,n_jobs=4):  # n_jobs应该在终端设置为可调，目前还没设置
+    with Pool(n_jobs) as p:
+        results = p.starmap(process_row, [(i, df1, mzml_data, mzml_dict) for i in range(len(df1))])
+    df = pd.DataFrame([item for sublist in results for item in sublist])
     return df
-
-# def find_isotopologues(df1, mzml_data, mzml_dict):
-#     with Pool() as p:
-#         results = p.map( process_scan_find_isotopologues, [(i, df1, mzml_data, mzml_dict) for i in range(len(df1))])
-
-#     df = pd.concat(results, axis=1).T
-#     return df
 
 def correct_isotopic_peaks_base(arr1, arr2, arr3):
     """Perform a re-calibration of isotopic peaks according to the Region of Interest (ROI). If any of the isotopic peaks b_3, b_2, or 
@@ -200,6 +125,7 @@ def correct_isotopic_peaks_base(arr1, arr2, arr3):
             arr3[:, i] = 0      
     return arr1, arr2, arr3
 
+@timeit
 def correct_isotopic_peaks(df):
 
     '''Re-calibrate the isotopic peaks based on the ROI. If b_3, b_2, or b_1 in a group within the ROI has an intensity of 0, 

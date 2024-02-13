@@ -5,6 +5,7 @@ from asari.default_parameters import PARAMETERS
 from collections import Counter
 from ..model_test import timeit
 from pyteomics import mzml ,mgf,mzxml
+from multiprocessing import Pool
 class ROIs:
     def __init__(self) -> None:
         self.rois = []
@@ -109,14 +110,25 @@ class my_data:
             self.data = mzml.read(self.path,use_index=True,read_schema=True)
         elif self.source in ['mzXML','mzxml'] :
             self.data = mzxml.read(self.path,use_index=True,read_schema=True)
-    @timeit
-    def create(self):
+
+    def fliter_mzml_data(self,ms1_spectra,min_intensity):
+        mz = ms1_spectra['m/z array']
+        # 保留5位小数
+        mz = np.round(mz,5)
+        intensity = ms1_spectra['intensity array']
+        #只保留intensity大于min_intensity的峰
+        mz = mz[intensity>min_intensity]
+        intensity = intensity[intensity>min_intensity]
+        return mz,intensity
+    # @timeit
+    def create(self,min_intensity):
         new_data = []
         if self.source in ['mzML','mzml']:
             for s in self.data:
                 try:
                     if s['ms level'] in [1,2]:
-                        new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
+                        mz,intensity = self.fliter_mzml_data(s,min_intensity)
+                        new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':mz,'intensity array':intensity,'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
                     else:
                         continue
                 except:
@@ -125,18 +137,20 @@ class my_data:
             for s in self.data:
                 try:
                     if s['msLevel'] in [1,2]:
+                        mz,intensity = self.fliter_mzml_data(s,min_intensity)
                         new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
                     else:
                         continue
                 except:
                     continue
         self.data = pd.DataFrame(new_data)
+
     @timeit
     def get_by_level(self,level):
         return self.data[self.data['ms level']==level]
-    def run(self):
+    def run(self,min_intensity):
         self.read()
-        self.create()
+        self.create(min_intensity)
 
 def feature_extractor(file_name: str,para) -> pd.DataFrame:
     """

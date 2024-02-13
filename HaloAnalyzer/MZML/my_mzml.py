@@ -30,9 +30,8 @@ class my_mzml:
     def load_mzml_data(self):
         """加载mzml数据"""
         #MS1数据
-        self.mzml_data_all,self.mzml_data =load_mzml_file(self.path)
-
-    
+        self.mzml_data_all,self.mzml_data =load_mzml_file(self.path,self.mzml_dict)
+   
     #分析数据
     @timeit
     def ROI_identify(self):
@@ -49,9 +48,10 @@ class my_mzml:
     @timeit
     def extract_features(self):
         """对ROI进行特征提取"""
+
         df1 = get_calc_targets(self.df_rois)
         df_isotopologues = find_isotopologues(df1,self.mzml_data,self.mzml_dict)
-        # df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_find.csv',index=False)
+        df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_find.csv',index=False)
         # correct df_isotopologues
         df_isotopologues = correct_isotopic_peaks(df_isotopologues)
         # df_isotopologues.to_csv(r'C:\Users\xyy\Desktop\after_correct.csv',index=False)
@@ -97,7 +97,7 @@ class my_mzml:
         roi_mean_halo_score = df['roi_mean_pred']
         
         # 如果roi_mean_halo_score为0，1，2则为1，如果为其他则为0
-        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x ssin [0,1,2] else 0)
+        roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [0,1,2] else 0)
 
         # #Se
         # roi_mean_halo_score = roi_mean_halo_score.apply(lambda x: 1 if x in [3] else 0)

@@ -74,11 +74,13 @@ min_peak_height = 5000
 #使用ms1ms2_linked进行峰识别的参数
 [mzml]
 vendor = ''
-min_intensity = 100 #并非相对强度，An intensity threshold of 500  was used to eliminate electronic noise.
+n_jobs = 4
+min_intensity = 100 #并非相对强度，An intensity threshold of 100  was used to eliminate electronic noise.
 precursor_error = 0.8
 ROI_identify_method = 'DDA' # MS:asari; DDA:ms2fms1;peak_only: ROI
 min_element_roi = 3 #roi识别中MS1_index的最少元素数量
 min_element_sum = 3 #halo_eval中count_list中最少元素数量
+
 
 #可视化参数
 [visualization]
