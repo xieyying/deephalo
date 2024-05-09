@@ -88,7 +88,7 @@ class dataset():
             
             self.df_data = df
         else:
-            raise ValueError('type must be in [base,noise,Fe,hydro,dehydro]')
+            raise ValueError('type must be in [base,Fe,hydro,dehydro]')
         
     def save(self,path):
         """保存数据集"""

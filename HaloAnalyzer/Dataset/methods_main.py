@@ -2,14 +2,12 @@ from molmass import Formula
 import pandas as pd
 from .methods_sub import get_iron_additive_isotopes,get_boron_additive_isotopes,\
     get_selenium_additive_isotopes,get_hydroisomer_isotopes,\
-    adding_noise_to_mass,adding_noise_to_intensity,mass_spectrum_calc,mass_spectrum_calc_2
+mass_spectrum_calc,mass_spectrum_calc_2
     
-
 def formula_clf(formula_dict,type=None) :
     """
     Returns a class based on the formula given.
     """
-
     #根据分子式，判断是否可训练
     if formula_dict.get('R') != None:
         trainable = 'no'
@@ -17,9 +15,6 @@ def formula_clf(formula_dict,type=None) :
         trainable = 'no'
     elif formula_dict.get('H') < 3 or formula_dict.get('C') < 1:
         trainable = 'no'
-    # elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
-    #     trainable = 'no'
-
     else:
         trainable = 'yes'
 
@@ -30,23 +25,15 @@ def formula_clf(formula_dict,type=None) :
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
         if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
             group = 19
-        # elif formula_dict['Br'] + formula_dict['Cl']<=5:
-        #     group = 0
         else:
             group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
             group = 19
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
-        #     if formula_dict['Br']<=5:
             group = 0
-        #     else:
-        #         group = 17
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
-        #     if formula_dict['Cl']<=5:
-            group = 0
-        #     else:
-        #         group = 18            
+            group = 0        
         elif ('Br' in formula_dict.keys()) and formula_dict['Br']==1 :
             group = 1
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']==3:
@@ -83,7 +70,6 @@ def formula_clf(formula_dict,type=None) :
             group = 10
         else:
             group = 11
-
     else:
         group = 6
 
@@ -183,16 +169,7 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
     #模拟质谱数据
     dict_isos = Isotope_simulation(formula,type,rate)
 
-    if type == 'noise':
-        #为质谱数据添加噪音
-        #更新dict_isos中的数据，逐个增加噪音
-        for key in dict_isos.keys():
-            if key in ['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3','mz_b4']:
-                dict_isos[key] = adding_noise_to_mass(dict_isos[key])
-            else:
-                dict_isos[key] = adding_noise_to_intensity(dict_isos[key])
-      
-    elif type == 'Se':
+    if type == 'Se':
         group = 3
     elif type == 'B':
         group = 4
@@ -211,10 +188,4 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
 
     return df
     
-if __name__ == '__main__':
-    formula = 'C19H37NO5'
-
-    df = create_data((formula),type='base',rate=0.1)
-
-    print(df)
 

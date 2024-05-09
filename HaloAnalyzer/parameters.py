@@ -10,7 +10,6 @@ class run_parameters:
         self.config = config
         #dataset参数
         self.elements_list = config['datasets']['element_list']
-        self.repeat_for_noise = config['datasets']['repeat_for_noise']
         self.datasets = config['datasets']['paths']
         self.mz_start = config['datasets']['mz_start']
         self.mz_end = config['datasets']['mz_end']
@@ -18,18 +17,12 @@ class run_parameters:
 
         #model_data参数
         self.features_list = config['model_data']['feature_list']
-        self.use_noise_data = config['model_data']['use_noise_data']
         self.use_fe_data = config['model_data']['use_add_fe_data']
         self.use_b_data = config['model_data']['use_add_b_data']
         self.use_se_data = config['model_data']['use_add_se_data']
         self.use_s_data = config['model_data']['use_add_s_data']
         self.use_hydroisomer_data = config['model_data']['use_hydroisomer_data']
-        self.use_overloaded_data = config['model_data']['use_overloaded_data']
-        # self.data_weight = config['model_data']['data_weight']
-        # self.noise_data_weight = config['model_data']['noise_data_weight']
-        # self.add_fe_data_weight = config['model_data']['add_fe_data_weight']
-        # self.hydroisomer_data_weight = config['model_data']['hydroisomer_data_weight']
-
+        
         #model_construct参数
         self.train_batch = config['model_construct']['train_batch']
         self.val_batch = config['model_construct']['val_batch']
@@ -40,14 +33,6 @@ class run_parameters:
         self.learning_rate = config['model_construct']['learning_rate']
         self.classes_weight = {int(k): v for k, v in config['model_construct_class_weight']['classes_weight'].items()}
         
-
-        #asari参数
-        self.asari_dict = {'min_prominence_threshold':config['asari']['min_prominence_threshold'],
-                           'mz_tolerance_ppm':config['asari']['mz_tolerance_ppm'],
-                           'min_intensity':config['asari']['min_intensity'],
-                           'min_timepoints':config['asari']['min_timepoints'],
-                           'min_peak_height':config['asari']['min_peak_height'],
-                           }
         #mzml参数
         self.mzml_dict = {'min_intensity':config['mzml']['min_intensity'],
                           'vendor':config['mzml']['vendor'],
