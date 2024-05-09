@@ -17,8 +17,8 @@ def formula_clf(formula_dict,type=None) :
         trainable = 'no'
     elif formula_dict.get('H') < 3 or formula_dict.get('C') < 1:
         trainable = 'no'
-    elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
-        trainable = 'no'
+    # elif formula_dict.get('S') != None and formula_dict.get('S') > 4:
+    #     trainable = 'no'
 
     else:
         trainable = 'yes'
@@ -71,8 +71,12 @@ def formula_clf(formula_dict,type=None) :
         else:
             group = 14
     elif 'S' in formula_dict.keys():
-        if formula_dict['S']<=3:
+        if formula_dict['S']==1:
+            group = 81
+        elif formula_dict['S']==2:
             group = 8
+        elif formula_dict['S']==3:
+            group = 811
         elif formula_dict['S']==4:
             group = 9
         elif formula_dict['S']==5:

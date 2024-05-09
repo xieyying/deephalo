@@ -5,6 +5,8 @@ from .parameters import run_parameters
 import importlib_resources
 from .model_test import timeit
 import logging
+
+
 #通过终端选择运行模式
 __version__ = '0.2.0'
 
@@ -12,6 +14,8 @@ __version__ = '0.2.0'
 def main():
 
     print("\n\nHaloAnalyzer (%s) \n" %__version__)
+
+    
     #命令行参数设置
     parser = argparse.ArgumentParser(description='HALOAnalyzer: a tool for mining halogenates based on high resolution mass data.')
 
@@ -45,6 +49,18 @@ def main():
             elif args.run == 'train_model':
                 pipeline_model(args.mode)
             elif args.run == 'analyze_mzml':
+                
+                # Check if the directory exists, if not, create it
+                if not os.path.exists('./test_mzml_prediction'):
+                    os.makedirs('./test_mzml_prediction')
+
+                # Check if the file exists, if so, remove it
+                if os.path.exists('./test_mzml_prediction/run.txt'):
+                    os.remove('./test_mzml_prediction/run.log')
+
+                # Now you can safely set up your logging
+                logging.basicConfig(filename='./test_mzml_prediction/run.log', level=logging.INFO)
+            
                 blank_path = args.blank
                 mzml_path = args.input
                 if blank_path != None:

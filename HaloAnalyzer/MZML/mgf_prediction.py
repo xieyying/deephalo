@@ -1,3 +1,4 @@
+
 import sys
 sys.path.append(r'\Users\xyy\Desktop\python\HaloAnalyzer')
 
@@ -10,6 +11,7 @@ import os
 from HaloAnalyzer.Model import model_build
 from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay, classification_report
 import matplotlib.pyplot as plt
+from keras.models import load_model
 
 # your code here
 def formula_clf(formula_dict,type=None) :
@@ -204,7 +206,7 @@ def get_charge(mz_list,ints_list,intensity_max):
     else:
         return 0
 
-def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.01):
+def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.02):
     
     """
     以最高峰为基准，获取与其相差delta_mz的同位素峰的mz和intensity;
@@ -239,6 +241,7 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     ints_b_2/ints_b0,ints_b_1/ints_b0,ints_b0/ints_b0,ints_b1/ints_b0,ints_b2/ints_b0,ints_b3/ints_b0
     mz_b_3,mz_b_2,mz_b_1,mz_b0,mz_b1,mz_b2,mz_b3 = mz_b_3*charge,mz_b_2*charge,mz_b_1*charge,mz_b0*charge,mz_b1*charge,mz_b2*charge,mz_b3*charge
     
+
     # 根据base数据统计结果去除掉低强度信号，防止背景信号影响
     # min_int_b3: 0.000217286018714 min_int_b1: 0.001998024679028 min_int_b2: 0.0446544604098983 
     # min_int_a1: 0.0218262955587414 min_int_a2: 0.0001238175919807 min_int_a3: 1.244083605286354e-06
@@ -291,7 +294,7 @@ def get_isotopic_peaks(mz_max,mz_list,ints_list,charge):
     #以字典的形式返回
     return {'b2_b1':b2_b1,'mz_b_3':mz_b_3,'ints_b_3':ints_b_3,'mz_b_2':mz_b_2,'ints_b_2':ints_b_2,'mz_b_1':mz_b_1,'ints_b_1':ints_b_1,'mz_b0':mz_b0,'ints_b0':ints_b0,'mz_b1':mz_b1,'ints_b1':ints_b1,'mz_b2':mz_b2,'ints_b2':ints_b2,'mz_b3':mz_b3,'ints_b3':ints_b3,'b2_b1_10':b2_b1_10}
 
-def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
+def is_halo_isotopes(b_3,b_2,b_1,b0,b1,b2,b3):
     """
     根据六个个同位素峰的强度,判断是否为同位素峰
     判断主要依据卤化物的同位素峰强度的统计结果
@@ -317,9 +320,19 @@ def is_halo_isotopes(b_3,b_2,b_1,a0,a1,a2,a3):
     #     is_isotope =0
 
     # return is_isotope
-    if a1>0.02:
+    """
+    根据七个同位素峰的强度,判断是否为同位素峰
+    判断依据为base数据模拟质谱的统计结果
+    """
+    # 根据base1卤化物ints_b1最小为0.0265888647368106
+    if b1>0.02:
         if b_3 == 0:
-            is_isotope = 1
+            if b_2 == 0:
+                is_isotope = 1
+            elif b_2>0.04:
+                is_isotope = 1
+            else:
+                is_isotope = 0
         else:
             if b_2 > 0.04:
                 is_isotope = 1
@@ -442,6 +455,7 @@ class mgf_pred():
                 # for myxo
                 formula = spectrum['params']['formula']
                 name = spectrum['params']['compound_name']
+            
 
 
             # print(formula)
@@ -477,6 +491,7 @@ class mgf_pred():
                 #     continue
                 
                 dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
+                
                 is_halo = is_halo_isotopes(dict_isotoplogues['ints_b_3'],dict_isotoplogues['ints_b_2'],dict_isotoplogues['ints_b_1'],dict_isotoplogues['ints_b0'],dict_isotoplogues['ints_b1'],dict_isotoplogues['ints_b2'],dict_isotoplogues['ints_b3'])
                 if is_halo == 1:
                     mgf_extracted.append(spectrum)
@@ -552,7 +567,9 @@ def add_predict(df,model_path,features_list):
     #     return tf.reduce_mean(tf.losses.sparse_categorical_crossentropy(y_true, y_pred) * weights)
     # clf = tf.keras.models.load_model(model_path,custom_objects={'root_csw_loss': root_csw_loss})
     clf = tf.keras.models.load_model(model_path)
-    
+
+
+
     #加载特征
 
     querys = df[features_list].values
@@ -572,15 +589,24 @@ def confusion_show(df):
         #y_pred中的7换为6
         y_pred[y_pred==7] = 6
         print(type(Y_val),type(y_pred))
+        # Merge classes 0, 1, 2 into a new class
+        # Y_val_merged = Y_val.copy()
+        # Y_val_merged[(Y_val_merged == 0) | (Y_val_merged == 1) | (Y_val_merged == 2)] = 7
+
+        # y_pred_merged = y_pred.copy()
+        # y_pred_merged[(y_pred_merged == 0) | (y_pred_merged == 1) | (y_pred_merged == 2)] = 7
+         
+        # Y_val = Y_val_merged
+        # y_pred = y_pred_merged
+
         cm = confusion_matrix(Y_val, y_pred)
 
-        # Compute recall and precision for each class
-        report = classification_report(Y_val, y_pred, output_dict=True,zero_division=0)
+
         # Compute recall and precision for each class
         report = classification_report(Y_val, y_pred, output_dict=True,zero_division=1)
-        recalls = [report[str(i)]['recall'] if str(i) in report else 0 for i in range(cm.shape[0])]
-        precisions = [report[str(i)]['precision'] if str(i) in report else 0 for i in range(cm.shape[0])]
-        F1_sore = [report[str(i)]['f1-score'] if str(i) in report else 0 for i in range(cm.shape[0])]
+        recalls = [report[str(i)]['recall'] if str(i) in report else 0  for i in range(8)]
+        precisions = [report[str(i)]['precision'] if str(i) in report else 0 for i in range(8)]
+        F1_sore = [report[str(i)]['f1-score'] if str(i) in report else 0 for i in range(8)]
 
         # Plot the confusion matrix
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
@@ -589,7 +615,7 @@ def confusion_show(df):
         ConfusionMatrixDisplay.from_predictions(Y_val, y_pred, ax=axs[0, 0], cmap=plt.cm.terrain)
         axs[0, 0].set_title('Classifier')
         # Plot the precision bar chart below the confusion matrix
-        # Plot the precision bar chart below the confusion matrix
+        
         colors = np.random.rand(len(precisions), 3)
         axs[1, 0].bar(np.arange(len(precisions)), precisions, color=colors)
         axs[1, 0].set_title('Precision')
@@ -628,7 +654,7 @@ def confusion_show(df):
 if __name__ == '__main__':
     
     feature_list = [
-        # "ints_b_3",
+        "ints_b_3",
         "ints_b_2",
         "ints_b_1",
         "ints_b0",
@@ -637,18 +663,18 @@ if __name__ == '__main__':
         "ints_b3",
         "m2_m1",
         "m1_m0",
-        # "b2_b1",
+        "b2_b1",
         
     ]
-    # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\main10\trained_models\pick_halo_ann.h5'
+    # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\my_search_10_feature_wise_including_hydro_data\trained_models\pick_halo_ann.h5'
+    # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\trained_models_10_parameters\pick_halo_ann.h5'
     model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\trained_models\pick_halo_ann.h5'
-    # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_1\trained_models\picked_models\pick_halo_ann_test1.h5'
 
-    # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\test'
-    # # path = r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\\AC_random_F'
-
-    # path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf'
-    path =r'D:\python\wangmengyuan\dataset\mzmls\mgf_from_public_database\pattern_mgf\isotope_patterns_mgf_merged'
+    path =r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset\in_house_dataset\For_haloanalyzer'
+    path = r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset\open_dataset\myxo'
+    # # # path = r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset\open_dataset\CASMI'
+    path = r'C:\Users\xyy\Desktop\test\test'
+    # path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\test_mzml_prediction\test'
     
     files = os.listdir(path)
     for file in files:
@@ -668,7 +694,6 @@ if __name__ == '__main__':
         df.to_csv(f[:-4]+'_features.csv',index=False)
         # mgf.write(mgf_extracted,f[:-4]+'_extracted.mgf')
         # mgf.write(mgf_patterns,f[:-4]+'_patterns.mgf')
-        
         # print(df)
         #遍历整个df
         n = 0
@@ -707,11 +732,3 @@ if __name__ == '__main__':
         confusion_show(df)
         # print(f,'done')
 
-# 0 = 0.00808743
-# 1 = 0.00690296
-# 2 = 0.0050516
-# 3 = 0.00997609
-# 4 = 0.00953029
-# 5 = 0.010005
-# 6 = 0.00342269
-# 7 = 1

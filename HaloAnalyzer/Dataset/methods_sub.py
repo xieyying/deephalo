@@ -1,59 +1,6 @@
 import numpy as np
 from molmass import Formula,Spectrum
 
-
-def adding_noise_to_intensity (Intensity,sigma_IR=0.05, sigma_IA=0.00005):
-
-    """
-    The parameters and function come from the reference:
-
-    'Meusel, M.;  Hufsky, F.;  Panter, F.;  Krug, D.;  Müller, R.; Böcker, S., 
-    Predicting the Presence of Uncommon Elements in Unknown Biomolecules from Isotope Patterns.
-    Anal Chem 2016, 88 (15), 7556-66.'
-
-    parameters:
-
-    Intesntiy: simulated intensity for a compound by molmass
-
-    sigma_IR = 0.05 for training set, 0.04 and 0.07 for evaluation set
-    sigma_IA =0.005 for training set, 0.0015 and 0.006 for evaluation set
-
-    """
-    # Generate the relative noise for intensity
-    relative_noise = np.random.uniform(1,1+sigma_IR)
-
-    # Generate the absolute noise for intensity
-    absolute_noise = np.random.uniform(0, sigma_IA)
-
-    # Calculate the simulated intensity
-    I_simulated = Intensity * relative_noise + absolute_noise
-
-    return I_simulated
-
-def adding_noise_to_mass (mass, M=0.0015):
-
-    """
-    The parameters and function come from the reference:
-
-    'Meusel, M.;  Hufsky, F.;  Panter, F.;  Krug, D.;  Müller, R.; Böcker, S., 
-    Predicting the Presence of Uncommon Elements in Unknown Biomolecules from Isotope Patterns.
-    Anal Chem 2016, 88 (15), 7556-66.'
-
-    parameters:
-
-    mass     : simulated mass for a compound by molmass
-
-    M=0.0015 for training set, 0.0013 and 0.0018 for evaluation set
-
-    """
-    # Generate the relative noise for mass
-    mass_noise = np.random.uniform(-M, M)
-
-    # Calculate the simulated mass
-    m_simulated = mass + mass_noise
-    
-    return m_simulated
-
 def get_iron_additive_isotopes(formula):
     """get the isotopic distribution of the formula with iron additive"""
     f=Formula(formula+"Fe")-Formula('H2')
@@ -172,121 +119,57 @@ def mass_spectrum_calc_2(dict_features,charge) -> dict:
             'm2_m1':m2_m1,'m2_m0':m2_m0,
             'm2_m0_10':m2_m0_10,'m2_m1_10':m2_m1_10,'b2_b1':b2_b1,'b2_b1_10':b2_b1_10,'m1_m0':m1_m0,'m1_m0_10':m1_m0_10}
 
-def get_hydroisomer_isotopes(formula,ratio,min_intensity=0.0001) -> Spectrum:
-    """get the isotopic distribution of the formula with hydrogen isotope"""
-    spectrum1=Formula(formula).spectrum()
-    spectrum2=Formula(formula+"H2").spectrum()
+def get_hydroisomer_isotopes(formula, ratio, min_intensity=0.0001) -> Spectrum:
+    """
+    Calculate the overlapped spectrum of a chemical formula and its hydroisomer.
+    
+    Parameters:
+    formula: str, the chemical formula.
+    ratio: float, the weighting between the two spectra in the final overlapped spectrum.
+    min_intensity: float, the minimum relative intensity for an isotope to be included in the final spectrum.
+
+    Returns:
+    Spectrum: the overlapped spectrum.
+    """
+    # Calculate the isotopic distribution of the original formula
+    spectrum1 = Formula(formula).spectrum()
+    # Calculate the isotopic distribution of the formula with two additional hydrogen atoms
+    spectrum2 = Formula(formula + "H2").spectrum()
 
     min_fraction: float = 1e-16
-    # min_intensity: float =1e-16
 
-    #新建一个spectrum的字典
-    spectrum={}
-    for key1,items in sorted(spectrum1.items()):
-        # print(key1)
-        f=items.fraction
-        m=items.mass
-        k=items.massnumber
-        if f<min_fraction:
-            continue
+    # Create a new dictionary to store the overlapped spectrum
+    spectrum = {}
+    for key1, items in sorted(spectrum1.items()):
+        f = items.fraction
+        m = items.mass
+        k = items.massnumber
         if key1 in spectrum2:
-            f2=spectrum2[key1].fraction
-            m2=spectrum2[key1].mass
-            if f2<min_fraction:
-                continue
-            s_0 = (f * m + f2 * m2*ratio) / (f + f2*ratio)
-            s_1 =f + f2*ratio
-            spectrum[k]=[s_0, s_1,1.0]
+            f2 = spectrum2[key1].fraction
+            m2 = spectrum2[key1].mass
+            # Calculate the new mass and relative intensity for the isotope
+            m_new = (f * m + f2 * m2 * ratio) / (f + f2 * ratio)
+            f_new = f + f2 * ratio
+            spectrum[k] = [m_new, f_new, 1.0]
         else:
-            spectrum[k] = [m, f,1.0]
+            # If the isotope is only present in spectrum 1, retain its original mass and relative intensity
+            spectrum[k] = [m, f, 1.0]
+    # Add isotopes that are exclusively present in spectrum2 to the overlapped spectrum
+    for key2, items in sorted(spectrum2.items()):
+        if key2 not in spectrum1:
+            f = items.fraction
+            m = items.mass
+            k = items.massnumber
+            spectrum[k] = [m, f, 1.0]
 
-    # filter low intensities
+    # Filter out isotopes with low intensities and normalize the remaining isotopic intensities to 100
     if min_intensity is not None:
         norm = 100 / max(v[1] for v in spectrum.values())
         for massnumber, value in spectrum.copy().items():
             if value[1] * norm < min_intensity:
                 del spectrum[massnumber]
             else:
-                spectrum[massnumber][2] = value[1]*norm
-    # print(spectrum)
+                spectrum[massnumber][2] = value[1] * norm
+
     return Spectrum(spectrum)
-
-if __name__ =='__main__':
-
-    import os
-    import pandas as pd
     
-    # #添加噪音
-    # df_new =pd.DataFrame()
-    
-    # key_mz=['m2_m1','m1_m0','b2_b1']
-    # key_ints = ['ints_b_3', 'ints_b_2','ints_b_1','ints_b0',"ints_b1",'ints_b2','ints_b3']
-    # path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset'
-    # path2 = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise'
-    # files = os.listdir(path)
-    # for f in files:
-    #     if f.endswith('.csv'):
-    #         f_path = os.path.join(path,f)
-    #         df = pd.read_csv(f_path)
-            
-    #         for i in range(3):
-    #             df_ =pd.DataFrame()
-    #             m2_m1 = df['m2_m1']
-    #             m1_m0 = df ['m1_m0']
-    #             b2_b1 = df['b2_b1']
-
-    #             ints_b_3 = df['ints_b_3']
-    #             ints_b_2 = df['ints_b_2']
-    #             ints_b_1 = df['ints_b_1']
-    #             ints_b0 = df['ints_b0']
-    #             ints_b1 = df['ints_b1']
-    #             ints_b2 = df['ints_b2']
-    #             ints_b3 = df['ints_b3']
-                
-
-    #             df_['m2_m1'] = adding_noise_to_mass(m2_m1, 0.003)
-    #             df_['m1_m0'] = adding_noise_to_mass(m1_m0,0.003)
-    #             df_['b2_b1'] = adding_noise_to_mass(b2_b1,0.003)
-
-    #             df_['m2_m1_10'] = df['m2_m1']**10
-    #             df_['m1_m0_10'] = df['m1_m0']**10
-    #             df_['b2_b1'] = df['b2_b1']**10
-
-    #             df_["ints_b_3"] = adding_noise_to_intensity(ints_b_3, 0.005,0.005)
-    #             df_["ints_b_2"] = adding_noise_to_intensity(ints_b_2, 0.005,0.005)
-    #             df_["ints_b_1"] = adding_noise_to_intensity(ints_b_1, 0.005,0.005)
-    #             df_["ints_b0"] = adding_noise_to_intensity(ints_b0, 0.005,0.005)
-    #             df_["ints_b1"] = adding_noise_to_intensity(ints_b1, 0.005,0.005)
-    #             df_["ints_b2"] = adding_noise_to_intensity(ints_b2, 0.005,0.005)
-    #             df_["ints_b3"] = adding_noise_to_intensity(ints_b3, 0.005,0.005)
-    #             df_['group'] = df['group']
-
-
-    #             df_new  = pd.concat([df_new,df_],ignore_index = True)
-    # df_new.to_csv(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise.csv')
-
-
-                
-    path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise\test'
-    files = os.listdir(path)
-    df_ = pd.DataFrame()
-    for f in files:
-        
-        if f.endswith('.csv'):
-            f_path = os.path.join(path,f)
-            print(f_path)
-            df = pd.read_csv(f_path)
-            df_ = pd.concat([df_,df],ignore_index=True)
-    df_.to_csv(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\020_main_2\dataset\noise.csv',index=False)
-        
-
-
-
-
-
-
-
-
-
-
-    # (Intensity,sigma_IR=0.05, sigma_IA=0.00005):

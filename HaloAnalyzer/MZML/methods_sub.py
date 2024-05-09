@@ -32,6 +32,7 @@ class ROIs:
                 'roi_ms2_index':[update_dict['MS2']],
                 'left_base':update_dict['MS1_counter'],
                 'right_base':update_dict['MS1_counter'],
+                'precursor':[update_dict['precursor']],
             })
             self.max_roi += 1
         
@@ -47,11 +48,12 @@ class ROIs:
                         roi['MS1_index'].append(update_dict['MS1'])
                         roi['counter_list'].append(update_dict['MS1_counter'])
                     roi['roi_ms2_index'].append(update_dict['MS2'])
+                    roi['precursor'].append (update_dict['precursor'])
                     #更新roi的左右边界
                     roi['left_base'] = min(roi['left_base'],update_dict['MS1_counter'])
                     roi['right_base'] = max(roi['right_base'],update_dict['MS1_counter'])
                     add_new = True
-                    # break
+
             if not add_new:
                 # print('new')
                 self.rois.append({
@@ -60,6 +62,7 @@ class ROIs:
                     'MS1_index':[update_dict['MS1']],
                     'counter_list':[update_dict['MS1_counter']],
                     'roi_ms2_index':[update_dict['MS2']],
+                    'precursor':[update_dict['precursor']],
                     'left_base':update_dict['MS1_counter'],
                     'right_base':update_dict['MS1_counter'],
                 })
@@ -89,6 +92,7 @@ class ROIs:
                 self.rois[i]['MS1_index'] = self.rois[i]['MS1_index'] + self.rois[i+1]['MS1_index']
                 self.rois[i]['counter_list'] = self.rois[i]['counter_list'] + self.rois[i+1]['counter_list']
                 self.rois[i]['roi_ms2_index'] = self.rois[i]['roi_ms2_index'] + self.rois[i+1]['roi_ms2_index']
+                self.rois[i]['precursor'] = self.rois[i]['precursor'] + self.rois[i+1]['precursor']
                 self.rois[i]['left_base'] = min(self.rois[i]['left_base'],self.rois[i+1]['left_base'])
                 self.rois[i]['right_base'] = max(self.rois[i]['right_base'],self.rois[i+1]['right_base'])
                 del self.rois[i+1]
@@ -126,8 +130,11 @@ class my_data:
         if self.source in ['mzML','mzml']:
             for s in self.data:
                 try:
-                    if s['ms level'] in [1,2]:
+                    if s['ms level'] == 1:
                         mz,intensity = self.fliter_mzml_data(s,min_intensity)
+                        new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':mz,'intensity array':intensity,'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
+                    elif s['ms level'] == 2:
+                        mz,intensity = self.fliter_mzml_data(s,min_intensity/4)
                         new_data.append({'scan':s['index'],'ms level':s['ms level'],'m/z array':mz,'intensity array':intensity,'tic':s['total ion current'],'rt':s['scanList']['scan'][0]['scan start time']*60,'precursor':s.get('precursorList'),})
                     else:
                         continue
@@ -136,8 +143,11 @@ class my_data:
         elif self.source in ['mzXML','mzxml']:
             for s in self.data:
                 try:
-                    if s['msLevel'] in [1,2]:
+                    if s['msLevel'] ==  1:
                         mz,intensity = self.fliter_mzml_data(s,min_intensity)
+                        new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
+                    elif s['msLevel'] == 2:
+                        mz,intensity = self.fliter_mzml_data(s,min_intensity/10)
                         new_data.append({'scan':s['num'],'ms level':s['msLevel'],'m/z array':s['m/z array'],'intensity array':s['intensity array'],'tic':s['totIonCurrent'],'rt':s['retentionTime']*60,'precursor':s.get('precursorMz'),})
                     else:
                         continue
@@ -145,7 +155,6 @@ class my_data:
                     continue
         self.data = pd.DataFrame(new_data)
 
-    @timeit
     def get_by_level(self,level):
         return self.data[self.data['ms level']==level]
     def run(self,min_intensity):
@@ -247,8 +256,7 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
     # transfer MS1_MS2_connected to a dataframe
     MS1_MS2_connected = pd.DataFrame(MS1_MS2_connected)
 
-    MS1_MS2_connected = MS1_MS2_connected[MS1_MS2_connected['precursor_ints']>=10000]
-
+    MS1_MS2_connected = MS1_MS2_connected[MS1_MS2_connected['precursor_ints']>=10000] # 10000这个参数应设置为可调参数
     return MS1_MS2_connected
 
 #待更新减去质谱中的基线
@@ -577,24 +585,24 @@ def roi_scan_based_halo_evaluation_(I):
     com_class = list(Counter(I).keys())
     counter = Counter(I)
     # 统计I中0,1,2所占的比例
-    scan_based_halo_ratio = sum(1 for i in I if i in {3}) / len(I)
+    scan_based_halo_ratio = sum(1 for i in I if i in {8}) / len(I)
 
     # Determine the halo classification for the ROI
-    if any(i in com_class for i in [3]):
+    if any(i in com_class for i in [8]):
         scan_based_halo_class = 'halo'
         if len(com_class) == 1:
             scan_based_halo_score = 100
             scan_based_halo_sub_score = 100
             scan_based_halo_sub_class = com_class[0]
         else:
-            if {3}.issuperset(set(com_class)):
+            if {8}.issuperset(set(com_class)):
                 scan_based_halo_score = 100
                 scan_based_halo_sub_class =max(counter.items(), key=lambda x: x[1])[0]
                 scan_based_halo_sub_class_ratio = counter[scan_based_halo_sub_class] / len(I)
                 scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
             else:
                 
-                I_new = [1 if i in [3] else 0 for i in I]
+                I_new = [1 if i in [8] else 0 for i in I]
                        
                 scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
 

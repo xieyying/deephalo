@@ -33,38 +33,38 @@ def asari_ROI_identify(path,para):
 def ms2ms1_linked_ROI_identify(spectra,mzml_dict,path):
     #获取path的文件后缀
     source = path.split('.')[-1]
-    df = MS1_MS2_connected(spectra, mzml_dict,source)
+    df1 = MS1_MS2_connected(spectra, mzml_dict,source)
+    # df.to_csv(r'C:\Users\xyy\Desktop\ms1_ms2_connected.csv',index=False)
 
-    df.to_csv('roi0.csv')
+    # df.to_csv('roi0.csv')
     #将df中的每一行转为一个字典
-    t = df.to_dict('records')
+    t = df1.to_dict('records')
 
     rois = ROIs()
     for i in range(len(t)):
         rois.update(t[i])
 
-    pd.DataFrame(rois.rois).to_csv('roi_no_sorted.csv')
+    # pd.DataFrame(rois.rois).to_csv('roi_no_sorted.csv')
     rois.merge()
 
-    rois.filter(mzml_dict['min_element_roi']) # 这个参数应设置为可调参数
+    rois.filter(mzml_dict['min_element_roi'])
 
     df = rois.get_roi_df()
     #将mz_mean列名改为mz
     df = df.rename(columns={'mz_mean':'mz'})
-    df.to_csv('roi-ckeck.csv')
-
-    return df
+    # df.to_csv('roi-ckeck.csv')
+    return df, df1
 
 def process_scan(scan, df_rois):
     mz_list = []
     roi_list = []
     for i in range(len(df_rois)):
-        if df_rois.loc[i,'left_base'] <=scan<=df_rois.loc[i,'right_base']:
-            mz_list.append(df_rois.loc[i,'mz'])
-            roi_list.append(df_rois.loc[i,'id_roi'])
+        if df_rois.iloc[i]['left_base'] <= scan <= df_rois.iloc[i]['right_base']:
+            mz_list.append(df_rois.iloc[i]['mz'])
+            roi_list.append(df_rois.iloc[i]['id_roi'])
     return {'scan':scan,'mz_list':mz_list,'roi_list':roi_list}
-@timeit
-def get_calc_targets(df_rois, n_jobs=4): # n_jobs应该在终端设置为可调，目前还没设置
+
+def get_calc_targets(df_rois, n_jobs=4): # n_jobs应该在终端设置为可调，目前还没设置(设置在congfig中了)
     scan_min = df_rois['left_base'].min()
     right_base = df_rois['right_base'].max()
     scan_range = np.arange(scan_min,right_base+1)
@@ -75,12 +75,11 @@ def get_calc_targets(df_rois, n_jobs=4): # n_jobs应该在终端设置为可调�
     df1 = pd.DataFrame(results)
     df1 = df1[df1['mz_list'].map(lambda x: len(x)) > 0]
     df1 = df1.reset_index(drop=True)
-    df1.to_csv('calc_targets.csv')
+    # df1.to_csv('calc_targets.csv')
     return df1
 
-
 def process_row(i, df1, mzml_data, mzml_dict):
-    scan_id = df1['scan'][i]
+    scan_id = int(df1['scan'][i])
     rt,mz,intensity = fliter_mzml_data(mzml_data.iloc[scan_id],min_intensity=mzml_dict['min_intensity'])
     rt = rt/60
     result = []
@@ -90,7 +89,7 @@ def process_row(i, df1, mzml_data, mzml_dict):
         dict_base = {'scan':scan_id,'RT':rt,'id_roi':target_roi,'target_mz':target_mz}
         try:
             dict_mz_max = get_mz_max(mz,intensity,target_mz)
-            if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >=10000:
+            if dict_mz_max['mz_max1'] == dict_mz_max['mz_max2'] and dict_mz_max['intensity_max2'] >=10000: # 这个参数应设置为可调参数
                 charge = get_charge(dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],dict_mz_max['intensity_max2'])
                 dict_isotoplogues = get_isotopic_peaks(dict_mz_max['mz_max2'],dict_mz_max['mz_list2'],dict_mz_max['ints_list2'],charge)
             else:
@@ -105,8 +104,10 @@ def process_row(i, df1, mzml_data, mzml_dict):
         except:
             pass
     return result
-@timeit
-def find_isotopologues(df1, mzml_data, mzml_dict,n_jobs=4):  # n_jobs应该在终端设置为可调，目前还没设置
+
+def find_isotopologues(df1, mzml_data, mzml_dict,n_jobs=4):  # n_jobs应该在终端设置为可调，目前还没设置(设置在congfig中了)
+    # delete blank rows
+    df1 = df1.dropna(subset=['scan'])
     with Pool(n_jobs) as p:
         results = p.starmap(process_row, [(i, df1, mzml_data, mzml_dict) for i in range(len(df1))])
     df = pd.DataFrame([item for sublist in results for item in sublist])
@@ -272,8 +273,8 @@ def halo_evaluation(df):
 
         #添加到df_evaluation中的新行
         df_evaluation = pd.concat([df_evaluation, pd.Series({'id_roi':id,'RTmean':(rt_left+rt_right)/2,'precursor_ints_sum':precursor_ints_sum,'RT_left':rt_left,'RT_right':rt_right,'counter_list':counter_list,'scan_based_halo_class_list':scan_based_halo_class_list,'scan_based_halo_class':scan_based_halo_class,'scan_based_halo_score':scan_based_halo_score,'scan_based_halo_sub_class':scan_based_halo_sub_class,'scan_based_halo_sub_score':scan_based_halo_sub_score,
-                                                             'MS1_precursor':MS1_precursor,'isotope_mz':isotope_mz,'isotope_ints':isotope_ints,'isotope_ints_raw':isotope_ints_raw,'isotope_mz_mean':isotope_mz_mean,'isotope_ints_mean':isotope_ints_mean,'isotope_ints_total':isotope_ints_total,'isotope_ints_total_relative':isotope_ints_total_relative,
-                                                                'isotope_ints_mean_relative':isotope_ints_mean_relative,'roi_mean_new_features':roi_mean_new_features,'roi_total_new_features':roi_total_new_features,'scan_based_halo_ratio':scan_based_halo_ratio})], axis=1)
+                                                             'MS1_precursor':MS1_precursor,'charge':charge,'isotope_mz':isotope_mz,'isotope_ints':isotope_ints,'isotope_ints_raw':isotope_ints_raw,'isotope_mz_mean':isotope_mz_mean,'isotope_ints_mean':isotope_ints_mean,'isotope_ints_total':isotope_ints_total,'isotope_ints_total_relative':isotope_ints_total_relative,
+                                                                'isotope_ints_mean_relative':isotope_ints_mean_relative,'roi_mean_new_features':roi_mean_new_features,'roi_total_new_features':roi_total_new_features,'scan_based_halo_ratio':scan_based_halo_ratio,'precursor_ints':df_['intensity_max1'].tolist()})], axis=1)
     df_evaluation = df_evaluation.T
     # df_evaluation = df_evaluation.reset_index(drop=True)
     return df_evaluation,df_roi_mean_for_prediction,df_roi_total_for_prediction
@@ -284,7 +285,7 @@ def merge_close_values(df, mz_tolerance=100, rt_tolerance=0.5):
 
     Args:
         df (pandas.DataFrame): The input DataFrame containing mz, RTmean, and other columns.
-        mz_tolerance (float, optional): The tolerance value for mz difference. Defaults to 10.
+        mz_tolerance (float, optional): The tolerance value for mz difference. Defaults to 100.
         rt_tolerance (float, optional): The tolerance value for RTmean difference. Defaults to 0.5.
 
     Returns:
@@ -296,18 +297,19 @@ def merge_close_values(df, mz_tolerance=100, rt_tolerance=0.5):
     df['RTmean_diff'] = df['RTmean'].diff().abs()
     group = (df['mz_diff'] > mz_tolerance) | (df['RTmean_diff'] > rt_tolerance)
     group = group.cumsum()
-    df = df.groupby(group).agg({'RTmean':'mean', 'mz':'mean', 'roi_mean_pred':'mean', 'roi_total_pred':'mean', 'scan_based_halo_score':'mean', 'scan_based_halo_ratio':'mean', 'H-score':'mean'})
+    df = df.groupby(['roi_mean_pred', 'roi_total_pred', group]).agg({'RTmean':'mean', 'mz':'mean', 'roi_mean_pred':'mean', 'roi_total_pred':'mean', 'scan_based_halo_score':'mean', 'scan_based_halo_ratio':'mean', 'H-score':'mean'})
+    df = df.sort_values(by=['RTmean','mz'])
     return df
 
-def blank_subtract(df, blank_df, mz_tolerance=500, rt_tolerance=1):
+def blank_subtract(df, blank_df, mz_tolerance=100, rt_tolerance=2):
     """
     Subtract blank values from the given dataframe.
 
     Args:
         df (pandas.DataFrame): The dataframe containing the data to be subtracted.
         blank_df (pandas.DataFrame): The dataframe containing the blank values.
-        mz_tolerance (float, optional): The tolerance for the difference in m/z values. Defaults to 10.
-        rt_tolerance (float, optional): The tolerance for the difference in retention time values. Defaults to 0.5.
+        mz_tolerance (float, optional): The tolerance for the difference in m/z values. Defaults to 500 ppm.
+        rt_tolerance (float, optional): The tolerance for the difference in retention time values. Defaults to 1 min.
 
     Returns:
         pandas.DataFrame: The dataframe with blank values subtracted.
@@ -320,25 +322,43 @@ def blank_subtract(df, blank_df, mz_tolerance=500, rt_tolerance=1):
             df = df.drop(i)
     return df
 
-def extract_ms2_of_rois(mzml_path,halo_evaluation_path,out_path,rois:list):
+def extract_ms2_of_rois(spectra_all,df_halo_evaluation,ms2ms1_linked_df,out_path):
     mgf_spectra = []
-    data = mzml.read(mzml_path,use_index=True,read_schema=True)
-    df_halo_evaluation = pd.read_csv(halo_evaluation_path)
-    for id in rois:
-        #获取self.df_socres中的target_roi为id的行
-        df = df_halo_evaluation[df_halo_evaluation['id_roi']==id]
-        #获取该行的counter_list列
-        counter_list = df['counter_list_x'].tolist()[0]
-        #将counter_list由str转为list
-        counter_list = eval(counter_list)
-        scans = data.get_by_indexes(counter_list)
-        for scan in scans:
+    # data = mzml.read(mzml_path,use_index=True,read_schema=True)
+    # df_halo_evaluation = pd.read_csv(halo_evaluation_path)
+    for i in range(len(df_halo_evaluation) ):
+   
+        df = df_halo_evaluation.iloc[[i]]
+        
+        charge = df['charge'].iloc[0]
+        #获取该行的roi_ms2_index列
+        counter_list = df['roi_ms2_index'].tolist()[0]
+        scans = spectra_all[spectra_all['scan'].isin(counter_list)]
+
+        for i in range(len(scans)):
+            scan = scans.iloc[i]
+            index = scan['scan']
+            
             #获取spectra中除了'm/z array', 'intensity array'以外的所有信息存入params
-            params = {k: scan[k] for k in scan if k not in ['m/z array', 'intensity array']}
-            mz = scan['m/z array']
-            ints= scan['intensity array']
-            #组成mgf格式的字典
-            mgf_dict = { 'params':params,'m/z array':mz,'intensity array':ints}
-            mgf_spectra.append(mgf_dict)
+            params = {k: v for k, v in scan.items() if k not in ['tic','precursor','m/z array', 'intensity array']}
+            #获取precursor
+            precursor_mz = ms2ms1_linked_df[ms2ms1_linked_df['MS2']==index]['precursor'].values[0]
+            precursor_intensity = ms2ms1_linked_df[ms2ms1_linked_df['MS2']==index]['precursor_ints'].values[0]
+            if precursor_intensity > 1e5: # 只添加强度大于1e5的MS2谱图
+                #params中添加'PEPMASS'键值对
+                params['PEPMASS'] = f"{precursor_mz*charge} {precursor_intensity}"
+                params['CHARGE'] = f"{charge}"
+                params['RTINSECONDS'] = scan['rt']*60
+                
+                #获取mz和intensity
+                #只保留小于等于precursor_mz的mz和intensity
+                mz_mask = scan['m/z array'] <= precursor_mz
+                mz = scan['m/z array'][mz_mask]
+                ints = scan['intensity array'][mz_mask]
+                
+                #组成mgf格式的字典
+                mgf_dict = { 'params':params,'m/z array':mz,'intensity array':ints}
+                
+                mgf_spectra.append(mgf_dict)
 
     mgf.write(mgf_spectra, out_path)

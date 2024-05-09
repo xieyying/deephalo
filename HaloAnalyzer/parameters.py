@@ -24,6 +24,7 @@ class run_parameters:
         self.use_se_data = config['model_data']['use_add_se_data']
         self.use_s_data = config['model_data']['use_add_s_data']
         self.use_hydroisomer_data = config['model_data']['use_hydroisomer_data']
+        self.use_overloaded_data = config['model_data']['use_overloaded_data']
         # self.data_weight = config['model_data']['data_weight']
         # self.noise_data_weight = config['model_data']['noise_data_weight']
         # self.add_fe_data_weight = config['model_data']['add_fe_data_weight']
