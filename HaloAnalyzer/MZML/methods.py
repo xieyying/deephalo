@@ -4,7 +4,7 @@ from .methods_sub import feature_extractor,fliter_mzml_data,get_mz_max,get_charg
 import numpy as np
 import tensorflow as tf
 import time,os
-from ..Dataset.methods_sub import mass_spectrum_calc_2
+from ..Dataset.methods_sub import mass_spectrum_calc
 from ..model_test import timeit
 from multiprocessing import Pool
 
@@ -161,9 +161,9 @@ def correct_isotopic_peaks(df):
         df_cor = pd.concat([df_cor,df_],axis=0)
     
     df_cor = df_cor.reset_index(drop=True)
-    #利用mass_spectrum_calc_2对df_cor中的数据进行校正
+    #利用mass_spectrum_calc对df_cor中的数据进行校正
 
-    df_new = df_cor.apply(lambda row: mass_spectrum_calc_2(row, row['charge']), axis=1)
+    df_new = df_cor.apply(lambda row: mass_spectrum_calc(row, row['charge']), axis=1)
 
     df_new = pd.DataFrame(df_new.tolist())
     df_cor = pd.concat([df_cor,df_new],axis=1)
@@ -202,6 +202,10 @@ def add_is_isotopes(df):
     return df
 
 def halo_evaluation(df):
+    """
+    Evaluate the halo score of the given DataFrame. The halo score is calculated based on the intensity of the isotopic peaks. 
+    """
+
     #以此将self.df_features中的数据按照roi进行分组
     df_evaluation = pd.DataFrame()
     df_roi_mean_for_prediction = pd.DataFrame()
@@ -249,14 +253,14 @@ def halo_evaluation(df):
         isotope_mz_mean_dict = dict(zip(['mz_b_3','mz_b_2','mz_b_1','mz_b0','mz_b1','mz_b2','mz_b3'],isotope_mz_mean))
         #将isotope_mz_mean_dict和isotope_ints_mean_dict合并为一个字典
         isotope_ints_mean_dict.update(isotope_mz_mean_dict)
-        roi_mean_new_features = mass_spectrum_calc_2(isotope_ints_mean_dict,charge)
+        roi_mean_new_features = mass_spectrum_calc(isotope_ints_mean_dict,charge)
         isotope_ints_mean_dict.update(roi_mean_new_features)
         isotope_ints_mean_dict = pd.DataFrame(isotope_ints_mean_dict,index=[0])
         isotope_ints_mean_dict['id_roi'] = id
         df_roi_mean_for_prediction = pd.concat([df_roi_mean_for_prediction,isotope_ints_mean_dict],axis=0)
 
         isotope_ints_total_dict.update(isotope_mz_mean_dict)
-        roi_total_new_features = mass_spectrum_calc_2(isotope_ints_total_dict,charge)
+        roi_total_new_features = mass_spectrum_calc(isotope_ints_total_dict,charge)
         isotope_ints_total_dict.update(roi_total_new_features)
         isotope_ints_total_dict = pd.DataFrame(isotope_ints_total_dict,index=[0])
         isotope_ints_total_dict['id_roi'] = id
@@ -308,8 +312,8 @@ def blank_subtract(df, blank_df, mz_tolerance=100, rt_tolerance=2):
     Args:
         df (pandas.DataFrame): The dataframe containing the data to be subtracted.
         blank_df (pandas.DataFrame): The dataframe containing the blank values.
-        mz_tolerance (float, optional): The tolerance for the difference in m/z values. Defaults to 500 ppm.
-        rt_tolerance (float, optional): The tolerance for the difference in retention time values. Defaults to 1 min.
+        mz_tolerance (float, optional): The tolerance for the difference in m/z values. Defaults to 100 ppm.
+        rt_tolerance (float, optional): The tolerance for the difference in retention time values. Defaults to 2 min.
 
     Returns:
         pandas.DataFrame: The dataframe with blank values subtracted.

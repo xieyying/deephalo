@@ -1,7 +1,6 @@
 #import相关模块
 import os
 import pandas as pd
-
 import tensorflow as tf
 from .methods import load_mzml_file,asari_ROI_identify,get_calc_targets,find_isotopologues,ms2ms1_linked_ROI_identify,\
                       add_predict,add_is_isotopes,halo_evaluation,correct_isotopic_peaks,merge_close_values,blank_subtract,extract_ms2_of_rois
@@ -9,8 +8,34 @@ from pyteomics import mzml ,mgf
 from ..model_test import timeit
 from .test_method import get_ROIs
 class my_mzml:
-    """自定义mzml类，包含了mzml数据的加载，ROI的识别，特征提取，halo评估等方法"""
+    """
+    自定义mzml类
+    
+    方法：
+    load_mzml_data:加载mzml数据
+    ROI_identify:ROI的识别：asari或ms2_linked others
+    extract_features:对ROI进行特征提取
+    rois_evaluation:对ROI进行halo评估
+    filter_result:保存结果
+    common_work_flow:常规工作流
+    blank_analyses:blank_subtract 
+    blank_combine:blank_combine
+    work_flow_subtract_blank:work_flow_subtract_blank
+    work_flow_no_blank:work_flow_no_blank
+    """
+    
     def __init__(self,para) -> None:
+        """
+        初始化参数
+
+        参数：
+        para:dict，包含以下键值对
+            path:str，mzml文件路径
+            feature_list:list，特征列表
+            asari:dict，asari参数
+            mzml:dict，mzml参数
+        """
+
         self.path = para['path']
         print(self.path)
         self.feature_list = para['feature_list']
@@ -27,7 +52,9 @@ class my_mzml:
     #加载数据
     @timeit
     def load_mzml_data(self):
-        """加载mzml数据"""
+        """
+        加载mzml数据, 计算MS1和MS2的总数
+        """
         #MS1数据
         self.mzml_data_all,self.mzml_data =load_mzml_file(self.path,self.mzml_dict)
         self.total_MS1_scan_num = len(self.mzml_data)
@@ -35,7 +62,10 @@ class my_mzml:
     #分析数据
     @timeit
     def ROI_identify(self):
-        """ROI的识别：asari或ms2_linked others"""
+        """
+        ROI的识别方法：asari，DDA或peak_only
+
+        """
         method = self.mzml_dict['ROI_identify_method']
         if method == 'MS':
             self.df_rois = asari_ROI_identify(self.path,self.asari_dict)
@@ -49,7 +79,9 @@ class my_mzml:
             
     @timeit
     def extract_features(self):
-        """对ROI进行特征提取"""
+        """
+        对ROI进行特征提取
+        """
 
         df1 = get_calc_targets(self.df_rois)
         df1.to_csv(r'C:\Users\xyy\Desktop\after_get_calc_targets.csv',index=False)
@@ -68,7 +100,11 @@ class my_mzml:
 
     @timeit
     def rois_evaluation(self):
-        """对ROI进行halo评估"""
+        """
+        对ROI进行halo评估
+
+        标准：H-score = (scan_based_halo_score)/300 + (roi_mean_halo_score)/3 + (scan_based_halo_ratio)/3
+        """
         df = self.df_isotopologues.copy()
         #对df进行预测        
         self.halo_evaluation,self.roi_mean_for_pred,self.df_roi_total_for_prediction = halo_evaluation(df)
@@ -95,7 +131,9 @@ class my_mzml:
         
     @timeit
     def filter_result(self,min_element_sum=3,H_score=0.8):
-        """保存结果"""
+        """
+        过滤结果，将结果保存到self.df中
+        """
         #筛选出scan_based_halo_class_list长度大于等于min_element_sum的结果
         self.merge_df = self.merge_df[self.merge_df['scan_based_halo_class_list'].apply(len) >= min_element_sum]
         self.merge_df = self.merge_df[self.merge_df['precursor_ints_sum'] > 1e6]  # TODO: change this threshold
@@ -109,13 +147,21 @@ class my_mzml:
         self.df = self.merge_df[self.merge_df['H-score']>=H_score]
         
     def common_work_flow(self):
+        """
+        常规工作流:加载mzml数据，ROI的识别，特征提取，halo评估
+        """
         self.load_mzml_data()
         self.ROI_identify()
         self.extract_features()
         self.rois_evaluation()
 
     def blank_analyses(self):
-        """blank_subtract"""
+        """
+        blank_subtract, for minmizing the blank, keep the results with H-score > 0
+
+        return:
+        feature_num:int, the number of features
+        """
         self.common_work_flow()
         # 为尽可能去除空白，保留H-score大于0的结果
         self.merge_df = self.merge_df[self.merge_df['H-score']>0] 
@@ -123,7 +169,12 @@ class my_mzml:
         return self.feature_num
     
     def blank_combine(self):
-        """blank_combine"""
+        """
+        blank_combine
+
+        return:
+        n:int, the number of features
+        """
         # 合并./test_mzml_prediction/blank中所有csv文件，如果各个csv文件中mz相差小于100 ppm，RTmean相差小于0.5 min，则合并为一个mz，其平均值为各个mz的平均值，平均RTmean为各个RT的平均值
         files = os.listdir('./test_mzml_prediction/blank')
         df_blank_merge = pd.DataFrame()
@@ -141,10 +192,24 @@ class my_mzml:
         
     @timeit
     def work_flow_subtract_blank(self,H_score=0.8):
-        """mzml数据处理流程"""
+        """
+        mzml数据处理流程
+        
+        参数：
+        H_score:float，H-score阈值
+
+        返回值：
+        n:int，没有找到halo化合物的文件数
+        h:int，找到halo化合物的文件数
+        self.total_MS1_scan_num:int，MS1扫描数
+        self.total_MS2_scan_num:int，MS2扫描数
+        self.feature_num:int，特征数
+        h_f:int，halo化合物的个数
+
+        """
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
-        self.common_work_flow() 
+        self.common_work_flow()
         self.filter_result(int(self.mzml_dict['min_element_sum']),H_score)
         #统计
         n = 0 # 没找到halo化合物的文件数
@@ -172,7 +237,21 @@ class my_mzml:
         return n,h,self.total_MS1_scan_num,self.total_MS2_scan_num,self.feature_num,h_f
                              
     def work_flow_no_blank(self,H_score=0.8):
-        """mzml数据处理流程"""
+        """
+        mzml数据处理流程,不扣除blank
+
+        参数：
+        H_score:float，H-score阈值
+
+        返回值：
+        n:int，没有找到halo化合物的文件数
+        h:int，找到halo化合物的文件数
+        self.total_MS1_scan_num:int，MS1扫描数
+        self.total_MS2_scan_num:int，MS2扫描数
+        self.feature_num:int，特征数
+        h_f:int，halo化合物的个数
+
+        """
         if not os.path.exists('./test_mzml_prediction'):
             os.mkdir('./test_mzml_prediction')
         self.common_work_flow() 

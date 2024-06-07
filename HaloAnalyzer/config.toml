@@ -1,27 +1,17 @@
-#创建模型训练集相关参数
+#此文件为配置文件，用于配置模型训绨集相关参数
+
+#训练集相关参数
 [datasets]
-#数据库文件路径
 
 paths = [
+        ["E:/XinBackup/source_data/datasets/NPAtlas_download.json","mol_formula",],
+        # ["D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv","Formula",],    
+        ]#数据库文件路径
+element_list = ['C','H','O','N','P','Cl','Br','F','I','Ho','Na','Al','As','S','Fe','Se','B','e-']#训练集中所包含的元素种类
+mz_start = 50#质荷比起始值
+mz_end = 3000#质荷比终止值
+rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,2.3,5]#模拟hydro所用的rate
 
-       [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
-        "mol_formula",
-    ],
-        [
-        "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
-        "Formula",
-    ],
-        
-    ]
-#训练集中所包含的元素种类
-element_list = ['C','H','O','N','P','Cl','Br','F','I','Ho','Na','Al','As','S','Fe','Se','B','e-']
-#质荷比范围
-mz_start = 50
-mz_end = 3000
-#基于真是数据库生成的噪音数据量倍率
-repeat_for_noise = 10
-#模拟hydro所用的rate
-rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,2.3,5]
 
 #模型训练参数
 [model_data]
@@ -44,7 +34,6 @@ use_add_b_data =  "True"
 use_add_se_data =  "True"
 use_hydroisomer_data = "True"
 
-
 #模型训练参数
 [model_construct]
 train_batch = 4
@@ -64,13 +53,13 @@ learning_rate = 0.0003
 6 = 0.00342933
 7 = 0.00379142
 
-#
+#mzml文件预测参数
 [mzml]
 vendor = ''
-n_jobs = 4
+n_jobs = 4#并行处理的核数
 min_intensity = 100 #并非相对强度，An intensity threshold of 100  was used to eliminate electronic noise.
-precursor_error = 0.8
-ROI_identify_method = 'DDA' # MS:asari; DDA:ms2fms1;peak_only: ROI
+precursor_error = 0.8#质荷比误差
+ROI_identify_method = 'DDA' #DDA:ms2fms1 algorithm; 'MS1': centWave algorith
 min_element_roi = 3 #roi识别中MS1_index的最少元素数量
 min_element_sum = 3 #halo_eval中count_list中最少元素数量
 

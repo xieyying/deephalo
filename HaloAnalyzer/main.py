@@ -2,52 +2,59 @@
 import os
 import shutil
 from .Dataset.my_dataset import dataset,datasets
-from .Model.my_model import my_model,my_search,KerasModelWrapper
+from .Model.my_model import my_model,my_search
 from .MZML.my_mzml import my_mzml
 from .parameters import run_parameters
 import logging
 
 #load config file
 def load_config() -> dict:
-    """load config file"""
+    """
+    load config file
+    
+    Returns:
+    class: run_parameters
+    """
     return run_parameters()
      
 #Dataset Pipeline
 def pipeline_dataset() -> None:
-    """generate dataset for training and testing"""
+    """
+    generate dataset for training and testing
+    """
     para = load_config()
     datas = []
     for data in para.datasets:
         datas.append(dataset(data[0],data[1]).data)
     raw_data = datasets(datas)
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'noise',repeats=para.repeat_for_noise)
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
-    # raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'base')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Fe')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'B')
+    raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'Se')
     raw_data.work_flow(para.mz_start,para.mz_end,para.elements_list,'hydro',rates=para.rate_for_hydro)
-    # data.data_statistics_customized()
+
 
 #Model Pipeline
 def pipeline_model(mode = 'manual') -> None:
-    """train model and save model"""
+    """
+    train model and save model
+    
+    Args:
+    mode: str, default 'manual', optional 'manual','search','feature_importance','read_feature_importance'
+    """
     #加载参数
     para = load_config()
 
     #根据配置文件选择训练数据
-    paths = ['./dataset/base89to6.csv']
+    paths = ['./dataset/base.csv']
     if para.use_fe_data == 'True':
         paths.append('./dataset/Fe.csv')
     if para.use_b_data == 'True':
         paths.append('./dataset/B.csv')
     if para.use_se_data == 'True':
-        paths.append('./dataset/Se.csv')        
+        paths.append('./dataset/Se.csv')
     if para.use_hydroisomer_data == 'True':
         paths.append('./dataset/hydro.csv')
-    if para.use_noise_data == 'True':
-        paths.append('./dataset/noise.csv')
-    if para.use_overloaded_data == 'True':
-        paths.append('./dataset/NPatlas_COCONUT_base6789_b1234_adding_10_intensity.csv')
     
     test_path = './dataset/test.csv'
 
@@ -65,23 +72,40 @@ def pipeline_model(mode = 'manual') -> None:
         model.work_flow()
     elif mode == 'search':
         model = my_search(model_para)
-    elif mode == 'feature_importance':
-        model = KerasModelWrapper(model_para)
-        model.work_flow()
-    elif mode == 'read_feature_importance':
-        model = KerasModelWrapper(model_para)
-        model.read_feature_importance()
+    # elif mode == 'feature_importance':#是否还要保留
+    #     model = KerasModelWrapper(model_para)
+    #     model.work_flow()
+    # elif mode == 'read_feature_importance':#是否还要保留
+    #     model = KerasModelWrapper(model_para)
+    #     model.read_feature_importance()
 
 def get_parameters(mzml_path):
+    """
+    get parameters for processing mzml file
+    
+    Args:
+    mzml_path: str, path of mzml file
+
+    Returns:
+    dict: parameters for processing mzml file
+    mzml_para = {'path':mzml_path,
+                'feature_list':para.features_list,
+                'mzml':para.mzml_dict,}
+    """
     para = load_config()
     mzml_para = {'path':mzml_path,
                 'feature_list':para.features_list,
-                'asari':para.asari_dict,
+                # 'asari':para.asari_dict,
                 'mzml':para.mzml_dict,}
     return mzml_para
 
 def blank_analyze_mzml(blank_path)-> None:
-    """analyze blank mzml file"""
+    """
+    analyze blank mzml file, extract features and combine features
+    
+    Args:
+    blank_path: str, path of blank mzml file
+    """
     para = load_config()
     blank_files = []
     # Create the folder
@@ -107,7 +131,7 @@ def blank_analyze_mzml(blank_path)-> None:
         b_f += 1
         mzml_para = {'path':f,
                     'feature_list':para.features_list,
-                    'asari':para.asari_dict,
+                    # 'asari':para.asari_dict,
                     'mzml':para.mzml_dict,}
        
         mzml_para['mzml']['ROI_identify_method'] = 'peak_only'  # 为了尽可能去除空白文件中的feature，blank_analyze_mzml中ROI_identify_method均设为'peak_only'
@@ -133,12 +157,40 @@ def blank_analyze_mzml(blank_path)-> None:
         
 #Find Halo Pipeline
 def pipeline_find_halo_no_blank(mzml_path) -> None:
-    """find halo in mzml file"""
+    """
+    find halo in mzml file
+    
+    Args:
+    mzml_path: str, path of mzml file
+
+    Returns:
+    int: n, Number of files without halogenates
+    int: h, Number of files containing halogenates
+    int: total_MS1_scan_num, Total number of MS1 scans processed
+    int: total_MS2_scan_num, Total number of MS2 scans processed
+    int: feature_num, Total number of features extracted
+    int: h_f, Total number of features containing halogenates
+
+    """
     n, h, total_MS1_scan_num, total_MS2_scan_num, feature_num, h_f = my_mzml(get_parameters(mzml_path)).work_flow_no_blank()
     return n, h, total_MS1_scan_num, total_MS2_scan_num, feature_num, h_f
 
 def batch_find_halo_no_blank(folder_path) -> None:
-    """find halo in mzml files"""
+    """
+    find halo in mzml files, not subtract blank
+    
+    Args:
+    folder_path: str, path of folder containing mzml files
+
+    Returns:
+    int: n, Number of files without halogenates
+    int: h, Number of files containing halogenates
+    int: total_MS1_scan_num, Total number of MS1 scans processed
+    int: total_MS2_scan_num, Total number of MS2 scans processed
+    int: feature_num, Total number of features extracted
+    int: h_f, Total number of features containing halogenates
+    
+    """
     # get all mzml files
     mzml_files = []
     for root, dirs, files in os.walk(folder_path):
@@ -188,12 +240,39 @@ def batch_find_halo_no_blank(folder_path) -> None:
           f.write(i+'\n')  
 
 def pipeline_find_halo_substrate_blank(mzml_path) -> None:
-    """find halo in mzml file"""
+    """
+    find halo in mzml file
+    
+    Args:
+    mzml_path: str, path of mzml file
+    
+    Returns:
+    int: n, Number of files without halogenates
+    int: h, Number of files containing halogenates
+    int: total_MS1_scan_num, Total number of MS1 scans processed
+    int: total_MS2_scan_num, Total number of MS2 scans processed
+    int: feature_num, Total number of features extracted
+    int: h_f, Total number of features containing halogenates
+    """
     n, h, total_MS1_scan_num, total_MS2_scan_num, feature_num, h_f = my_mzml(get_parameters(mzml_path)).work_flow_subtract_blank()
     return n, h, total_MS1_scan_num, total_MS2_scan_num, feature_num, h_f
 
 def batch_find_halo_substrate_blank(folder_path) -> None:
-    """find halo in mzml files"""
+    """
+    find halo in mzml files, subtract blank
+    
+    Args:
+    folder_path: str, path of folder containing mzml file s
+
+    Returns:
+    int: n, Number of files without halogenates
+    int: h, Number of files containing halogenates
+    int: total_MS1_scan_num, Total number of MS1 scans processed
+    int: total_MS2_scan_num, Total number of MS2 scans processed
+    int: feature_num, Total number of features extracted
+    int: h_f, Total number of features containing halogenates
+
+    """
     MS1_scan_num = 0 # Total number of MS1 scans processed
     MS2_scan_num = 0 # Total number of MS2 scans processed
     total_feature_num = 0 # Total number of features extracted
@@ -247,6 +326,63 @@ def batch_find_halo_substrate_blank(folder_path) -> None:
        for i in error_file:
           f.write(i+'\n')
 
+def pipeline_analyze_mzml(args):
+    # Check if the directory exists, if not, create it
+    if not os.path.exists('./test_mzml_prediction'):
+        os.makedirs('./test_mzml_prediction')
+    # Check if the file exists, if so, remove it
+    if os.path.exists('./test_mzml_prediction/run.txt'):
+        os.remove('./test_mzml_prediction/run.log')
+    # Now you can safely set up your logging
+    logging.basicConfig(filename='./test_mzml_prediction/run.log', level=logging.INFO)
+
+    blank_path = args.blank
+    mzml_path = args.input
+    #扣除blank的情况
+    if blank_path != None:
+        #如果存在./test_mzml_prediction/blank/merged_blank_halo.csv则不再进行blank_analyze_mzml
+        if not os.path.exists('./test_mzml_prediction/blank/merged_blank_halo.csv') or args.overwrite_blank:
+            blank_analyze_mzml(blank_path)
+        #根据mzml_path的类型选择不同的分析方式，文件夹则批量处理，文件则单个处理
+        if os.path.isdir(mzml_path):
+            batch_find_halo_substrate_blank(mzml_path)
+        elif os.path.isfile(mzml_path):
+            pipeline_find_halo_substrate_blank(mzml_path)
+        else:
+            print("Please specify a mzML file or a folder containing mzML files to analyze.")
+    #不扣除blank的情况
+    else:
+        if os.path.isdir(mzml_path):
+            batch_find_halo_no_blank(mzml_path)
+        elif os.path.isfile(mzml_path):
+            pipeline_find_halo_no_blank(mzml_path)
+        else:
+            print("Please specify a mzML file or a folder containing mzML files to analyze.")
+
+    # with open(r'test_mzml_prediction/log.txt','w') as f: f.write(mzml_path)
+
+def pipeline_viz_result():
+    #更新config中的vis_path
+    #     parameters = run_parameters()
+    #     c = parameters.config
+    #     c['visualization']['path'] = args.project
+    #     parameters.update(c)
+    #     # 运行vis.py
+    #     vis_path = importlib_resources.files('HaloAnalyzer') / 'vis.py'
+    #     print(vis_path)
+    #     os.system('python -m streamlit run %s' %vis_path)
+    # elif args.run == 'extract_ms2':
+    #     mzml_path = args.input
+    #     project_path = args.project
+    #     rois_list = args.list_rois
+    #     if mzml_path == None:
+    #         print("Please specify a mzML file to analyze.")
+    #     if rois_list == None:
+    #         print("Please specify a list of rois to extract ms2 spectra.")
+    #     if project_path == None:
+    #         print("Please specify a project path.")
+    #     if mzml_path != None and rois_list != None and project_path != None:
+    #         pipeline_extract_ms2_of_rois(mzml_path,project_path,rois_list)
 if __file__ == '__main__':
     pass
 

@@ -1,6 +1,9 @@
 #创建统计函数运行时间的修饰器
 import time
 def timeit(method):
+    """
+    统计函数运行时间的修饰器
+    """
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)

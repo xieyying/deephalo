@@ -2,6 +2,9 @@ import tomli,tomli_w
 import importlib_resources
 
 class run_parameters:
+    """
+    读取config.toml文件中的参数
+    """
     def __init__(self):
         file_path = importlib_resources.files('HaloAnalyzer') / 'config.toml'
         with open(file_path,'rb') as f:
@@ -20,7 +23,6 @@ class run_parameters:
         self.use_fe_data = config['model_data']['use_add_fe_data']
         self.use_b_data = config['model_data']['use_add_b_data']
         self.use_se_data = config['model_data']['use_add_se_data']
-        self.use_s_data = config['model_data']['use_add_s_data']
         self.use_hydroisomer_data = config['model_data']['use_hydroisomer_data']
         
         #model_construct参数

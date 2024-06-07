@@ -1,12 +1,20 @@
 from molmass import Formula
 import pandas as pd
 from .methods_sub import get_iron_additive_isotopes,get_boron_additive_isotopes,\
-    get_selenium_additive_isotopes,get_hydroisomer_isotopes,\
-mass_spectrum_calc,mass_spectrum_calc_2
+    get_selenium_additive_isotopes,get_hydroisomer_isotopes,mass_spectrum_calc
     
 def formula_clf(formula_dict,type=None) :
     """
     Returns a class based on the formula given.
+
+    Args:
+    formula_dict: dict, formula_dict
+    type: str, type of formula
+
+    Returns:
+    trainable: str, whether the formula can be trained
+    group: int, group of the formula
+    
     """
     #根据分子式，判断是否可训练
     if formula_dict.get('R') != None:
@@ -178,7 +186,7 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
     
     dict_base = {'formula':formula,'group':group}
     # dict_isos_calc=mass_spectrum_calc(dict_isos)
-    dict_isos_calc_new = mass_spectrum_calc_2(dict_isos,1)
+    dict_isos_calc_new = mass_spectrum_calc(dict_isos,1)
 
     #合并dict_base,dict_isos_calc和dict_isos_calc_new
     dict_all = dict_base.copy()

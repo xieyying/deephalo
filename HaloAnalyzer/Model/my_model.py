@@ -5,7 +5,7 @@ import keras,os
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
-from .methods import create_dataset,create_dataset_test,create_dataset_copy
+from .methods import create_dataset
 from .model_build import model
 from keras import layers
 import keras_tuner as kt
@@ -15,13 +15,26 @@ from sklearn.metrics import make_scorer, r2_score, mean_absolute_percentage_erro
 from keras.utils import to_categorical
 from keras import backend as K
 
-import pickle
-
 
 class my_model:
-    '''自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法'''
+    '''
+    自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法
+
+    Functions:
+    load_dataset: 加载数据集
+    get_model: 获取模型
+    train: 训练模型
+    show_CM: 显示混淆矩阵
+    work_flow: 模型训练流程
+    '''
+
     def __init__(self,para) -> None:
-        """para是一个字典，包含了模型训练所需的所有参数"""
+        """
+        初始化模型参数，为方便调用，参数以字典形式传入。
+
+        Args:
+        para: dict, 模型参数，包括batch_size, epochs, features, paths, test_path, classes, weight, learning_rate
+        """
         self.batch_size = para['batch_size']
         self.epochs = para['epochs']
         self.features = para['features']
@@ -33,7 +46,12 @@ class my_model:
         self.learning_rate = para['learning_rate']
 
     def load_dataset(self):
-        """加载数据集"""
+        """
+        加载数据集，创建训练集和验证集，以及测试集
+
+        Returns:
+        None
+        """
         self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features.copy(),self.paths,self.batch_size)
         
         # 计算每个类别的样本数量,保留此部分
@@ -51,12 +69,22 @@ class my_model:
         # print(self.square_csw_weights)
         
     def get_model(self):
-        """获取自定义模型，并绘制模型结构图"""
+        """
+        加载预先定义的模型，并绘制模型结构图
+
+        Returns:
+        None
+        """
         self.model = model(self.input_shape,self.output_shape)
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
     def train(self):
-        """训练模型"""
+        """
+        训练模型，并保存训练好的模型
+
+        Returns:
+        None
+        """
         opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
 
         self.model.compile(optimizer=opt,
@@ -71,25 +99,30 @@ class my_model:
                                     validation_data=self.val_dataset, 
                                     callbacks=[early_stopping])  # 添加回调到fit函数
         self.model.summary()
+        self.model.save(r'./trained_models/pick_halo_ann.h5')  
+        # # 显示loss和epoch的关系
+        # history = self.history.history
+        # print(history.keys())
+        # #不同loss显示不同颜色
+        # plt.figure()
+        # plt.xlabel('Epoch')
+        # plt.ylabel('Loss')
+        # plt.plot(history['loss'],color='red')
+        # plt.plot(history['accuracy'],color='blue')
+        # plt.plot(history['val_loss'],color='black')
+        # plt.plot(history['val_accuracy'],color='green')
 
-        # 显示loss和epoch的关系
-        history = self.history.history
-        print(history.keys())
-        #不同loss显示不同颜色
-        plt.figure()
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.plot(history['loss'],color='red')
-        plt.plot(history['accuracy'],color='blue')
-        plt.plot(history['val_loss'],color='black')
-        plt.plot(history['val_accuracy'],color='green')
-
-        #显示图例
-        plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
-        self.model.save(r'./trained_models/pick_halo_ann.h5')    
+        # #显示图例
+        # plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
+  
 
     def show_CM(self):
-        """显示混淆矩阵"""
+        """
+        显示混淆矩阵，计算recall和precision，保存预测结果
+
+        Returns:
+        None
+        """
         # load the model
         model = keras.models.load_model(r'./trained_models/pick_halo_ann.h5')
         tf.keras.utils.plot_model(model, show_shapes=True, rankdir="LR")
@@ -184,7 +217,13 @@ class my_model:
         plt.show()
     
     def work_flow(self):
-        """模型训练流程"""
+        """
+        模型训练流程，包括加载数据集，获取模型，训练模型，显示混淆矩阵
+
+        example:
+        model = my_model(para)
+        model.work_flow()
+        """
         if not os.path.exists('./trained_models'):
             os.mkdir('./trained_models')
         self.load_dataset()
@@ -193,12 +232,37 @@ class my_model:
         self.show_CM()
 
 class Myhypermodel(kt.HyperModel):
+    """
+    自定义超参数搜索类，继承自kt.HyperModel
+
+    Functions:
+    __init__: 初始化参数
+    build: 构建模型
+    fit: 训练模型
+    """
     def __init__(self,input_shape,output_shape,loss_weights):
+        """
+        初始化参数
+
+        Args:
+        input_shape: int, 输入特征的维度
+        output_shape: int, 输出类别的数量
+        loss_weights: dict, 损失权重
+        """
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.classes_weight = loss_weights
     
     def build(self, hp):
+        """
+        构建模型
+
+        Args:
+        hp: kt.HyperParameters, 超参数搜索空间
+
+        Returns:
+        model: keras.Model, 构建好的模型
+        """
         # 定义batch_size的搜索空间
         hp.Choice('batch_size', [4,16,64,128],default=4)
         
@@ -236,6 +300,21 @@ class Myhypermodel(kt.HyperModel):
         return model
         
     def fit(self,hp,model,X_train,Y_train,X_test,Y_test,**kwargs):
+        """
+        训练模型
+
+        Args:
+        hp: kt.HyperParameters, 超参数搜索空间
+        model: keras.Model, 构建好的模型
+        X_train: np.ndarray, 训练集特征
+        Y_train: np.ndarray, 训练集标签
+        X_test: np.ndarray, 验证集特征
+        Y_test: np.ndarray, 验证集标签
+        kwargs: dict, 其他参数
+
+        Returns:
+        history: dict, 训练历史
+        """
         batch_size = hp.get('batch_size')
         train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
         val_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
@@ -245,6 +324,15 @@ class Myhypermodel(kt.HyperModel):
         return history
        
 def my_search(para):
+    """
+    超参数搜索函数
+
+    Args:
+    para: dict, 参数字典
+
+    Returns:
+    None
+    """
     paths = para['paths']
     features = para['features']
     input_shape = len(features)

@@ -3,7 +3,21 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
 def create_dataset(features,paths,batch_size):
-    """创建模型训练所需的数据集，tf.data.Dataset格式"""
+    """
+    创建模型训练所需的数据集，tf.data.Dataset格式
+    
+    Args:
+    features: list, 特征名称
+    paths: list, 数据集路径
+    batch_size: int, batch大小
+    
+    Returns:
+    train_dataset: tf.data.Dataset, 训练数据集
+    val_dataset: tf.data.Dataset, 验证数据集
+    X_test: np.array, 验证集特征
+    Y_test: np.array, 验证集标签
+    val_: pd.DataFrame, 验证集
+    """
     features+=['group']
     df = pd.DataFrame()
     for path in paths:

@@ -7,6 +7,17 @@ from ..model_test import timeit
 from pyteomics import mzml ,mgf,mzxml
 from multiprocessing import Pool
 class ROIs:
+    """
+    用于存储roi的类,
+    roi的定义为一组连续的MS1,MS2数据,
+    roi.mz_mean为MS1的mz_mean的平均值,
+    roi.MS1_index为roi中所有MS1的index,
+    roi.counter_list为roi中所有MS1的counter,
+    roi.roi_ms2_index为roi中所有MS2的index,
+    roi.left_base为roi中所有MS1的counter的最小值,
+    roi.right_base为roi中所有MS1的counter的最大值,
+    roi.precursor为roi中所有MS2的precursor_mz
+    """
     def __init__(self) -> None:
         self.rois = []
         self.max_roi = 0
@@ -70,11 +81,30 @@ class ROIs:
 
     #过滤掉MS1_index长度小于min_points的roi
     def filter(self,min_points):
+        """
+        过滤掉MS1_index长度小于min_points的roi
+
+        Args:
+        min_points: int, 最小的roi长度
+
+        Returns:
+        df: pd.DataFrame, 过滤后的roi
+        """
         self.rois = [roi for roi in self.rois if len(roi['MS1_index']) > min_points]
         df = pd.DataFrame(self.rois)
         return df
 
     def merge(self,merge_precursor_error = 20, merge_gap_scans = 3):
+        """
+        合并相邻的roi,合并条件为相邻的两个roi的mz_mean相差小于merge_precursor_error且相邻的两个roi的counter_list的边界值相差小于merge_gap_scans
+
+        Args:
+        merge_precursor_error: int, 合并的mz误差
+        merge_gap_scans: int, 合并的scan误差
+
+        Returns:
+        None
+        """
         #将self.rois按照mz_mean从小到大排序
         # self.rois = sorted(self.rois,key=lambda x:x['mz_mean'])
         #如果相邻的两行的mz_mean相差小于merge_precursor_error且相邻的两行的counter_list的边界值相差小于merge_gap_scans，则将这两行合并，left_base为两行中left_base最小的值，right_base为两行中right_base最大的值，mz_mean为两行中mz_mean的平均值，MS1_index为两行中MS1_index的合并，counter_list为两行中counter_list的合并，roi_ms2_index为两行中roi_ms2_index的合并
@@ -105,6 +135,9 @@ class ROIs:
 
 #建立一个自定义的数据类
 class my_data:
+    """
+    用于读取mzml文件并进行处理的类
+    """
     #初始化
     def __init__(self,path,) -> None:
         self.path = path
@@ -126,6 +159,15 @@ class my_data:
         return mz,intensity
     # @timeit
     def create(self,min_intensity):
+        """
+        读取mzml文件并进行处理，返回一个dataframe，包含scan,ms level,m/z array,intensity array,tic,rt,precursor
+
+        Args:
+        min_intensity: int, 最小的intensity
+
+        Returns:
+        None
+        """
         new_data = []
         if self.source in ['mzML','mzml']:
             for s in self.data:
@@ -156,8 +198,21 @@ class my_data:
         self.data = pd.DataFrame(new_data)
 
     def get_by_level(self,level):
+        """
+        根据ms level获取数据
+
+        Args:
+        level: int, ms level
+
+        Returns:
+        pd.DataFrame, ms level为指定level的数据
+        """
         return self.data[self.data['ms level']==level]
+    
     def run(self,min_intensity):
+        """
+        merge all the methods as a whole
+        """
         self.read()
         self.create(min_intensity)
 
@@ -194,9 +249,6 @@ def feature_extractor(file_name: str,para) -> pd.DataFrame:
     return df_features
 
 def MS1_MS2_connected(spectra,mzml_dict,source):
-    # vendor = mzml_dict['vendor']
-    precursor_error = mzml_dict['precursor_error']
-
     """
     将MS1和MS2连接起来，返回一个dataframe，包含MS2的index以及与之对应的MS1的index，以及经过MS1图谱校正的MS2的precursor_mz
 
@@ -206,6 +258,8 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
     在waters采集中MS1的function=1
 
     """
+    # vendor = mzml_dict['vendor']
+    precursor_error = mzml_dict['precursor_error']
  
     MS1_MS2_connected = {}
     MS1_MS2_connected['MS1'] = []
@@ -218,7 +272,6 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
     MS1_rt = []
     MS1_counter_list = []
     MS1_counter=-1
-    
     
     for s in spectra.iterrows():
         try:
@@ -261,6 +314,19 @@ def MS1_MS2_connected(spectra,mzml_dict,source):
 
 #待更新减去质谱中的基线
 def fliter_mzml_data(ms1_spectra,min_intensity):
+    """
+    过滤掉intensity小于min_intensity的峰
+
+    Args:
+    ms1_spectra: dict, ms1的数据
+    min_intensity: int, 最小的intensity
+
+    Returns:
+    rt: float, retention time
+    mz: np.array, m/z array
+    intensity: np.array, intensity array
+
+    """
     rt = ms1_spectra['rt']
     mz = ms1_spectra['m/z array']
     intensity = ms1_spectra['intensity array']
@@ -271,6 +337,18 @@ def fliter_mzml_data(ms1_spectra,min_intensity):
 
 #误差范围也需要同步传递
 def get_mz_max(mz,intensity,target_mz):
+    """
+    获取mz中与target_mz相差在0.02的所有mz中intensity最大的mz
+
+    Args:
+    mz: np.array, m/z array
+    intensity: np.array, intensity array
+    target_mz: float, 目标mz
+
+    Returns:
+    mz_max: float, 与target_mz相差在0.02的所有mz中intensity最大的mz
+    intensity_max: float, mz_max对应的intensity
+    """
     #获取mz中与target_mz相差在0.02的所有mz
     mz_list1 = mz[np.abs(mz-target_mz)<0.02]
     ints_list1 = intensity[np.abs(mz-target_mz)<0.02]
@@ -292,8 +370,19 @@ def get_mz_max(mz,intensity,target_mz):
     #以字典的形式返回
     return {'mz_list1':mz_list1,'ints_list1':ints_list1,'mz_max1':mz_max1,'intensity_max1':intensity_max1,'mz_list2':mz_list2,'ints_list2':ints_list2,'mz_max2':mz_max2,'intensity_max2':intensity_max2}
 
-#暂未修改
 def get_charge(mz_list,ints_list,intensity_max):
+    """
+    generate charge based on the intensity and mz of the peaks
+    select the top 5 peaks with the highest intensity in mz_list，if the number of peaks is less than 5, select all
+
+    Args:
+    mz_list: np.array, m/z array
+    ints_list: np.array, intensity array
+    intensity_max: float, the max intensity of the peaks
+
+    Returns:
+    charge: int, the charge of the peaks
+    """
     mz_charge_list = mz_list
     ints_charge_list = ints_list/intensity_max
     #选取mz_charge_list中强度最大的前5个峰
@@ -348,11 +437,23 @@ def get_charge(mz_list,ints_list,intensity_max):
         return 0
 
 def get_one_isotopic_peak(mz_list,ints_list,mz_max,charge,delta_mz,error=0.02):
-    
     """
     以最高峰为基准，获取与其相差delta_mz的同位素峰的mz和intensity;
     考虑电荷
     允许误差范围为error
+
+    args:
+    mz_list: np.array, m/z array
+    ints_list: np.array, intensity array
+    mz_max: float, the max mz of the peaks
+    charge: int, the charge of the peaks
+    delta_mz: float, the delta mz of the peaks
+    error: float, the error of the peaks
+
+    returns:
+    mz: float, the mz of the peaks
+    ints: float, the intensity of the peaks
+    
     """
 
     mz = [i for i, x in enumerate(mz_list) if (mz_max+(delta_mz-error)/charge) <= x <= (mz_max+(delta_mz+error)/charge)]
