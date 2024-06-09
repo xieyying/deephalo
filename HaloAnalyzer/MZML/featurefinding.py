@@ -94,7 +94,7 @@ class FeatureMapProcessor(FeatureDetection):
         self.df_feature_ = self.feature_map.get_df()
         self.df_feature_ = self.df_feature_.reset_index()
         for feature in self.feature_map:
-            if feature.getMetaValue("num_of_masstraces") >4 and feature.getIntensity() > 100000:
+            if feature.getMetaValue("num_of_masstraces") >4 and feature.getIntensity() > 10000:
                 self._process_feature(feature)
         self._transform_to_dataframe()
         self._merge_feature_df()
@@ -194,8 +194,8 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     inty_df = inty_df.div(inty_df.max(axis=1), axis=0)
     
     # Assign new columns to df
-    df['m2_m1'] = m2_m1
-    df['m1_m0'] = m1_m0
+    df['m2_m1'] = m2_m1*df['charge']
+    df['m1_m0'] = m1_m0*df['charge']
     for i in range(7):
         df[f'p{i}_int'] = inty_df[i].values
     return df
@@ -256,10 +256,16 @@ def roi_scan_based_halo_evaluation(I):
                 scan_based_halo_score = 100
                 scan_based_halo_sub_class =max(counter.items(), key=lambda x: x[1])[0]
                 scan_based_halo_sub_class_ratio = counter[scan_based_halo_sub_class] / len(I)
-                scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
+                if len(I) > 2:
+                    scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
+                else:
+                    scan_based_halo_sub_score = scan_based_halo_ratio
             else:
                 I_new = [1 if i in [0,1,2] else 0 for i in I]
-                scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
+                if len(I) > 2:
+                    scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
+                else:
+                    scan_based_halo_score = scan_based_halo_ratio
                 scan_based_halo_sub_class = "None"
                 scan_based_halo_sub_score = "None"
     else:
