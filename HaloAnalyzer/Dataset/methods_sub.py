@@ -14,16 +14,7 @@ def get_selenium_additive_isotopes(formula):
     f=Formula(formula+"Se")
     return f.spectrum()
 
-def other_requirements_trainable_clf(formula):
-    """判断分子式是否满足其他要求，满足返回1，否则返回0
-    要求：分子式中的元素只能是C,H,O,N,S,P,F,I的子集"""
-    #将formula列中的公式转为字典
-    f_dict = Formula(formula).composition().dataframe().to_dict()['Count']
-    #如果f_dict中的keys是[C,H,O,N,S]的子集，则返回1，否则返回0
-    if set(f_dict.keys()).issubset(set(['C','H','O','N','S','P','F','I'])):
-        return 1
-    else:
-        return 0
+
 
 def mass_spectrum_calc(dict_features,charge) -> dict:
     """
