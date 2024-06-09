@@ -54,6 +54,7 @@ def mass_spectrum_calc(dict_features,charge) -> dict:
 
     dict_features['m2_m1'] = m2_m1
     dict_features['m2_m0'] = m2_m0
+    dict_features['m1_m0'] = m1_m0
 
 
     #以字典的形式返回

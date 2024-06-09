@@ -22,6 +22,8 @@ def formula_clf(formula_dict,type=None) :
         trainable = 'no'
     elif formula_dict.get('H') < 3 or formula_dict.get('C') < 1:
         trainable = 'no'
+    elif 'S' in formula_dict.keys() and formula_dict.get('S') >4 :
+        trainable = 'no'
     else:
         trainable = 'yes'
 
@@ -30,9 +32,14 @@ def formula_clf(formula_dict,type=None) :
         group = 7
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        group = 0
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 10
+        else:
+            group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
-        if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 10
+        elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
             group = 0
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
             group = 0        
@@ -76,7 +83,7 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     #获取intensity
     intensity = fm_isos['Intensity %'].tolist()[:7]
 
-    if max(intensity) < 99:
+    if max(intensity) < 99.8:
         print(max(intensity),type,formula)
     #如果len(relative_mass) < 7,则补全relative_mass和intensity
     while len(relative_mass) < 7:
@@ -84,13 +91,10 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
         intensity.append(0)
     #转为字典
     dict_isos = {'mz_0':relative_mass[0],'mz_1':relative_mass[1],'mz_2':relative_mass[2],'mz_3':relative_mass[3],
-                'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],
-                'ints_0':intensity[0],'ints_1':intensity[1],'ints_2':intensity[2],'ints_3':intensity[3],
-                'ints_4':intensity[4],'ints_5':intensity[5],'ints_6':intensity[6]}
-
-
-
-
+                'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],'m2_m1':relative_mass[1]-relative_mass[0],
+                'm1_m0':relative_mass[2]-relative_mass[1],
+                'ints_0':intensity[0]/100,'ints_1':intensity[1]/100,'ints_2':intensity[2]/100,'ints_3':intensity[3]/100,
+                'ints_4':intensity[4]/100,'ints_5':intensity[5]/100,'ints_6':intensity[6]/100}
     return dict_isos
 
 def create_data(formula,type='base',rate=None,):#return_from_max_ints=True) -> pd.DataFrame:

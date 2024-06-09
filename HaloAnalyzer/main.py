@@ -16,7 +16,7 @@ def pipeline_dataset(type_list = ['base','Fe','B','Se','hydro']) -> None:
     for data_df, col_formula in para.datasets:
         datas.append(dataset(data_df,col_formula).data)
     raw_data = datasets(datas)
-    
+    # type_list = ['base']
     for type in type_list:
         raw_data.work_flow(para,type)
 

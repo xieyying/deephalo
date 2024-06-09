@@ -129,6 +129,8 @@ class dataset():
         参数:
         path: str，保存路径
         """
+        #过滤，只保留group<=7的数据
+        self.df_data = self.df_data[self.df_data['group']<=7]
         self.df_data.to_csv(path,index=False)
 
     def work_flow(self,para,type):
@@ -147,6 +149,7 @@ class dataset():
         """
         self.filt(para.mz_start,para.mz_end,para.elements_list)
         self.create_dataset(type,para.rate_for_hydro,)#para.return_from_max_ints)
+        
         #如果不存在dataset文件夹，则创建
 
         if not os.path.exists('./dataset'):

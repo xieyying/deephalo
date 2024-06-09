@@ -4,10 +4,17 @@
 [datasets]
 
 paths = [
-        ["E:/XinBackup/source_data/datasets/NPAtlas_download.json","mol_formula",],
-        # ["D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv","Formula",],    
+            
+       [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
+        "mol_formula"],
+            [
+        "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+        "Formula",
+    ],
+    
+           
         ]#数据库文件路径
-element_list = ['C','H','O','N','P','Cl','Br','F','I','Ho','Na','Al','As','S','Fe','Se','B','e-']#训练集中所包含的元素种类
+element_list = ['C','H','O','N','P','Cl','Br','F','I','S','Fe','Se','B']#训练集中所包含的元素种类
 mz_start = 50#质荷比起始值
 mz_end = 3000#质荷比终止值
 rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,2.3,5]#模拟hydro所用的rate
