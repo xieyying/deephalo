@@ -1,7 +1,6 @@
 from molmass import Formula
 import pandas as pd
-from .methods_sub import get_iron_additive_isotopes,get_boron_additive_isotopes,\
-    get_selenium_additive_isotopes,get_hydroisomer_isotopes,mass_spectrum_calc
+from .methods_sub import *
     
 def formula_clf(formula_dict,type=None) :
     """
@@ -31,14 +30,9 @@ def formula_clf(formula_dict,type=None) :
         group = 7
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
-            group = 19
-        else:
-            group = 0
+        group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
-        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
-            group = 19
-        elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+        if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
             group = 0
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
             group = 0        
@@ -49,35 +43,14 @@ def formula_clf(formula_dict,type=None) :
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>=1:
             group = 2
     elif ('Se' in formula_dict.keys() ):
-        if formula_dict['Se']==1:
-            group = 3
-        else:
-            group = 15
+        group = 3
+
     elif ('B' in formula_dict.keys()):
-        if  formula_dict['B']==1:
-            group = 4
-        elif formula_dict['B']<=4:
-            group = 12
-        else:
-            group = 13
+        group = 4
+
     elif ('Fe' in formula_dict.keys()):
-        if formula_dict['Fe']==1:
-            group = 5
-        else:
-            group = 14
-    elif 'S' in formula_dict.keys():
-        if formula_dict['S']==1:
-            group = 81
-        elif formula_dict['S']==2:
-            group = 8
-        elif formula_dict['S']==3:
-            group = 811
-        elif formula_dict['S']==4:
-            group = 9
-        elif formula_dict['S']==5:
-            group = 10
-        else:
-            group = 11
+        group = 5
+
     else:
         group = 6
 
@@ -97,72 +70,34 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     else:
         fm_isos =fm.spectrum(min_intensity=0.0001).dataframe()
 
-    i = 0 
-    b_1_int = 0
-    b_2_int = 0
-    b_3_int = 0
-    b_3_mz = 0
-    b_2_mz = 0
-    b_1_mz = 0
-    
+    # print(fm_isos)
+    #获取relative_mass
+    relative_mass = fm_isos['Relative mass'].tolist()[:7]
+    #获取intensity
+    intensity = fm_isos['Intensity %'].tolist()[:7]
 
-    while round(fm_isos.iloc[i]['Intensity %'],7) != 100.0:
-        b_3_mz = b_2_mz
-        b_2_mz = b_1_mz
-        b_3_int = b_2_int
-        b_2_int = b_1_int
-        b_1_mz = fm_isos.iloc[i]['Relative mass']
-        b_1_int = fm_isos.iloc[i]['Intensity %']
+    if max(intensity) < 99:
+        print(max(intensity),type,formula)
+    #如果len(relative_mass) < 7,则补全relative_mass和intensity
+    while len(relative_mass) < 7:
+        relative_mass.append(0)
+        intensity.append(0)
+    #转为字典
+    dict_isos = {'mz_0':relative_mass[0],'mz_1':relative_mass[1],'mz_2':relative_mass[2],'mz_3':relative_mass[3],
+                'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],
+                'ints_0':intensity[0],'ints_1':intensity[1],'ints_2':intensity[2],'ints_3':intensity[3],
+                'ints_4':intensity[4],'ints_5':intensity[5],'ints_6':intensity[6]}
 
-        i+=1
-    
-    b0_mz = fm_isos.iloc[i]['Relative mass']
-    b0_int = fm_isos.iloc[i]['Intensity %']
 
-    try:
-    
-        b1_mz = fm_isos.iloc[i+1]['Relative mass']
-        b1_int = fm_isos.iloc[i+1]['Intensity %']
-    
-    except:
-        b1_mz = 0
-        b1_int = 0
 
-    try:
-    
-        b2_mz = fm_isos.iloc[i+2]['Relative mass']
-        b2_int = fm_isos.iloc[i+2]['Intensity %']
-        
-    except:
-        b2_mz = 0
-        b2_int = 0
 
-    try:
-        
-        b3_mz = fm_isos.iloc[i+3]['Relative mass']
-        b3_int = fm_isos.iloc[i+3]['Intensity %']
+    return dict_isos
 
-    except:
-        b3_mz = 0
-        b3_int = 0
-    try:
-        b4_mz = fm_isos.iloc[i+4]['Relative mass']
-        b4_int = fm_isos.iloc[i+4]['Intensity %']
-    except:
-        b4_mz = 0
-        b4_int = 0
-
-    return {'mz_b_3':b_3_mz,'mz_b_2':b_2_mz,'mz_b_1':b_1_mz,'mz_b0':b0_mz,\
-            'mz_b1':b1_mz,'mz_b2':b2_mz,'mz_b3':b3_mz,'mz_b4':b4_mz,\
-            'ints_b_3':b_3_int/100,'ints_b_2':b_2_int/100,'ints_b_1':b_1_int/100,\
-            'ints_b0':b0_int/100,'ints_b1':b1_int/100,'ints_b2':b2_int/100,\
-            'ints_b3':b3_int/100,'ints_b4':b4_int/100} 
-
-def create_data(formula,type='base',rate=None) -> pd.DataFrame:
+def create_data(formula,type='base',rate=None,):#return_from_max_ints=True) -> pd.DataFrame:
     """基于分子式及其类型，模拟质谱数据，返回模拟质谱数"""
     if not isinstance(formula, str):
         raise ValueError(formula,'formula must be a string')
-    #将formula转化为formula_dict
+    #将formula转化为formula_dict，用于判断训练标签
     formula_dict = Formula(formula).composition().dataframe().to_dict()['Count']
     #根据formula判断训练标签
     trainable,group =formula_clf(formula_dict,type=type)
@@ -175,7 +110,7 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
             return pd.DataFrame()
 
     #模拟质谱数据
-    dict_isos = Isotope_simulation(formula,type,rate)
+    dict_isos = Isotope_simulation(formula,type,rate,)#return_from_max_ints)
 
     if type == 'Se':
         group = 3
@@ -186,14 +121,17 @@ def create_data(formula,type='base',rate=None) -> pd.DataFrame:
     
     dict_base = {'formula':formula,'group':group}
     # dict_isos_calc=mass_spectrum_calc(dict_isos)
-    dict_isos_calc_new = mass_spectrum_calc(dict_isos,1)
+    dict_isos_calc = mass_spectrum_calc(dict_isos,1)
 
     #合并dict_base,dict_isos_calc和dict_isos_calc_new
     dict_all = dict_base.copy()
     dict_all.update(dict_isos)
-    dict_all.update(dict_isos_calc_new)
+    dict_all.update(dict_isos_calc)
     df = pd.DataFrame([dict_all])
 
     return df
     
+if __name__ == '__main__':
+    df = create_data('C30H15Br7O9S','base')
+    print(df)
 

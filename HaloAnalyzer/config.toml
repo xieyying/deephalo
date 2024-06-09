@@ -11,7 +11,7 @@ element_list = ['C','H','O','N','P','Cl','Br','F','I','Ho','Na','Al','As','S','F
 mz_start = 50#质荷比起始值
 mz_end = 3000#质荷比终止值
 rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,2.3,5]#模拟hydro所用的rate
-
+return_from_max_ints = "True"#是否从最大强度的峰开始返回
 
 #模型训练参数
 [model_data]
@@ -29,10 +29,10 @@ feature_list = [
         ]
 
 #训练使用的数据集
-use_add_fe_data = "True"
-use_add_b_data =  "True"
-use_add_se_data =  "True"
-use_hydroisomer_data = "True"
+use_add_fe_data = "False"
+use_add_b_data =  "False"
+use_add_se_data =  "False"
+use_hydroisomer_data = "False"
 
 #模型训练参数
 [model_construct]

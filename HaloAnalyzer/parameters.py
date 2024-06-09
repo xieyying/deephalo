@@ -17,6 +17,7 @@ class run_parameters:
         self.mz_start = config['datasets']['mz_start']
         self.mz_end = config['datasets']['mz_end']
         self.rate_for_hydro = config['datasets']['rate_for_hydro']
+        # self.return_from_max_ints = config['datasets']['return_from_max_ints']
 
         #model_data参数
         self.features_list = config['model_data']['feature_list']
@@ -48,14 +49,7 @@ class run_parameters:
         #vis参数
         self.vis_path = config['visualization']['path']
 
-    def update(self,new_parameters):
-        #对参数进行更新
-        file_path = importlib_resources.files('HaloAnalyzer') / 'config.toml'
-        with open(file_path,'wb') as f:
-            tomli_w.dump(new_parameters,f)
-        self.__init__()
-
 
 if __name__ == '__main__':
     parameters = run_parameters()
-    print(type((parameters.use_fe_data)))
+    print((parameters.datasets))

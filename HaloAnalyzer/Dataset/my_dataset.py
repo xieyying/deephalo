@@ -44,44 +44,26 @@ class dataset():
         #重置index
         self.data = self.data.reset_index(drop=True)
         
-    def filter(self,lp):
-        """
-        过滤数据，返回符合要求的数据。
+    def filter(self,Multi_core_run_parameters):
 
-        参数:
-        lp: 一个列表，包含四个元素，分别是
-            索引i，
-            最小质量min_mass，
-            最大质量max_mass，
-            目标元素target_elements。
-
-        返回值:
-        df: 一个Pandas DataFrame，包含符合要求的化合物公式。
-
-        异常:
-        如果lp的长度不是4，或者i不在数据的索引范围内，可能会抛出异常。
-
-        使用示例:
-        ds = dataset(path='path/to/data.json', key='formula')
-        df = ds.filter([0, 100, 500, ['H', 'O']])
-        """
+        
         df = pd.DataFrame(columns=['formula'])
         try:
-            i,min_mass,max_mass,target_elements = lp[0],lp[1],lp[2],lp[3]
+            i,mz_start,mz_end,elements_list = Multi_core_run_parameters
             formula = self.data.iloc[i]['formula']
             formula_mass = Formula(formula).isotope.mass
             formula_dict = Formula(formula).composition().dataframe().to_dict()['Count']
             formula_dict_keys = list(formula_dict.keys())
-            if formula_mass >= min_mass and formula_mass <= max_mass:
+            if formula_mass >= mz_start and formula_mass <= mz_end:
             #如果formula_dict_keys中元素都在target_elements中的元素中，则将formula添加到df中
-                if set(formula_dict_keys).issubset(set(target_elements)):
+                if set(formula_dict_keys).issubset(set(elements_list)):
                     #pending
                     df = pd.concat([df,pd.DataFrame([[formula]],columns=['formula'])],ignore_index=True)
             return df
         except:
             return df
         
-    def filt(self,min_mass,max_mass,target_elements):
+    def filt(self,mz_start,mz_end,elements_list):
         """
         多进程的方式map filter，默认使用全部cpu
 
@@ -94,14 +76,14 @@ class dataset():
         结果会直接修改self.data，无返回值
         """
         pool = Pool()
-        dfs = pool.map(self.filter, [(i,min_mass,max_mass,target_elements) for i in self.data.index] )
+        dfs = pool.map(self.filter, [(i,mz_start,mz_end,elements_list) for i in range(len(self.data))])
         pool.close()
         df = pd.concat(dfs,ignore_index=True)
 
         self.data = df
 
 
-    def create_dataset(self,type,rates):
+    def create_dataset(self,type,rates,):#return_from_max_ints):
         """
         依据self.data中的formula，构建特定的数据集，不同的type对应不同的数据集，区别如下：
         基础数据集：基于数据库中真实化合物的formula。
@@ -118,8 +100,8 @@ class dataset():
         """
         if type in ['base','Fe','B','Se','S']:
             #基础数据集
-            pool = Pool()
-            func = partial(create_data, type=type)
+            pool = Pool(5)
+            func = partial(create_data, type=type,)#return_from_max_ints=return_from_max_ints)
             dfs = pool.map(func, [formula for formula in self.data['formula']])
             pool.close()
             df = pd.concat(dfs,ignore_index=True)
@@ -128,9 +110,9 @@ class dataset():
         elif type =='hydro':
             df = pd.DataFrame()
             #模拟加氢数据集
-            pool = Pool()
+            pool = Pool(5)
             for rate in rates:
-                func = partial(create_data, type=type,rate=rate)
+                func = partial(create_data, type=type,rate=rate,)#return_from_max_ints=return_from_max_ints)
                 dfs = pool.map(func, [formula for formula in self.data['formula']])
                 df0 = pd.concat(dfs, ignore_index=True)
                 df = pd.concat([df,df0],ignore_index=True)
@@ -149,7 +131,7 @@ class dataset():
         """
         self.df_data.to_csv(path,index=False)
 
-    def work_flow(self,min_mass,max_mass,target_elements,type,rates=[0.5,1]):
+    def work_flow(self,para,type):
         """
         创建指定数据集的工作流程.
         
@@ -163,13 +145,17 @@ class dataset():
         返回值:
         此过程耗时较长，故以文件的形式保存数据集。
         """
-        self.filt(min_mass,max_mass,target_elements)
-        self.create_dataset(type,rates)
+        self.filt(para.mz_start,para.mz_end,para.elements_list)
+        self.create_dataset(type,para.rate_for_hydro,)#para.return_from_max_ints)
         #如果不存在dataset文件夹，则创建
 
         if not os.path.exists('./dataset'):
             os.mkdir('./dataset')
-        self.save('./dataset/'+type+'.csv')   
+        self.save('./dataset/'+type+'.csv')
+        # if para.return_from_max_ints:
+        #     self.save('./dataset/'+type+'_from_max_ints.csv')
+        # else:
+        #     self.save('./dataset/'+type+'.csv')   
 
 class datasets(dataset):
     """

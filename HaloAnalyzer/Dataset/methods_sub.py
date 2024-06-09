@@ -36,41 +36,28 @@ def mass_spectrum_calc(dict_features,charge) -> dict:
     Returns:
     dict, 质谱数据的相关特征
     """
-    # 将以最高峰为a0的质谱数据转化为以mz最小的峰为m0的质谱数据
-    mz_list = [dict_features['mz_b_3'],dict_features['mz_b_2'],dict_features['mz_b_1'],dict_features['mz_b0'],dict_features['mz_b1'],dict_features['mz_b2'],dict_features['mz_b3']]
-    ints_list = [dict_features['ints_b_3'],dict_features['ints_b_2'],dict_features['ints_b_1'],1,dict_features['ints_b1'],dict_features['ints_b2'],dict_features['ints_b3']]
-    for i in range(len(ints_list)):
-        if ints_list[i] != 0:
-            index = i
-            break
-    m0_mz,m1_mz,m2_mz,m3_mz = mz_list[index],mz_list[index+1],mz_list[index+2],mz_list[index+3]
-    m0_ints,m1_ints,m2_ints,m3_ints = ints_list[index],ints_list[index+1],ints_list[index+2],ints_list[index+3]
-    
+    mz_2 = dict_features['mz_2']
+    mz_1 = dict_features['mz_1']
+    mz_0 = dict_features['mz_0']
 
-    if m2_mz !=0:
-        m2_m1 = (m2_mz - m1_mz)*charge
-        m2_m0 = (m2_mz - m0_mz)*charge
+    if mz_2 !=0:
+        m2_m1 = (mz_2 - mz_1)*charge
+        m2_m0 = (mz_2 - mz_0)*charge
     else:
         m2_m1 = 1.002
         m2_m0 = 2.002
 
-    if m1_mz !=0:
-        m1_m0 = (m1_mz - m0_mz)*charge 
+    if mz_1 !=0:
+        m1_m0 = (mz_1 - mz_0)*charge 
     else:    
         m1_m0 = 1.002
 
-    b2= dict_features['mz_b2']
-    b1= dict_features['mz_b1']
-    if b2 !=0:
-        b2_b1 = (b2 - b1)*charge
-    else:
-        b2_b1 = 1.002
+    dict_features['m2_m1'] = m2_m1
+    dict_features['m2_m0'] = m2_m0
+
 
     #以字典的形式返回
-    return {'m0_mz':m0_mz,'m1_mz':m1_mz,'m2_mz':m2_mz,'m3_mz':m3_mz,
-            'm0_ints':m0_ints,'m1_ints':m1_ints,'m2_ints':m2_ints,'m3_ints':m3_ints,
-            'm2_m1':m2_m1,'m2_m0':m2_m0,
-            'b2_b1':b2_b1,'m1_m0':m1_m0,}
+    return dict_features
 
 def get_hydroisomer_isotopes(formula, ratio, min_intensity=0.0001) -> Spectrum:
     """

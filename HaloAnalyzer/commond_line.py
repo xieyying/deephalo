@@ -1,4 +1,4 @@
-from HaloAnalyzer.main import pipeline_dataset,pipeline_model,pipeline_analyze_mzml,pipeline_viz_result
+from HaloAnalyzer.main import pipeline_dataset,pipeline_model,pipeline_analyze_mzml
 import os
 import argparse
 from .parameters import run_parameters
@@ -45,7 +45,8 @@ def main():
             elif args.run == 'analyze_mzml':
                 pipeline_analyze_mzml(args)
             elif args.run == 'viz_result':
-                pipeline_viz_result()
+                # pipeline_viz_result()
+                pass
             
         else:
             print("Please specify a project path.")
