@@ -2,6 +2,8 @@ import pyopenms as oms
 import pandas as pd
 import numpy as np
 from scipy.spatial import KDTree
+import tensorflow as tf
+from collections import Counter
 
 class FeatureDetection:
     """
@@ -22,7 +24,7 @@ class FeatureDetection:
     def get_dataframes(self):
         """Get the ion dataframes and filter them"""
         self.ion_df = self.exp.get_ion_df()
-        self.ion_df = self.ion_df[self.ion_df['inty'] > 10000]
+        self.ion_df = self.ion_df[self.ion_df['inty'] > 100]
 
     def mass_trace_detection(self):
         """Detect the mass traces"""
@@ -30,7 +32,7 @@ class FeatureDetection:
         mtd_par = mtd.getDefaults()
         mtd_par.setValue("mass_error_ppm", 20.0)
         mtd_par.setValue('min_trace_length', 5.0)
-        mtd_par.setValue("noise_threshold_int", 10000.0)
+        mtd_par.setValue("noise_threshold_int", 100.0)
         mtd.setParameters(mtd_par)
         mtd.run(self.exp, self.mass_traces, 0)
 
@@ -109,7 +111,7 @@ class FeatureMapProcessor(FeatureDetection):
         self.masstrace_intensity.append(feature.getMetaValue("masstrace_intensity") )
         self.masstrace_centroid_mz.append((feature.getMetaValue("masstrace_centroid_mz")) )
         self.masstrace_lable.append(feature.getMetaValue("label").split("_")) 
-        self.feature_id.append(feature.getUniqueId())
+        self.feature_id.append(str(feature.getUniqueId()))
         convex_hulls = feature.getConvexHulls()
         self._process_convex_hulls(convex_hulls, feature)
 
@@ -130,7 +132,7 @@ class FeatureMapProcessor(FeatureDetection):
         df_trace1 = df_trace1.melt(id_vars='rt', var_name='mz_type', value_name='mz')
         self.df_feature_flatten = pd.concat([self.df_feature_flatten,df_trace1])
         self.charge_f.extend ([feature.getCharge() for _ in range(len(df_trace1))])
-        self.feature_id_flatten.extend ([feature.getUniqueId() for _ in range(len(df_trace1))])
+        self.feature_id_flatten.extend ([str(feature.getUniqueId()) for _ in range(len(df_trace1))])
 
     def _transform_to_dataframe(self):
         """Transform the data to a dataframe"""
@@ -142,8 +144,6 @@ class FeatureMapProcessor(FeatureDetection):
 
     def _merge_feature_df(self):
         """Merge the feature dataframes"""
-        self.df_feature['feature_id'] = self.df_feature['feature_id'].astype(str)
-        self.df_feature_['feature_id'] = self.df_feature_['feature_id'].astype(str)
         self.df_feature = pd.merge(self.df_feature, self.df_feature_, left_on='feature_id', right_on='feature_id', how='left')
 
     def _add_intensity(self):
@@ -165,10 +165,167 @@ class FeatureMapProcessor(FeatureDetection):
             'charge': x.sort_values('mz_type')['charge_f'].tolist()[0],
         })).reset_index()
 
-if __name__ == '__main__':
-    file = r'D:\python\wangmengyuan\dataset\mzmls\test\test\cmx_11_23_M3_p9_bottle_1.mzML'
+def featureFinding(file):
+    """
+    Find features from mzML data
+    return two DataFrame. One containing feature based isotope patterns. The other contain scan based isotope patterns
+    """
     df = FeatureMapProcessor(file)
     feature = df.run()
     df_f,df_scan = feature.process()
-    print('df_f', df_f)
-    print(df_scan)
+    return df_f,df_scan
+
+def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list"):
+    """
+    Process DataFrame and make it ready for halo model inputs
+    """
+    # get the mz_list and inty_list
+    mz_list = df[mz_list_name].values
+    m2_m1 = [i[2] - i[1] for i in mz_list]
+    m1_m0 = [i[1] - i[0] for i in mz_list]
+    
+    # Ensure all lists in inty_list have 7 elements
+    inty_list = [i + [0]*(7-len(i)) for i in df[inty_list_name].tolist()]
+    
+    # Convert inty_list to a DataFrame
+    inty_df = pd.DataFrame(inty_list)
+    
+    # Normalize each row by its max value
+    inty_df = inty_df.div(inty_df.max(axis=1), axis=0)
+    
+    # Assign new columns to df
+    df['m2_m1'] = m2_m1
+    df['m1_m0'] = m1_m0
+    for i in range(7):
+        df[f'p{i}_int'] = inty_df[i].values
+    return df
+
+def add_predict(df,model_path,features_list):
+    """
+    Add prediction result based on DNN Halo model
+    """
+    # Load the TensorFlow model
+    clf = tf.keras.models.load_model(model_path)
+    # Load the features
+    querys = df[features_list].values
+    querys = querys.astype('float32')
+    # Predict the features
+    res = clf.predict(querys)
+    classes_pred = np.argmax(res, axis=1)
+    # Add the prediction results to df_features
+    df.loc[:, 'class_pred'] = classes_pred
+    return df
+
+def calculate_zig_zag(I):
+    """
+    Calculate the ZigZag score based on the classification results of all scans in an ROI
+    """
+    # Calculate the maximum and minimum values of I
+    Imax= max(I)
+    Imin = min(I)
+    N = len(I) 
+    total = 0
+    # Calculate the ZigZag score for I
+    for n in range(1,N-1):
+        term = (2 * I[n] - I[n - 1] - I[n + 1])**2 
+        total += term
+    zigzag = total/(N*(Imax-Imin)**2)
+    # Convert the ZigZag score to a percentage
+    score = (4-8/N-zigzag)/(4-8/N)*100
+    return score
+
+def roi_scan_based_halo_evaluation(I):
+    """
+    Determine the probability of an ROI being a halo based on the classification results of all scans in the ROI
+    """
+    # Get the common classes in the ROI
+    com_class = list(Counter(I).keys())
+    counter = Counter(I)
+    # Calculate the ratio of 0,1,2 in I
+    scan_based_halo_ratio = sum(1 for i in I if i in {0, 1, 2}) / len(I)
+
+    # Determine the halo classification for the ROI
+    if any(i in com_class for i in [0, 1, 2]):
+        scan_based_halo_class = 'halo'
+        if len(com_class) == 1:
+            scan_based_halo_score = 100
+            scan_based_halo_sub_score = 100
+            scan_based_halo_sub_class = com_class[0]
+        else:
+            if {0, 1, 2}.issuperset(set(com_class)):
+                scan_based_halo_score = 100
+                scan_based_halo_sub_class =max(counter.items(), key=lambda x: x[1])[0]
+                scan_based_halo_sub_class_ratio = counter[scan_based_halo_sub_class] / len(I)
+                scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
+            else:
+                I_new = [1 if i in [0,1,2] else 0 for i in I]
+                scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
+                scan_based_halo_sub_class = "None"
+                scan_based_halo_sub_score = "None"
+    else:
+        scan_based_halo_class = 'non-halo'
+        scan_based_halo_score = 0
+        scan_based_halo_sub_class = 'None'
+        scan_based_halo_sub_score = 'None'
+
+    return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio
+
+def haloEvalution(df_f,df_scan):
+    """
+    Evaluate the probability of features based on both feature isotope patterns and scan based isotope patterns
+    """
+    for i in df_scan['feature_id_flatten'].unique():
+        I = df_scan[df_scan['feature_id_flatten'] == i]['class_pred'].tolist()
+        scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio = roi_scan_based_halo_evaluation(I)
+        
+        df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_class'] = scan_based_halo_class
+        df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_score'] = scan_based_halo_score
+        df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_sub_class'] = scan_based_halo_sub_class
+        df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_sub_score'] = scan_based_halo_sub_score
+        df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_ratio'] = scan_based_halo_ratio
+        
+        df_f.loc[df_f['feature_id'] == i,'scan_based_halo_class'] = scan_based_halo_class
+        df_f.loc[df_f['feature_id'] == i,'scan_based_halo_score'] = scan_based_halo_score
+        df_f.loc[df_f['feature_id'] == i,'scan_based_halo_sub_class'] = scan_based_halo_sub_class
+        df_f.loc[df_f['feature_id'] == i,'scan_based_halo_sub_score'] = scan_based_halo_sub_score
+        df_f.loc[df_f['feature_id'] == i,'scan_based_halo_ratio'] = scan_based_halo_ratio
+        
+    feature_based_halo_score = df_f['class_pred'].apply(lambda x: 1 if x in [0,1,2] else 0)
+    df_f['feature_based_halo_score'] = feature_based_halo_score
+    df_f['H_score'] = (df_f['scan_based_halo_score'])/300 + (df_f['scan_based_halo_ratio'])/3 + (df_f['feature_based_halo_score'])/3 
+    
+    return df_f,df_scan
+
+if __name__ == '__main__':
+    feature_list = [
+        "p0_int",
+        "p1_int",
+        "p2_int",
+        "p3_int",
+        "p4_int",
+        "p5_int",
+        "p6_int",
+        "m2_m1",
+        "m1_m0",        
+    ]
+    
+    file = r'D:\python\wangmengyuan\dataset\mzmls\test\test\cmx_11_23_M3_p9_bottle_1.mzML'
+    model_path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms\trained_models\pick_halo_ann.h5'
+
+    df_f,df_scan = featureFinding(file)
+    df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+    # print(df_feature_for_model_input)
+    df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
+    # print(df_scan_for_model_input)
+    
+    df_f = add_predict(df_feature_for_model_input,model_path, feature_list)
+    df_scan = add_predict(df_scan_for_model_input,model_path, feature_list)
+    # print(df_f)
+    # print(df_scan)
+    
+    df_f_result,df_scan_result = haloEvalution(df_f,df_scan)
+    df_f_result.to_csv(r'C:\Users\xyy\Desktop\test\tem\df_f_result.csv', index=False)
+    df_scan_result.to_csv(r'C:\Users\xyy\Desktop\test\tem\df_scan_result.csv', index=False)
+    print(df_f)
+    
+    

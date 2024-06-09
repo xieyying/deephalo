@@ -6,10 +6,27 @@
 paths = [
             
        [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
-        "mol_formula"],
-            [
+        "mol_formula",
+    ],
+   [
+        "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+        "MS-Ready_Mol_Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+        "chemical_formula",
+    ],
+    [
         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
         "Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+        "formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+        "CHEMICAL_DATA",
     ],
     
            
@@ -24,22 +41,22 @@ return_from_max_ints = "True"#是否从最大强度的峰开始返回
 [model_data]
 #训练使用的特征列表
 feature_list = [
-            "ints_b_3",
-            "ints_b_2",
-            "ints_b_1",
-            "ints_b0",
-            "ints_b1",
-            "ints_b2",
-            "ints_b3",
+            "ints_0",
+            "ints_1",
+            "ints_2",
+            "ints_3",
+            "ints_4",
+            "ints_5",
+            "ints_6",
             "m2_m1",
             "m1_m0",   
         ]
 
 #训练使用的数据集
-use_add_fe_data = "False"
-use_add_b_data =  "False"
-use_add_se_data =  "False"
-use_hydroisomer_data = "False"
+use_add_fe_data = "True"
+use_add_b_data =  "True"
+use_add_se_data =  "True"
+use_hydroisomer_data = "True"
 
 #模型训练参数
 [model_construct]

@@ -55,14 +55,14 @@ class my_model:
         self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features.copy(),self.paths,self.batch_size)
         
         # 计算每个类别的样本数量,保留此部分
-        # class_counts = np.bincount(self.Y_test) 
+        class_counts = np.bincount(self.Y_test) 
 
         # # 计算类别权重
         # # self.class_weights = 1 / class_counts 
 
         # # 计算root CSW权重
-        # self.root_csw_weights = 1 / np.sqrt(class_counts)
-        # print(self.root_csw_weights)
+        self.root_csw_weights = 1 / np.sqrt(class_counts)
+        print(self.root_csw_weights)
 
         # # 计算square CSW权重
         # self.square_csw_weights = 1 / (class_counts ** 2)
@@ -145,23 +145,23 @@ class my_model:
         wrong_data = X_val[wrong_index]
 
         cols  = [
-                "ints_b_3",
-                "ints_b_2",
-                "ints_b_1",
-                "ints_b0",
-                "ints_b1",
-                "ints_b2",
-                "ints_b3",
-                "m2_m1",
-                "m1_m0",
-                'b2_b1',
+        
+            "ints_0",
+            "ints_1",
+            "ints_2",
+            "ints_3",
+            "ints_4",
+            "ints_5",
+            "ints_6",
+            "m2_m1",
+            "m1_m0",   
             ]
 
         formula_test = np.array(self.val_['formula'].tolist())
-        m0 = np.array(self.val_['m0_mz'].tolist())
+        m0 = np.array(self.val_['mz_0'].tolist())
         wrong_data = pd.DataFrame(wrong_data,columns=cols)
         wrong_data['formula'] = pd.Series(formula_test[wrong_index])
-        wrong_data['m0_mz'] = pd.Series(m0[wrong_index])
+        wrong_data['mz_0'] = pd.Series(m0[wrong_index])
         wrong_data['true_classes'] = pd.Series(Y_val[wrong_index])
         wrong_data['pred_classes'] = pd.Series(y_pred[wrong_index])
         
