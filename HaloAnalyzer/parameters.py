@@ -12,6 +12,7 @@ class run_parameters:
 
         self.config = config
         #dataset参数
+        self.type_list = config['datasets']['type_list']
         self.elements_list = config['datasets']['element_list']
         self.datasets = config['datasets']['paths']
         self.mz_start = config['datasets']['mz_start']
