@@ -1,7 +1,8 @@
 from molmass import Formula
 import pandas as pd
 from .methods_sub import *
-    
+import numpy as np
+
 def formula_clf(formula_dict,type=None) :
     """
     Returns a class based on the formula given.
@@ -82,13 +83,15 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     relative_mass = fm_isos['Relative mass'].tolist()[:7]
     #获取intensity
     intensity = fm_isos['Intensity %'].tolist()[:7]
-    intensity = intensity/max(intensity)
+    
     if max(intensity) < 99.8:
         print(max(intensity),type,formula)
     #如果len(relative_mass) < 7,则补全relative_mass和intensity
     while len(relative_mass) < 7:
         relative_mass.append(0)
         intensity.append(0)
+
+    intensity = np.array(intensity)/max(intensity)
     #转为字典
     dict_isos = {'mz_0':relative_mass[0],'mz_1':relative_mass[1],'mz_2':relative_mass[2],'mz_3':relative_mass[3],
                 'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],

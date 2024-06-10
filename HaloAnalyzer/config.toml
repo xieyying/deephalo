@@ -4,33 +4,34 @@
 [datasets]
 
 paths = [
-            
-       [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
-        "mol_formula",
-    ],
-   [
-        "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
-        "MS-Ready_Mol_Formula",
-    ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
-        "chemical_formula",
-    ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
-        "Formula",
-    ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
-        "formula",
-    ],
-    [
-        "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
-        "CHEMICAL_DATA",
-    ],
+        ["E:/XinBackup/source_data/datasets/NPAtlas_download.json","mol_formula",],
+    #    [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
+    #     "mol_formula",
+    # ],
+#    [
+#         "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+#         "MS-Ready_Mol_Formula",
+#     ],
+#     [
+#         "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+#         "chemical_formula",
+#     ],
+#     [
+#         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+#         "Formula",
+#     ],
+#     [
+#         "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+#         "formula",
+#     ],
+#     [
+#         "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+#         "CHEMICAL_DATA",
+#     ],
     
            
         ]#数据库文件路径
+type_list = ['base']#生成数据库类型
 element_list = ['C','H','O','N','P','Cl','Br','F','I','S','Fe','Se','B']#训练集中所包含的元素种类
 mz_start = 50#质荷比起始值
 mz_end = 3000#质荷比终止值
@@ -53,17 +54,17 @@ feature_list = [
         ]
 
 #训练使用的数据集
-use_add_fe_data = "True"
-use_add_b_data =  "True"
-use_add_se_data =  "True"
-use_hydroisomer_data = "True"
+use_add_fe_data = "False"
+use_add_b_data =  "False"
+use_add_se_data =  "False"
+use_hydroisomer_data = "False"
 
 #模型训练参数
 [model_construct]
 train_batch = 4
 val_batch = 4
 classes = 8
-epochs = 20
+epochs = 2
 learning_rate = 0.0003
 
 #模型训练权重
