@@ -82,7 +82,7 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     relative_mass = fm_isos['Relative mass'].tolist()[:7]
     #获取intensity
     intensity = fm_isos['Intensity %'].tolist()[:7]
-
+    intensity = intensity/max(intensity)
     if max(intensity) < 99.8:
         print(max(intensity),type,formula)
     #如果len(relative_mass) < 7,则补全relative_mass和intensity
@@ -91,10 +91,9 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
         intensity.append(0)
     #转为字典
     dict_isos = {'mz_0':relative_mass[0],'mz_1':relative_mass[1],'mz_2':relative_mass[2],'mz_3':relative_mass[3],
-                'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],'m2_m1':relative_mass[1]-relative_mass[0],
-                'm1_m0':relative_mass[2]-relative_mass[1],
-                'ints_0':intensity[0]/100,'ints_1':intensity[1]/100,'ints_2':intensity[2]/100,'ints_3':intensity[3]/100,
-                'ints_4':intensity[4]/100,'ints_5':intensity[5]/100,'ints_6':intensity[6]/100}
+                'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],
+                'ints_0':intensity[0],'ints_1':intensity[1],'ints_2':intensity[2],'ints_3':intensity[3]/100,
+                'ints_4':intensity[4],'ints_5':intensity[5],'ints_6':intensity[6]}
     return dict_isos
 
 def create_data(formula,type='base',rate=None,):#return_from_max_ints=True) -> pd.DataFrame:
