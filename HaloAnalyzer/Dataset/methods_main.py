@@ -95,7 +95,7 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     #转为字典
     dict_isos = {'mz_0':relative_mass[0],'mz_1':relative_mass[1],'mz_2':relative_mass[2],'mz_3':relative_mass[3],
                 'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],
-                'ints_0':intensity[0],'ints_1':intensity[1],'ints_2':intensity[2],'ints_3':intensity[3]/100,
+                'ints_0':intensity[0],'ints_1':intensity[1],'ints_2':intensity[2],'ints_3':intensity[3],
                 'ints_4':intensity[4],'ints_5':intensity[5],'ints_6':intensity[6]}
     return dict_isos
 

@@ -4,7 +4,7 @@ import shutil
 from .Dataset.my_dataset import dataset,datasets
 from .Model.my_model import my_model,my_search
 from .MZML.my_mzml import my_mzml
-from .parameters import run_parameters 
+from HaloAnalyzer.parameters import run_parameters 
 
 #Dataset Pipeline
 def pipeline_dataset(type_list = ['base','Fe','B','Se','hydro']) -> None:
@@ -59,7 +59,13 @@ def pipeline_model(mode = 'manual') -> None:
 
 
 def pipeline_analyze_mzml(args):
-    pass
+    #检查./result是否存在，不存在则创建
+    if not os.path.exists('./result'):
+        os.makedirs('./result')
+    para = run_parameters()
+    df_f_result,df_scan_result = my_mzml(args.input,para).work_flow()
+    df_f_result.to_csv('./result/df_f_result.csv', index=False)
+    df_scan_result.to_csv('./result/df_scan_result.csv', index=False)
 
 
 if __file__ == '__main__':

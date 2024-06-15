@@ -38,13 +38,15 @@ class run_parameters:
         self.classes_weight = {int(k): v for k, v in config['model_construct_class_weight']['classes_weight'].items()}
         
         #mzml参数
-        self.mzml_dict = {'min_intensity':config['mzml']['min_intensity'],
-                          'vendor':config['mzml']['vendor'],
-                          'precursor_error':config['mzml']['precursor_error'],
-                          'ROI_identify_method':config['mzml']['ROI_identify_method'],
-                          'min_element_roi':config['mzml']['min_element_roi'],
-                          'min_element_sum':config['mzml']['min_element_sum'],
-                          }
+        self.ion_df_min_inty = config['FeatureFinding']['ion_df_min_inty']
+        self.mass_trace_detection = config['FeatureFinding']['mass_trace_detection']
+        self.elution_peak_detection = config['FeatureFinding']['elution_peak_detection']
+        self.feature_detection = config['FeatureFinding']['feature_detection']
+
+        self.FeatureMapProcessor_mz_error = config['FeatureMapProcessor']['mz_error']
+        self.FeatureMapProcessor_rt_error = config['FeatureMapProcessor']['rt_error']
+        self.FeatureMapProcessor_min_num_of_masstraces = config['FeatureMapProcessor']['min_num_of_masstraces']
+        self.FeatureMapProcessor_min_feature_int = config['FeatureMapProcessor']['min_feature_int']
 
 
         #vis参数
