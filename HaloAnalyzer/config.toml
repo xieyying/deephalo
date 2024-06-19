@@ -42,16 +42,16 @@ return_from_max_ints = "True"#是否从最大强度的峰开始返回
 [model_data]
 #训练使用的特征列表
 feature_list = [
-            "ints_0",
-            "ints_1",
-            "ints_2",
-            "ints_3",
-            "ints_4",
-            "ints_5",
-            "ints_6",
-            "m2_m1",
-            "m1_m0",   
-        ]
+                "p0_int",
+                "p1_int",
+                "p2_int",
+                "p3_int",
+                "p4_int",
+                "p5_int",
+                "p6_int",
+                "m2_m1",
+                "m1_m0",  
+                ]
 
 #训练使用的数据集
 use_add_fe_data = "False"
@@ -80,14 +80,33 @@ learning_rate = 0.0003
 7 = 0.00379978
 
 #mzml文件预测参数
-[mzml]
-vendor = ''
-n_jobs = 4#并行处理的核数
-min_intensity = 100 #并非相对强度，An intensity threshold of 100  was used to eliminate electronic noise.
-precursor_error = 0.8#质荷比误差
-ROI_identify_method = 'DDA' #DDA:ms2fms1 algorithm; 'MS1': centWave algorith
-min_element_roi = 3 #roi识别中MS1_index的最少元素数量
-min_element_sum = 3 #halo_eval中count_list中最少元素数量
+[FeatureFinding]
+ion_df_min_inty = 100
+
+mass_trace_detection = [["mass_error_ppm", 20.0],
+                        ['min_trace_length', 5.0],
+                        ['noise_threshold_int', 100.0]]
+
+elution_peak_detection = [['width_filtering','fixed']]
+
+feature_detection = [['local_rt_range',10.0],
+                     ['local_mz_range',6.5],
+                     ['chrom_fwhm', 5.0],
+                     ['enable_RT_filtering', 'true'],
+                     ['mz_scoring_by_elements', 'true'],
+                     ["elements", "CHNOPSClBrFeBSeIF"],
+                     ["report_chromatograms", 'true'],
+                     ['isotope_filtering_model','none'],
+                     ["remove_single_traces", "true"],
+                     ["report_convex_hulls", 'true']
+                     ]
+                    
+[FeatureMapProcessor]
+mz_error = 0.001
+rt_error = 0.001
+min_num_of_masstraces = 4
+min_feature_int = 10000
+
 
 #可视化参数
 [visualization]
