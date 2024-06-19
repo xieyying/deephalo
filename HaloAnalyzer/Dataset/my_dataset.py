@@ -75,7 +75,7 @@ class dataset():
         返回值:
         结果会直接修改self.data，无返回值
         """
-        pool = Pool()
+        pool = Pool(4)
         dfs = pool.map(self.filter, [(i,mz_start,mz_end,elements_list) for i in range(len(self.data))])
         pool.close()
         df = pd.concat(dfs,ignore_index=True)
@@ -100,7 +100,7 @@ class dataset():
         """
         if type in ['base','Fe','B','Se','S']:
             #基础数据集
-            pool = Pool(5)
+            pool = Pool(4)
             func = partial(create_data, type=type,)#return_from_max_ints=return_from_max_ints)
             dfs = pool.map(func, [formula for formula in self.data['formula']])
             pool.close()
@@ -110,7 +110,7 @@ class dataset():
         elif type =='hydro':
             df = pd.DataFrame()
             #模拟加氢数据集
-            pool = Pool(5)
+            pool = Pool(4)
             for rate in rates:
                 func = partial(create_data, type=type,rate=rate,)#return_from_max_ints=return_from_max_ints)
                 dfs = pool.map(func, [formula for formula in self.data['formula']])

@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
+import numpy as np
 
 def create_dataset(features,paths,batch_size):
     """
@@ -23,6 +24,10 @@ def create_dataset(features,paths,batch_size):
     for path in paths:
         df_ = pd.read_csv(path)
         df = pd.concat([df,df_],axis=0)
+    
+    # 计算每个类别的样本数量,保留此部分
+    class_counts = np.bincount(df['group'].values) 
+    print('Whole_data_class_counts: ',class_counts)
 
     train_,val_ = train_test_split(df,test_size=0.2,random_state=6)
     train = train_[features]
@@ -36,6 +41,24 @@ def create_dataset(features,paths,batch_size):
 
     Y_train = train_target.values
     Y_test = val_target.values
+    
+    # 计算每个类别的样本数量,保留此部分
+    # class_counts = np.bincount(Y_train) 
+    # print('class_counts: ',class_counts)
+
+    # # 计算类别权重
+    class_weights = 1 / class_counts 
+    print('class_weights: ',class_weights)
+
+    # # # # 计算root CSW权重
+    # root_csw_weights = 1 / np.sqrt(class_counts)
+    # print('root_csw_weights: ',root_csw_weights)
+
+    # 计算square CSW权重
+    # square_csw_weights = 1 / (class_counts ** 2)
+    # print('square_csw_weight',square_csw_weights)
+        
+    
     
     train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
     val_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))

@@ -54,20 +54,6 @@ class my_model:
         """
         self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features.copy(),self.paths,self.batch_size)
         
-        # 计算每个类别的样本数量,保留此部分
-        class_counts = np.bincount(self.Y_test) 
-
-        # # 计算类别权重
-        # # self.class_weights = 1 / class_counts 
-
-        # # 计算root CSW权重
-        self.root_csw_weights = 1 / np.sqrt(class_counts)
-        print(self.root_csw_weights)
-
-        # # 计算square CSW权重
-        # self.square_csw_weights = 1 / (class_counts ** 2)
-        # print(self.square_csw_weights)
-        
     def get_model(self):
         """
         加载预先定义的模型，并绘制模型结构图
@@ -99,21 +85,22 @@ class my_model:
                                     validation_data=self.val_dataset, 
                                     callbacks=[early_stopping])  # 添加回调到fit函数
         self.model.summary()
-        self.model.save(r'./trained_models/pick_halo_ann.h5')  
-        # # 显示loss和epoch的关系
-        # history = self.history.history
-        # print(history.keys())
-        # #不同loss显示不同颜色
-        # plt.figure()
-        # plt.xlabel('Epoch')
-        # plt.ylabel('Loss')
-        # plt.plot(history['loss'],color='red')
-        # plt.plot(history['accuracy'],color='blue')
-        # plt.plot(history['val_loss'],color='black')
-        # plt.plot(history['val_accuracy'],color='green')
+        self.model.save(r'./trained_models/pick_halo_ann.h5') 
+         
+        # 显示loss和epoch的关系
+        history = self.history.history
+        print(history.keys())
+        #不同loss显示不同颜色
+        plt.figure()
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.plot(history['loss'],color='red')
+        plt.plot(history['accuracy'],color='blue')
+        plt.plot(history['val_loss'],color='black')
+        plt.plot(history['val_accuracy'],color='green')
 
-        # #显示图例
-        # plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
+        #显示图例
+        plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
   
 
     def show_CM(self):
@@ -145,14 +132,12 @@ class my_model:
         wrong_data = X_val[wrong_index]
 
         cols  = [
-        
             "ints_0",
             "ints_1",
             "ints_2",
             "ints_3",
             "ints_4",
             "ints_5",
-            "ints_6",
             "m2_m1",
             "m1_m0",   
             ]
