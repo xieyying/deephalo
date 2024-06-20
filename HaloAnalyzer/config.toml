@@ -2,11 +2,9 @@
 
 #mzml文件预测参数
 [FeatureFinding]
-ion_df_min_inty = 200
-
 mass_trace_detection = [["mass_error_ppm", 20.0],
                         ['min_trace_length', 3.0],
-                        # ['noise_threshold_int', 200.0],
+                        ['noise_threshold_int', 200.0],
                         ['chrom_peak_snr',3.0],
                         ['trace_termination_criterion', 'outlier'],
                         ['trace_termination_outliers', 5],
@@ -77,15 +75,15 @@ return_from_max_ints = "True"#是否从最大强度的峰开始返回
 [model_data]
 #训练使用的特征列表
 feature_list = [
-                "p0_int",
-                "p1_int",
-                "p2_int",
-                "p3_int",
-                "p4_int",
-                "p5_int",
-                "m2_m1",
-                "m1_m0",        
-            ]
+            "p0_int",
+            "p1_int",
+            "p2_int",
+            "p3_int",
+            "p4_int",
+            "p5_int",
+            "m2_m1",
+            "m1_m0",   
+        ]
 #训练使用的数据集
 use_add_fe_data = "True"
 use_add_b_data =  "True"

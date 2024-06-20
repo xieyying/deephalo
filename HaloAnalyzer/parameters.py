@@ -38,7 +38,6 @@ class run_parameters:
         self.classes_weight = {int(k): v for k, v in config['model_construct_class_weight']['classes_weight'].items()}
         
         #mzml参数
-        self.ion_df_min_inty = config['FeatureFinding']['ion_df_min_inty']
         self.mass_trace_detection = config['FeatureFinding']['mass_trace_detection']
         self.elution_peak_detection = config['FeatureFinding']['elution_peak_detection']
         self.feature_detection = config['FeatureFinding']['feature_detection']

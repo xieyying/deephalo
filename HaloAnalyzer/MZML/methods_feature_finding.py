@@ -33,14 +33,15 @@ class FeatureDetection:
     def get_dataframes(self):
         """Get the ion dataframes and filter them"""
         self.ion_df = self.exp.get_ion_df()
-        self.ion_df = self.ion_df[self.ion_df['inty'] > self.pars.ion_df_min_inty]  # TODO: use the same threshold as 'noise_threshold_int'
+        filter_threshold = value = next((item[1] for item in self.pars.mass_trace_detection if item[0] == 'noise_threshold_int'), None)
+        print(filter_threshold)
+        self.ion_df = self.ion_df[self.ion_df['inty'] > filter_threshold]  
 
     def mass_trace_detection(self):
         """Detect the mass traces"""
         mtd = oms.MassTraceDetection()
         mtd_par = mtd.getDefaults()
         set_para(mtd_par,self.pars.mass_trace_detection)
-        mtd_par.setValue("noise_threshold_int", self.pars.ion_df_min_inty)
         mtd.setParameters(mtd_par)
         mtd.run(self.exp, self.mass_traces, 0)
 

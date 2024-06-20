@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from collections import Counter
 from HaloAnalyzer.parameters import run_parameters
-from .methods_FeatureFind import FeatureMapProcessor
+from .methods_feature_finding import FeatureMapProcessor
 
 def featureFinding(file,para):
     """
@@ -22,11 +22,15 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     mz_list = df[mz_list_name].values
     m2_m1 = [i[2] - i[1] for i in mz_list]
     m1_m0 = [i[1] - i[0] for i in mz_list]
+    # Assign new columns to df
+    df['m2_m1'] = m2_m1*df['charge']
+    df['m1_m0'] = m1_m0*df['charge']
     
     # Ensure all lists in inty_list have 7 elements
     inty_list = [list(i) + [0]*(7-len(i)) for i in df[inty_list_name].tolist()]
     # Convert inty_list to a DataFrame
     inty_df = pd.DataFrame(inty_list)
+    
     # Normalize each row by its max value
     inty_df = inty_df.div(inty_df.max(axis=1), axis=0)
     for i in range(7):
@@ -148,7 +152,14 @@ def flow_base(file,model_path,pars):
     return df_f_result,df_scan_result
 
 if __name__ == '__main__':
-    pass
+
+    file = r'C:\Users\xq75\Desktop\Test Folder\xcms_test\Vancomycin.mzML'
+    model_path = r'C:\Users\xq75\Desktop\p_test\trained_models\pick_halo_ann.h5'
+    pars= run_parameters()
+
+    df_f_result,df_scan_result = workflow(file,model_path,pars)
+    df_f_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_f_result.csv', index=False)
+    df_scan_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_scan_result.csv', index=False)
 
     
     
