@@ -33,8 +33,7 @@ class FeatureDetection:
     def get_dataframes(self):
         """Get the ion dataframes and filter them"""
         self.ion_df = self.exp.get_ion_df()
-        filter_threshold = value = next((item[1] for item in self.pars.mass_trace_detection if item[0] == 'noise_threshold_int'), None)
-        print(filter_threshold)
+        filter_threshold = next((item[1] for item in self.pars.mass_trace_detection if item[0] == 'noise_threshold_int'), None)
         self.ion_df = self.ion_df[self.ion_df['inty'] > filter_threshold]  
 
     def mass_trace_detection(self):
