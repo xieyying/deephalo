@@ -12,8 +12,8 @@ def model(input_shape,  output_shape):
     input1 = layers.GaussianNoise(0.01)(input1)
    
     input2 = input[:,-2:]
-    input2 = layers.Lambda(lambda x: x **15)(input2)
-
+    input2 = tf.pow(input2, 15)
+    
     x = layers.Dense(64, activation="relu")(input1)
     y = layers.Dense(128, activation="relu")(input2)
 

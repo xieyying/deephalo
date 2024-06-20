@@ -13,7 +13,7 @@ from functools import partial
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import make_scorer, r2_score, mean_absolute_percentage_error, mean_squared_error
 from keras.utils import to_categorical
-from keras import backend as K
+
 
 
 class my_model:
@@ -215,6 +215,14 @@ class my_model:
         self.get_model()
         self.train()
         self.show_CM()
+        
+class PowerLayer(layers.Layer):
+    def __init__(self, power, **kwargs):
+        self.power = power
+        super(PowerLayer, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        return tf.pow(inputs, self.power)
 
 class Myhypermodel(kt.HyperModel):
     """
@@ -254,12 +262,13 @@ class Myhypermodel(kt.HyperModel):
         # input layer
         inputs = keras.Input(shape=(self.input_shape,), name="features1")
         
-        input1 = inputs[:, :-3]
+        input1 = inputs[:, :-2]
         #add noise
         input1 = layers.GaussianNoise(hp.Choice('noise1',[0.01]))(input1)
-        input2 = inputs[:, -3:]
+        input2 = inputs[:, -2:]
         #scaling
-        input2 = layers.Lambda(lambda x: x ** hp.Choice('scaling_num', [0,10,20],default=0))(input2)
+        power = hp.Choice('power_num', [0,10,20],default=0)
+        input2 = PowerLayer(power)(input2)
         #wise feature
         x = layers.Dense(hp.Choice("units_0x", [16,64,256],default=16), activation="relu")(input1)
         y = layers.Dense(hp.Choice("units_0y", [8,32,128,512],default=8), activation="relu")(input2)
