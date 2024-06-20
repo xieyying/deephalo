@@ -43,8 +43,8 @@ class run_parameters:
         self.elution_peak_detection = config['FeatureFinding']['elution_peak_detection']
         self.feature_detection = config['FeatureFinding']['feature_detection']
 
-        self.FeatureMapProcessor_mz_error = config['FeatureMapProcessor']['mz_error']
-        self.FeatureMapProcessor_rt_error = config['FeatureMapProcessor']['rt_error']
+        # self.FeatureMapProcessor_mz_error = config['FeatureMapProcessor']['mz_error']
+        # self.FeatureMapProcessor_rt_error = config['FeatureMapProcessor']['rt_error']
         self.FeatureMapProcessor_min_num_of_masstraces = config['FeatureMapProcessor']['min_num_of_masstraces']
         self.FeatureMapProcessor_min_feature_int = config['FeatureMapProcessor']['min_feature_int']
 

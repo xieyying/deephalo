@@ -40,6 +40,7 @@ class FeatureDetection:
         mtd = oms.MassTraceDetection()
         mtd_par = mtd.getDefaults()
         set_para(mtd_par,self.pars.mass_trace_detection)
+        mtd_par.setValue("noise_threshold_int", self.pars.ion_df_min_inty)
         mtd.setParameters(mtd_par)
         mtd.run(self.exp, self.mass_traces, 0)
 

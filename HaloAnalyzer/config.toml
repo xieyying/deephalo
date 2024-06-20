@@ -6,7 +6,7 @@ ion_df_min_inty = 200
 
 mass_trace_detection = [["mass_error_ppm", 20.0],
                         ['min_trace_length', 3.0],
-                        ['noise_threshold_int', 200.0],
+                        # ['noise_threshold_int', 200.0],
                         ['chrom_peak_snr',3.0],
                         ['trace_termination_criterion', 'outlier'],
                         ['trace_termination_outliers', 5],
@@ -32,8 +32,6 @@ feature_detection = [['local_rt_range',10.0],
 # For details on the above parameters, please refer to pyopenms.
 
 [FeatureMapProcessor]
-mz_error = 0.01 #为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
-rt_error = 0.01 #为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
 min_num_of_masstraces = 3 # 含有卤素的化合物最好有3个同位素峰
 min_feature_int = 1000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
 
