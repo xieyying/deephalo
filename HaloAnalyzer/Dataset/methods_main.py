@@ -33,14 +33,14 @@ def formula_clf(formula_dict,type=None) :
         group = 7
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
-            group = 10
-        else:
+        # if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+        #     group = 10
+        # else:
             group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
-        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
-            group = 10
-        elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+        # if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+        #     group = 10
+        if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
             group = 0
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
             group = 0        
@@ -68,7 +68,7 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     """基于分子式，模拟质谱同位素分布，返回模拟质谱数"""
     fm = Formula(formula)
     if type =='hydro':
-        fm_isos = get_hydroisomer_isotopes(formula,rate,0.0001).dataframe()
+        fm_isos = get_dehydroisomer_isotopes(formula,rate,0.0001).dataframe()
     elif type == 'Fe':
         fm_isos = get_iron_additive_isotopes(formula).dataframe()
     elif type == 'B':

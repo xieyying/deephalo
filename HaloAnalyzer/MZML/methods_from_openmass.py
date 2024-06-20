@@ -33,7 +33,7 @@ class FeatureDetection:
     def get_dataframes(self):
         """Get the ion dataframes and filter them"""
         self.ion_df = self.exp.get_ion_df()
-        self.ion_df = self.ion_df[self.ion_df['inty'] > self.pars.ion_df_min_inty]
+        self.ion_df = self.ion_df[self.ion_df['inty'] > self.pars.ion_df_min_inty]  # TODO: use the same threshold as 'noise_threshold_int'
 
     def mass_trace_detection(self):
         """Detect the mass traces"""
@@ -129,8 +129,8 @@ class FeatureMapProcessor(FeatureDetection):
 
     def _add_intensity(self):
         """Add intensity to the dataframe"""
-        mz_error = self.pars.FeatureMapProcessor_mz_error
-        rt_error = self.pars.FeatureMapProcessor_rt_error
+        mz_error = 0.01  # 为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
+        rt_error = 0.01  # 为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
         tree = KDTree(self.ion_df[['RT', 'mz']].values)
         distances, indices = tree.query(self.df_feature_flatten[['rt', 'mz']], distance_upper_bound=np.sqrt(mz_error**2 + rt_error**2 ))
         valid_indices = indices[distances != np.inf]
@@ -145,13 +145,14 @@ class FeatureMapProcessor(FeatureDetection):
             'inty_list': x.sort_values('mz_type')['inty'].tolist(),
             'charge': x.sort_values('mz_type')['charge_f'].tolist()[0],
         })).reset_index()
+        self.df_scan['mz_list'], self.df_scan['inty_list'] = zip(*self.df_scan.apply(lambda row: zip(*sorted(zip(row['mz_list'], row['inty_list']))), axis=1))
 
     def process(self):
         """Process the feature map"""
         self.df_feature_ = self.feature_map.get_df()
         self.df_feature_ = self.df_feature_.reset_index()
         for feature in self.feature_map:
-            if feature.getMetaValue("num_of_masstraces") >self.pars.FeatureMapProcessor_min_num_of_masstraces and feature.getIntensity() > self.pars.FeatureMapProcessor_min_feature_int:
+            if feature.getMetaValue("num_of_masstraces") >=self.pars.FeatureMapProcessor_min_num_of_masstraces and feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int:
                 self._process_feature(feature)
         self._transform_to_dataframe()
         self._merge_feature_df()

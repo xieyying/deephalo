@@ -25,21 +25,19 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     # Assign new columns to df
     df['m2_m1'] = m2_m1*df['charge']
     df['m1_m0'] = m1_m0*df['charge']
-
-    #将inty_list中的每一个list转为dataframe的一行
-    inty_list = df[inty_list_name].tolist()
+    
+    # Ensure all lists in inty_list have 7 elements
+    inty_list = [list(i) + [0]*(7-len(i)) for i in df[inty_list_name].tolist()]
+    # Convert inty_list to a DataFrame
     inty_df = pd.DataFrame(inty_list)
-    #保留前7列，然后将每一个dataframe的列名改为p0_int,p1_int...p6_int
-    inty_df = inty_df.iloc[:,0:7]
-    inty_df.columns = [f'p{i}_int' for i in range(7)]
-    #将NaN值填充为0
-    inty_df = inty_df.fillna(0)
-    #Normalize each row by its max value
+    
+    # Normalize each row by its max value
     inty_df = inty_df.div(inty_df.max(axis=1), axis=0)
- 
-    #将inty_df，df合并
-    df = pd.concat([df,inty_df],axis=1)
-    # print(df)
+    # Assign new columns to df
+    df['m2_m1'] = m2_m1*df['charge']
+    df['m1_m0'] = m1_m0*df['charge']
+    for i in range(7):
+        df[f'p{i}_int'] = inty_df[i].values
     return df
 
 def add_predict(df,model_path,features_list):

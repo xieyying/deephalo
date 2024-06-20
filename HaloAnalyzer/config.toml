@@ -1,5 +1,42 @@
 #此文件为配置文件，用于配置模型训绨集相关参数
 
+#mzml文件预测参数
+[FeatureFinding]
+ion_df_min_inty = 200
+
+mass_trace_detection = [["mass_error_ppm", 20.0],
+                        ['min_trace_length', 3.0],
+                        ['noise_threshold_int', 200.0],
+                        ['chrom_peak_snr',3.0],
+                        ['trace_termination_criterion', 'outlier'],
+                        ['trace_termination_outliers', 5],
+                        ['min_sample_rate', 0.5],
+                        ['quant_method', 'area'],
+                        ['reestimate_mt_sd', 'true'],]
+
+elution_peak_detection = [['width_filtering','fixed'],
+                          ['chrom_fwhm', 3.0],
+                          ]
+
+feature_detection = [['local_rt_range',10.0],
+                     ['local_mz_range',12.0],
+                     ['chrom_fwhm', 3.0],
+                     ['enable_RT_filtering', 'true'],
+                     ['mz_scoring_by_elements', 'true'],
+                     ['elements', 'CHNOPSClBrFeBSeIF'],
+                     ['report_chromatograms', 'true'],
+                     ['isotope_filtering_model','none'],
+                     ['remove_single_traces', 'true'],
+                     ['report_convex_hulls', 'true']
+                     ]
+# For details on the above parameters, please refer to pyopenms.
+
+[FeatureMapProcessor]
+mz_error = 0.01 #为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
+rt_error = 0.01 #为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
+min_num_of_masstraces = 3 # 含有卤素的化合物最好有3个同位素峰
+min_feature_int = 1000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
+
 #训练集相关参数
 [datasets]
 
@@ -8,10 +45,25 @@ paths = [
        [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
         "mol_formula",
     ],
-
+   [
+        "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+        "MS-Ready_Mol_Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+        "chemical_formula",
+    ],
     [
         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
         "Formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+        "formula",
+    ],
+    [
+        "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+        "CHEMICAL_DATA",
     ],
  
 ]
@@ -27,29 +79,15 @@ return_from_max_ints = "True"#是否从最大强度的峰开始返回
 [model_data]
 #训练使用的特征列表
 feature_list = [
-<<<<<<< Updated upstream
                 "p0_int",
                 "p1_int",
                 "p2_int",
                 "p3_int",
                 "p4_int",
                 "p5_int",
-                "p6_int",
                 "m2_m1",
-                "m1_m0",  
-                ]
-=======
-            "ints_0",
-            "ints_1",
-            "ints_2",
-            "ints_3",
-            "ints_4",
-            "ints_5",
-            "m2_m1",
-            "m1_m0",   
-        ]
->>>>>>> Stashed changes
-
+                "m1_m0",        
+            ]
 #训练使用的数据集
 use_add_fe_data = "True"
 use_add_b_data =  "True"
@@ -67,8 +105,6 @@ learning_rate = 0.0003
 #模型训练权重
 [model_construct_class_weight.classes_weight]
 
-
-
 0 = 1.31312866e-05 
 1 = 9.63363294e-06
 2 = 5.19189234e-06
@@ -77,36 +113,6 @@ learning_rate = 0.0003
 5 = 2.00924252e-05
 6 = 2.47260967e-06
 7 = 2.87867535e-06
-
-
-#mzml文件预测参数
-[FeatureFinding]
-ion_df_min_inty = 100
-
-mass_trace_detection = [["mass_error_ppm", 20.0],
-                        ['min_trace_length', 5.0],
-                        ['noise_threshold_int', 100.0]]
-
-elution_peak_detection = [['width_filtering','fixed']]
-
-feature_detection = [['local_rt_range',10.0],
-                     ['local_mz_range',6.5],
-                     ['chrom_fwhm', 5.0],
-                     ['enable_RT_filtering', 'true'],
-                     ['mz_scoring_by_elements', 'true'],
-                     ["elements", "CHNOPSClBrFeBSeIF"],
-                     ["report_chromatograms", 'true'],
-                     ['isotope_filtering_model','none'],
-                     ["remove_single_traces", "true"],
-                     ["report_convex_hulls", 'true']
-                     ]
-                    
-[FeatureMapProcessor]
-mz_error = 0.001
-rt_error = 0.001
-min_num_of_masstraces = 4
-min_feature_int = 10000
-
 
 #可视化参数
 [visualization]
