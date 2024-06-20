@@ -30,12 +30,8 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     inty_list = [list(i) + [0]*(7-len(i)) for i in df[inty_list_name].tolist()]
     # Convert inty_list to a DataFrame
     inty_df = pd.DataFrame(inty_list)
-    
     # Normalize each row by its max value
     inty_df = inty_df.div(inty_df.max(axis=1), axis=0)
-    # Assign new columns to df
-    df['m2_m1'] = m2_m1*df['charge']
-    df['m1_m0'] = m1_m0*df['charge']
     for i in range(7):
         df[f'p{i}_int'] = inty_df[i].values
     return df
