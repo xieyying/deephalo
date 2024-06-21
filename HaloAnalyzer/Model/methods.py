@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import numpy as np
 
-def create_dataset(features,paths,batch_size):
+def create_dataset(features,paths,batch_size,model='base'):
     """
     创建模型训练所需的数据集，tf.data.Dataset格式
     
@@ -64,4 +64,9 @@ def create_dataset(features,paths,batch_size):
     val_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
     train_dataset = train_dataset.shuffle(len(X_train)).batch(batch_size)
     val_dataset = val_dataset.shuffle(len(X_test)).batch(batch_size)
-    return train_dataset,val_dataset,X_test, Y_test, val_
+    if model == 'base':
+        
+        return train_dataset,val_dataset,X_test, Y_test, val_
+    elif model == 'search':
+        return X_train,Y_train,X_test, Y_test
+

@@ -1,22 +1,22 @@
 #import packages
 import os
 import shutil
-from .Dataset.my_dataset import dataset,datasets
-from .Model.my_model import my_model,my_search
-from .MZML.my_mzml import my_mzml
-from HaloAnalyzer.parameters import run_parameters 
+from .Dataset.my_dataset import Dataset,Datasets
+from .Model.my_model import MyModel,my_search
+from .MZML.my_mzml import MyMzml
+from HaloAnalyzer.parameters import RunParameters
 
 #Dataset Pipeline
-def pipeline_dataset(type_list = ['base','Fe','B','Se','hydro']) -> None:
+def pipeline_dataset() -> None:
     """
     generate dataset for training and testing
     """
-    para = run_parameters()
+    para = RunParameters()
     datas = []
     for data_df, col_formula in para.datasets:
-        datas.append(dataset(data_df,col_formula).data)
-    raw_data = datasets(datas)
-    type_list = ['base']
+        datas.append(Dataset(data_df,col_formula).data)
+    raw_data = Datasets(datas)
+    type_list = para.type_list
     for type in type_list:
         raw_data.work_flow(para,type)
 
@@ -29,7 +29,7 @@ def pipeline_model(mode = 'manual') -> None:
     # Args:
     # mode: str, default 'manual', optional 'manual','search','feature_importance','read_feature_importance'
     # """
-    para = run_parameters()
+    para = RunParameters()
     # #根据配置文件选择训练数据
     paths = ['./dataset/base.csv']
     if para.use_fe_data == 'True':
@@ -53,7 +53,7 @@ def pipeline_model(mode = 'manual') -> None:
                   'weight': para.classes_weight,
                   'learning_rate': para.learning_rate,}
     if mode == 'manual':
-        model = my_model(model_para)
+        model = MyModel(model_para)
         model.work_flow()
     elif mode == 'search':
         model = my_search(model_para)
@@ -63,8 +63,8 @@ def pipeline_analyze_mzml(args):
     #检查./result是否存在，不存在则创建
     if not os.path.exists('./result'):
         os.makedirs('./result')
-    para = run_parameters()
-    df_f_result,df_scan_result = my_mzml(args.input,para).work_flow()
+    para = RunParameters()
+    df_f_result,df_scan_result = MyMzml(args.input,para).work_flow()
     df_f_result.to_csv('./result/df_f_result.csv', index=False)
     df_scan_result.to_csv('./result/df_scan_result.csv', index=False)
 

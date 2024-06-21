@@ -16,7 +16,7 @@ from keras.utils import to_categorical
 
 
 
-class my_model:
+class MyModel:
     '''
     自定义模型类，包含数据集加载，模型构建，模型训练，模型评估等方法
 
@@ -103,7 +103,7 @@ class my_model:
         plt.legend(['loss','accuracy','val_loss','val_accuracy'], loc='right')
   
 
-    def show_CM(self):
+    def show_cm(self):
         """
         显示混淆矩阵，计算recall和precision，保存预测结果
 
@@ -214,17 +214,11 @@ class my_model:
         self.load_dataset()
         self.get_model()
         self.train()
-        self.show_CM()
+        self.show_cm()
         
-class PowerLayer(layers.Layer):
-    def __init__(self, power, **kwargs):
-        self.power = power
-        super(PowerLayer, self).__init__(**kwargs)
 
-    def call(self, inputs):
-        return tf.pow(inputs, self.power)
 
-class Myhypermodel(kt.HyperModel):
+class MyHypermodel(kt.HyperModel):
     """
     自定义超参数搜索类，继承自kt.HyperModel
 
@@ -267,8 +261,8 @@ class Myhypermodel(kt.HyperModel):
         input1 = layers.GaussianNoise(hp.Choice('noise1',[0.01]))(input1)
         input2 = inputs[:, -2:]
         #scaling
-        power = hp.Choice('power_num', [0,10,20],default=0)
-        input2 = PowerLayer(power)(input2)
+        power = hp.Choice('power_num', [10,15,20],default=10)
+        input2 = tf.pow(input2,power)
         #wise feature
         x = layers.Dense(hp.Choice("units_0x", [16,64,256],default=16), activation="relu")(input1)
         y = layers.Dense(hp.Choice("units_0y", [8,32,128,512],default=8), activation="relu")(input2)
@@ -333,8 +327,8 @@ def my_search(para):
     output_shape = para['classes']
     classes_weight = para['weight']
     
-    X_train, Y_train, X_test, Y_test = create_dataset_copy(features.copy(),paths)
-    hypermodel = Myhypermodel(input_shape,output_shape,classes_weight)
+    X_train, Y_train, X_test, Y_test = create_dataset(features.copy(),paths,para['batch_size'],model='search')
+    hypermodel = MyHypermodel(input_shape,output_shape,classes_weight)
     tuner = kt.BayesianOptimization(hypermodel,
                     objective="val_accuracy",
                     max_trials=20, # 50-100

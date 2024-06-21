@@ -64,7 +64,7 @@ def formula_clf(formula_dict,type=None) :
 
     return trainable,group
 
-def Isotope_simulation(formula,type=None,rate=None) -> dict:
+def isotope_simulation(formula,type=None,rate=None) -> dict:
     """基于分子式，模拟质谱同位素分布，返回模拟质谱数"""
     fm = Formula(formula)
     if type =='hydro':
@@ -95,8 +95,8 @@ def Isotope_simulation(formula,type=None,rate=None) -> dict:
     #转为字典
     dict_isos = {'mz_0':relative_mass[0],'mz_1':relative_mass[1],'mz_2':relative_mass[2],'mz_3':relative_mass[3],
                 'mz_4':relative_mass[4],'mz_5':relative_mass[5],'mz_6':relative_mass[6],
-                'ints_0':intensity[0],'ints_1':intensity[1],'ints_2':intensity[2],'ints_3':intensity[3],
-                'ints_4':intensity[4],'ints_5':intensity[5],'ints_6':intensity[6]}
+                'p0_int':intensity[0],'p1_int':intensity[1],'p2_int':intensity[2],'p3_int':intensity[3],
+                'p4_int':intensity[4],'p5_int':intensity[5],'p6_int':intensity[6]}
     return dict_isos
 
 def create_data(formula,type='base',rate=None,):#return_from_max_ints=True) -> pd.DataFrame:
@@ -116,7 +116,7 @@ def create_data(formula,type='base',rate=None,):#return_from_max_ints=True) -> p
             return pd.DataFrame()
 
     #模拟质谱数据
-    dict_isos = Isotope_simulation(formula,type,rate,)#return_from_max_ints)
+    dict_isos = isotope_simulation(formula,type,rate,)#return_from_max_ints)
 
     if type == 'Se':
         group = 3

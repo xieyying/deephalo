@@ -139,7 +139,7 @@ class FeatureMapProcessor(FeatureDetection):
         self.df_feature_flatten['mz_raw_data'] = self.ion_df.iloc[valid_indices]['mz'].values  # 只是用于过程中检查找到的数据对不对，目前核对正确，正式版可以删除
         self.df_feature_flatten['rt_raw_data'] = self.ion_df.iloc[valid_indices]['RT'].values  ## 只是用于过程中检查找到的数据对不对，目前核对正确，正式版可以删除
 
-    def _grouping_df_based_on_FeaturePlusScan(self):
+    def _grouping_df_based_on_feature_plus_scan(self):
         """Group the dataframe based on FeaturePlusScan"""
         self.df_scan = self.df_feature_flatten.groupby(['feature_id_flatten', 'rt']).apply(lambda x: pd.Series({
             'mz_list': x.sort_values('mz_type')['mz'].tolist(),
@@ -158,7 +158,7 @@ class FeatureMapProcessor(FeatureDetection):
         self._transform_to_dataframe()
         self._merge_feature_df()
         self._add_intensity()
-        self._grouping_df_based_on_FeaturePlusScan()
+        self._grouping_df_based_on_feature_plus_scan()
         return self.df_feature, self.df_scan  
         # self.df_feature 包括以feature 为基础的isotope patterns（mz为controid mz，intensity为总和（但具体细节待确认）
         # self.df_scan 包括以scan 为基础的isotope patterns (intensity来自原始数据mz来自featuremap.convexHulls)

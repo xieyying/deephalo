@@ -1,7 +1,7 @@
 #import相关模块
 from .methods_main import flow_base
 
-class my_mzml:
+class MyMzml:
     def __init__(self,file,para) -> None:
         self.file = file
         self.para = para

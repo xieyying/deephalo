@@ -1,7 +1,7 @@
 from HaloAnalyzer.main import pipeline_dataset,pipeline_model,pipeline_analyze_mzml
 import os
 import argparse
-from .parameters import run_parameters
+from .parameters import RunParameters
 import importlib_resources
 from .model_test import timeit
 import logging
@@ -40,7 +40,6 @@ def main():
             if args.run == 'create_dataset':
                 pipeline_dataset()
             elif args.run == 'train_model':
-                print(args.mode)
                 pipeline_model(args.mode)
             elif args.run == 'analyze_mzml':
                 pipeline_analyze_mzml(args)

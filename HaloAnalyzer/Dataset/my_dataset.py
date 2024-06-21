@@ -5,7 +5,7 @@ from .methods_main import create_data
 from functools import partial
 import os
 
-class dataset():
+class Dataset():
     def __init__(self,path,key) -> None:
         """
         此类可依据数据库中真实化合物的formula，构建基础数据集。
@@ -98,7 +98,7 @@ class dataset():
         repeats: int，重复次数。
 
         """
-        if type in ['base','Fe','B','Se','S']:
+        if type in ['base','Fe','B','Se']:
             #基础数据集
             pool = Pool(4)
             func = partial(create_data, type=type,)#return_from_max_ints=return_from_max_ints)
@@ -160,7 +160,7 @@ class dataset():
         # else:
         #     self.save('./dataset/'+type+'.csv')   
 
-class datasets(dataset):
+class Datasets(Dataset):
     """
     dataset的子类，用于合并多个dataset
 
@@ -178,5 +178,5 @@ class datasets(dataset):
         self.data = self.data.reset_index(drop=True)
         
 if __name__ == '__main__':
-    test = dataset('F:/XinBackup/source_data/datasets/NPAtlas_download.json','mol_formula')
+    test = Dataset('F:/XinBackup/source_data/datasets/NPAtlas_download.json','mol_formula')
     test.work_flow(100,1000,['C','H','O','N','S'],'hydro')

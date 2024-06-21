@@ -1,7 +1,7 @@
 import tomli,tomli_w
 import importlib_resources
 
-class run_parameters:
+class RunParameters:
     """
     读取config.toml文件中的参数
     """
@@ -53,5 +53,5 @@ class run_parameters:
 
 
 if __name__ == '__main__':
-    parameters = run_parameters()
+    parameters = RunParameters()
     print((parameters.datasets))

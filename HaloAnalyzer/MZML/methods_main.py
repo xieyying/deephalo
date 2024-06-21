@@ -2,10 +2,9 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 from collections import Counter
-from HaloAnalyzer.parameters import run_parameters
 from .methods_feature_finding import FeatureMapProcessor
 
-def featureFinding(file,para):
+def feature_finding(file,para):
     """
     Find features from mzML data
     return two DataFrame. One containing feature based isotope patterns. The other contain scan based isotope patterns
@@ -113,7 +112,7 @@ def roi_scan_based_halo_evaluation(I):
 
     return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio
 
-def haloEvalution(df_f,df_scan):
+def halo_evalution(df_f,df_scan):
     """
     Evaluate the probability of features based on both feature isotope patterns and scan based isotope patterns
     """
@@ -143,12 +142,12 @@ def flow_base(file,model_path,pars):
     """
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
-    df_f,df_scan = featureFinding(file,pars)
+    df_f,df_scan = feature_finding(file,pars)
     df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
     df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
     df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
     df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
-    df_f_result,df_scan_result = haloEvalution(df_f,df_scan)
+    df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
     return df_f_result,df_scan_result
 
 if __name__ == '__main__':
@@ -157,7 +156,7 @@ if __name__ == '__main__':
     model_path = r'C:\Users\xq75\Desktop\p_test\trained_models\pick_halo_ann.h5'
     pars= run_parameters()
 
-    df_f_result,df_scan_result = workflow(file,model_path,pars)
+    df_f_result,df_scan_result = flow_base(file,model_path,pars)
     df_f_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_f_result.csv', index=False)
     df_scan_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_scan_result.csv', index=False)
 
