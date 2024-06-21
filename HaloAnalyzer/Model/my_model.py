@@ -251,27 +251,27 @@ class MyHypermodel(kt.HyperModel):
         model: keras.Model, 构建好的模型
         """
         # 定义batch_size的搜索空间
-        hp.Choice('batch_size', [4,16,64,128],default=4)
+        hp.Choice('batch_size', [8,16,32,64,128],default=4)
         
         # input layer
         inputs = keras.Input(shape=(self.input_shape,), name="features1")
         
         input1 = inputs[:, :-2]
         #add noise
-        input1 = layers.GaussianNoise(hp.Choice('noise1',[0.01]))(input1)
+        input1 = layers.GaussianNoise(hp.Choice('noise1',[0.01,0.02]))(input1)
         input2 = inputs[:, -2:]
         #scaling
-        power = hp.Choice('power_num', [10,15,20],default=10)
+        power = hp.Choice('power_num', [0,5,10,15,20],default=0)
         input2 = tf.pow(input2,power)
         #wise feature
-        x = layers.Dense(hp.Choice("units_0x", [16,64,256],default=16), activation="relu")(input1)
-        y = layers.Dense(hp.Choice("units_0y", [8,32,128,512],default=8), activation="relu")(input2)
+        x = layers.Dense(hp.Choice("units_0x", [16,32,64,128,256],default=16), activation="relu")(input1)
+        y = layers.Dense(hp.Choice("units_0y", [8,16,32,64,128,256,512],default=8), activation="relu")(input2)
         share = layers.concatenate([x,y])
         # 定义神经网络的层数的搜索空间
         num_layers = hp.Int('num_layers', 1, 5)
         for i in range(num_layers):
             if i < num_layers:
-                units = hp.Choice(f'units_{i+1}', [32,128,512],default=32)
+                units = hp.Choice(f'units_{i+1}', [32,64,128,256,512],default=32)
                 dropout = hp.Choice(f'dropout_{i+1}', [0.0,0.3],default=0)
                 share = layers.Dense(units, activation="relu")(share)
                 share = layers.Dropout(dropout)(share)
@@ -331,7 +331,7 @@ def my_search(para):
     hypermodel = MyHypermodel(input_shape,output_shape,classes_weight)
     tuner = kt.BayesianOptimization(hypermodel,
                     objective="val_accuracy",
-                    max_trials=20, # 50-100
+                    max_trials=100, # 50-100
                     directory="my_search_10_feature_wise_including_hydro_data_20trails_batch_size_from_4_",
                     overwrite=False,
                     project_name="kt_base",
