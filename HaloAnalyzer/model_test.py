@@ -12,3 +12,10 @@ def timeit(method):
               (method.__name__, te-ts))
         return result
     return timed
+
+import os
+
+def paths_check_for_mzml():
+    #检查./result是否存在，不存在则创建
+    if not os.path.exists('./result'):
+        os.makedirs('./result')

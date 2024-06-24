@@ -5,7 +5,7 @@ from .Dataset.my_dataset import Dataset,Datasets
 from .Model.my_model import MyModel,my_search
 from .MZML.my_mzml import MyMzml
 from HaloAnalyzer.parameters import RunParameters
-
+from .model_test import paths_check_for_mzml
 #Dataset Pipeline
 def pipeline_dataset() -> None:
     """
@@ -60,9 +60,7 @@ def pipeline_model(mode = 'manual') -> None:
 
 
 def pipeline_analyze_mzml(args):
-    #检查./result是否存在，不存在则创建
-    if not os.path.exists('./result'):
-        os.makedirs('./result')
+    paths_check_for_mzml()
     para = RunParameters()
     df_f_result,df_scan_result = MyMzml(args.input,para).work_flow()
     df_f_result.to_csv('./result/df_f_result.csv', index=False)
