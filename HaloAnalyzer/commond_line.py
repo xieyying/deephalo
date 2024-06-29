@@ -26,8 +26,6 @@ def main():
     parser.add_argument('-b', '--blank', help='input directory of blank mzML files for substraction')
     parser.add_argument('-p', '--project', help='set the project path for HaloAnalyzer output')
     parser.add_argument('-m', '--mode', help='train model mode: manual or search')
-    parser.add_argument('-l', '--list_rois',  nargs='+', type=int, help='list of rois to extract ms2 spectra')
-    parser.add_argument('-ob', '--overwrite_blank', action='store_true', help='overwrite the original blank output files')
     args = parser.parse_args()
 
     #处理命令行参数
@@ -36,13 +34,13 @@ def main():
     else:
         if args.project != None:
             os.chdir(args.project)
-
+            para = RunParameters()
             if args.run == 'create_dataset':
-                pipeline_dataset()
+                pipeline_dataset(para)
             elif args.run == 'train_model':
-                pipeline_model(args.mode)
+                pipeline_model(args,para)
             elif args.run == 'analyze_mzml':
-                pipeline_analyze_mzml(args)
+                pipeline_analyze_mzml(args,para)
             elif args.run == 'viz_result':
                 # pipeline_viz_result()
                 pass

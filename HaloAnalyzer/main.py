@@ -5,13 +5,14 @@ from .Dataset.my_dataset import Dataset,Datasets
 from .Model.my_model import MyModel,my_search
 from .MZML.my_mzml import MyMzml
 from HaloAnalyzer.parameters import RunParameters
-from .model_test import paths_check_for_mzml
+from .model_test import path_check
+from .MZML.methods_main import create_blank
 #Dataset Pipeline
-def pipeline_dataset() -> None:
+def pipeline_dataset(para) -> None:
     """
     generate dataset for training and testing
     """
-    para = RunParameters()
+    path_check('./dataset')
     datas = []
     for data_df, col_formula in para.datasets:
         datas.append(Dataset(data_df,col_formula).data)
@@ -21,7 +22,7 @@ def pipeline_dataset() -> None:
         raw_data.work_flow(para,type)
 
 #Model Pipeline
-def pipeline_model(mode = 'manual') -> None:
+def pipeline_model(args,para) -> None:
     # pass
     # """
     # train model and save model
@@ -29,7 +30,8 @@ def pipeline_model(mode = 'manual') -> None:
     # Args:
     # mode: str, default 'manual', optional 'manual','search','feature_importance','read_feature_importance'
     # """
-    para = RunParameters()
+    path_check('./trained_models')
+    
     # #根据配置文件选择训练数据
     paths = ['./dataset/base.csv']
     if para.use_fe_data == 'True':
@@ -40,29 +42,24 @@ def pipeline_model(mode = 'manual') -> None:
         paths.append('./dataset/Se.csv')
     if para.use_hydroisomer_data == 'True':
         paths.append('./dataset/hydro.csv')
-    
-    test_path = './dataset/test.csv'
+    para.paths = paths
+    para.test_path = './dataset/test.csv'
 
-    #定义训练参数
-    model_para = {'batch_size': para.train_batch,
-                  'epochs': para.epochs,
-                  'features': para.features_list,
-                  'paths': paths,
-                  'test_path': test_path,
-                  'classes': para.classes,
-                  'weight': para.classes_weight,
-                  'learning_rate': para.learning_rate,}
-    if mode == 'manual':
-        model = MyModel(model_para)
+    if args.mode == 'manual':
+        model = MyModel(para)
         model.work_flow()
-    elif mode == 'search':
-        model = my_search(model_para)
+    elif args.mode == 'search':
+        model = my_search(para)
 
 
-def pipeline_analyze_mzml(args):
-    paths_check_for_mzml()
-    para = RunParameters()
-    df_f_result,df_scan_result = MyMzml(args.input,para).work_flow()
+def pipeline_analyze_mzml(args,para):
+    path_check('./result')
+    if args.blank is not None :
+        blank = create_blank(args,para)
+    else:
+        blank = None
+
+    df_f_result,df_scan_result = MyMzml(args.input,para).work_flow(blank=blank)
     df_f_result.to_csv('./result/df_f_result.csv', index=False)
     df_scan_result.to_csv('./result/df_scan_result.csv', index=False)
 

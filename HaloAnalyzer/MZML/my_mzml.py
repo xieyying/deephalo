@@ -6,8 +6,8 @@ class MyMzml:
         self.file = file
         self.para = para
         self.model_path = r'./trained_models/pick_halo_ann.h5'
-    def work_flow(self):
-        return flow_base(self.file,self.model_path,self.para) 
+    def work_flow(self,blank=None):
+        return flow_base(self.file,self.model_path,self.para,blank=blank) 
     
 if __name__ == "__main__":
     pass

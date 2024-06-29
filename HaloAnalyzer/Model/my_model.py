@@ -35,15 +35,8 @@ class MyModel:
         Args:
         para: dict, 模型参数，包括batch_size, epochs, features, paths, test_path, classes, weight, learning_rate
         """
-        self.batch_size = para['batch_size']
-        self.epochs = para['epochs']
-        self.features = para['features']
-        self.paths = para['paths']
-        self.test_path = para['test_path']
-        self.input_shape = len(self.features)
-        self.output_shape = para['classes']
-        self.classes_weight = para['weight']
-        self.learning_rate = para['learning_rate']
+        self.para = para
+        self.input_shape = len(self.para.features_list)
 
     def load_dataset(self):
         """
@@ -52,7 +45,7 @@ class MyModel:
         Returns:
         None
         """
-        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.features.copy(),self.paths,self.batch_size)
+        self.train_dataset,self.val_dataset,self.X_test, self.Y_test,self.val_ = create_dataset(self.para.features_list.copy(),self.para.paths,self.para.train_batch)
         
     def get_model(self):
         """
@@ -61,7 +54,7 @@ class MyModel:
         Returns:
         None
         """
-        self.model = model(self.input_shape,self.output_shape)
+        self.model = model(self.input_shape,self.para.classes)
         keras.utils.plot_model(self.model, to_file=r'./trained_models/model.png', show_shapes=True, show_layer_names=True, rankdir='TB', dpi=96)
     
     def train(self):
@@ -71,17 +64,17 @@ class MyModel:
         Returns:
         None
         """
-        opt = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        opt = tf.keras.optimizers.Adam(learning_rate=self.para.learning_rate)
 
         self.model.compile(optimizer=opt,
             loss={'classes': 'SparseCategoricalCrossentropy'},
-                loss_weights={'classes': self.classes_weight},
+                loss_weights={'classes': self.para.classes_weight},
             metrics=['accuracy'])
 
         # 创建EarlyStopping回调
         early_stopping = EarlyStopping(monitor='val_loss', patience=3)
 
-        self.history = self.model.fit(self.train_dataset, epochs=self.epochs, 
+        self.history = self.model.fit(self.train_dataset, epochs=self.para.epochs, 
                                     validation_data=self.val_dataset, 
                                     callbacks=[early_stopping])  # 添加回调到fit函数
         self.model.summary()
@@ -209,8 +202,7 @@ class MyModel:
         model = my_model(para)
         model.work_flow()
         """
-        if not os.path.exists('./trained_models'):
-            os.mkdir('./trained_models')
+
         self.load_dataset()
         self.get_model()
         self.train()

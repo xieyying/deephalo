@@ -3,15 +3,18 @@ import numpy as np
 import tensorflow as tf
 from collections import Counter
 from .methods_feature_finding import FeatureMapProcessor
-
+import os
+import pyopenms as oms
 def feature_finding(file,para):
     """
     Find features from mzML data
     return two DataFrame. One containing feature based isotope patterns. The other contain scan based isotope patterns
     """
     feature = FeatureMapProcessor(file,para)
-    df_f,df_scan = feature.run().process()
-    return df_f,df_scan
+    tem = feature.run()
+    df_f,df_scan = tem.process()
+
+    return df_f,df_scan,tem.feature_map
 
 def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list"):
     """
@@ -138,27 +141,81 @@ def halo_evalution(df_f,df_scan):
     
     return df_f,df_scan
 
-def flow_base(file,model_path,pars):
+def create_blank(args,para):
+    """
+    Create a blank for feature subtraction
+    """
+    #处理blank mzml文件
+    #如果args.blank为文件夹，则blank_paths为文件夹下所有文件，否则为单个文件，都转化为列表
+    if args.blank is not None:
+        if os.path.isdir(args.blank):
+            blank_paths = [os.path.join(args.blank, f) for f in os.listdir(args.blank)]
+        else:
+            blank_paths = [args.blank]
+    else:
+        blank_paths = None
+
+    feature_maps_blank = []
+    for file in blank_paths:
+        feature_maps_blank.append(feature_finding(file,para)[2])
+
+    return feature_maps_blank
+
+def substract_blank(feature_maps):
+    feature_grouper = oms.FeatureGroupingAlgorithmKD()
+
+    consensus_map = oms.ConsensusMap()
+    file_descriptions = consensus_map.getColumnHeaders()
+    files = []
+    for i, feature_map in enumerate(feature_maps):
+        file_description = file_descriptions.get(i, oms.ColumnHeader())
+        file_name = os.path.basename(feature_map.getMetaValue("spectra_data")[0].decode())
+        files.append(file_name)
+        file_description.filename = file_name
+        file_description.size = feature_map.size()
+        file_descriptions[i] = file_description
+
+    feature_grouper.group(feature_maps, consensus_map)
+    consensus_map.setColumnHeaders(file_descriptions)
+    consensus_map.setUniqueIds()
+    # oms.ConsensusXMLFile().store("FeatureMatrix.consensusXML", consensus_map)
+
+    df = consensus_map.get_df()
+    for i in range(len(files))[:-1]:
+        df = df[df[files[i]] <= 0.001]
+    return df
+
+def flow_base(file,model_path,pars,blank=None):
     """
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
-    df_f,df_scan = feature_finding(file,pars)
+    df_f,df_scan,feature_map_ = feature_finding(file,pars)
     df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
     df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
     df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
     df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
     df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
+
+    if blank != None:
+        blank.append(feature_map_)
+        df_f_= substract_blank(blank)
+        # df_f_.to_csv(r'./result/test.csv', index=False)
+        #提取df_f_result中与df_f_中所有RT和mz相同的行
+        #此处还需确认
+        df_f_result = df_f_result[df_f_result['RT'].isin(df_f_['RT'])]
+        df_f_result = df_f_result[df_f_result['mz'].isin(df_f_['mz'])]
+
     return df_f_result,df_scan_result
 
 if __name__ == '__main__':
+    pass
+    # file = r'C:\Users\xq75\Desktop\Test Folder\xcms_test\Vancomycin.mzML'
+    # model_path = r'C:\Users\xq75\Desktop\p_test\trained_models\pick_halo_ann.h5'
+    # pars= run_parameters()
 
-    file = r'C:\Users\xq75\Desktop\Test Folder\xcms_test\Vancomycin.mzML'
-    model_path = r'C:\Users\xq75\Desktop\p_test\trained_models\pick_halo_ann.h5'
-    pars= run_parameters()
-
-    df_f_result,df_scan_result = flow_base(file,model_path,pars)
-    df_f_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_f_result.csv', index=False)
-    df_scan_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_scan_result.csv', index=False)
+    # df_f_result,df_scan_result = flow_base(file,model_path,pars)
+    # df_f_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_f_result.csv', index=False)
+    # df_scan_result.to_csv(r'C:\Users\xq75\Desktop\oms\df_scan_result.csv', index=False)
 
     
     
