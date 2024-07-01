@@ -7,6 +7,8 @@ from .MZML.my_mzml import MyMzml
 from HaloAnalyzer.parameters import RunParameters
 from .model_test import path_check
 from .MZML.methods_main import create_blank
+import pyopenms as oms
+
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
     """
@@ -54,8 +56,23 @@ def pipeline_model(args,para) -> None:
 
 def pipeline_analyze_mzml(args,para):
     path_check('./result')
+    blank_featurexml_path = r'./result/blank'
     if args.blank is not None :
-        blank = create_blank(args,para)
+        if os.path.exists(blank_featurexml_path):
+            blank =[]
+            for file in os.listdir(blank_featurexml_path):
+                b = oms.FeatureMap()
+                print(f"Loading blank feature_map: {file}")
+                oms.FeatureXMLFile().load(os.path.join(blank_featurexml_path,file), b)
+                blank.append(b)
+        else:
+            path_check(blank_featurexml_path)
+            print(f"Blank feature_map not found: {blank_featurexml_path}. Creating a new blank feature_map path.")
+            
+            blank = create_blank(args,para)
+            for b in blank:
+                file_name = os.path.basename(b.getMetaValue("spectra_data")[0].decode()).replace('.mzML','_blank.featureXML')
+                oms.FeatureXMLFile().store(os.path.join(blank_featurexml_path,file_name), b)
     else:
         blank = None
 

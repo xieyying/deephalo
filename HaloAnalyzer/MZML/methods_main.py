@@ -181,7 +181,7 @@ def substract_blank(feature_maps):
     # oms.ConsensusXMLFile().store("FeatureMatrix.consensusXML", consensus_map)
 
     df = consensus_map.get_df()
-    for i in range(len(files))[:-1]:
+    for i in range(len(files[:-1])):
         df = df[df[files[i]] <= 0.001]
     return df
 

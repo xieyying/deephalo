@@ -2,7 +2,7 @@
 
 #mzml文件预测参数
 [FeatureFinding]
-mass_trace_detection = [["mass_error_ppm", 20.0],
+mass_trace_detection = [["mass_error_ppm", 10.0],
                         ['min_trace_length', 3.0],
                         ['noise_threshold_int', 200.0],
                         ['chrom_peak_snr',3.0],
@@ -17,10 +17,10 @@ elution_peak_detection = [['width_filtering','fixed'],
                           ]
 
 feature_detection = [['local_rt_range',10.0],
-                     ['local_mz_range',12.0],
+                     ['local_mz_range',6.5],
                      ['chrom_fwhm', 3.0],
                      ['enable_RT_filtering', 'true'],
-                     ['mz_scoring_by_elements', 'true'],
+                     ['mz_scoring_by_elements', 'false'],
                      ['elements', 'CHNOPSClBrFeBSeIF'],
                      ['report_chromatograms', 'true'],
                      ['isotope_filtering_model','none'],
@@ -31,7 +31,7 @@ feature_detection = [['local_rt_range',10.0],
 
 [FeatureMapProcessor]
 min_num_of_masstraces = 3 # 含有卤素的化合物最好有3个同位素峰
-min_feature_int = 1000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
+min_feature_int = 10000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
 
 #训练集相关参数
 [datasets]
