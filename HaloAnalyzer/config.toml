@@ -2,30 +2,41 @@
 
 #mzml文件预测参数
 [FeatureFinding]
-mass_trace_detection = [["mass_error_ppm", 10.0],
-                        ['min_trace_length', 3.0],
-                        ['noise_threshold_int', 200.0],
+mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 # default:5.0 Change according to experiment conditions
+                        ['min_trace_length', 1.0], # default：5.0 # default:5.0 Change according to experiment conditions
+                        ['noise_threshold_int', 200.0], # not default # default:5.0 Change according to experiment conditions
                         ['chrom_peak_snr',3.0],
                         ['trace_termination_criterion', 'outlier'],
                         ['trace_termination_outliers', 5],
                         ['min_sample_rate', 0.5],
                         ['quant_method', 'area'],
-                        ['reestimate_mt_sd', 'true'],]
+                        ['reestimate_mt_sd', 'true'],
+                        ['max_trace_length', -1.0],
+                        ]
 
-elution_peak_detection = [['width_filtering','fixed'],
-                          ['chrom_fwhm', 3.0],
+elution_peak_detection = [
+                          ['chrom_fwhm', 3.0], # default:5.0
+                          ['chrom_peak_snr',3.0],
+                          ['width_filtering','fixed'],
+                          ['min_fwhm',1.0],
+                          ['max_fwhm',60.0],
+                          ['masstrace_snr_filtering','false'],
                           ]
 
 feature_detection = [['local_rt_range',10.0],
-                     ['local_mz_range',6.5],
-                     ['chrom_fwhm', 3.0],
+                     ['local_mz_range',5.5], # default 6.5 DeepHalo use 6 isotope peaks, so here set 5.5
+                     ['chrom_fwhm', 1.0], # default:5.0 Change according to experiment conditions
+                     ['charge_lower_bound', 1],
+                     ['charge_upper_bound', 3],
+                     ['charge_upper_bound', 3],
                      ['enable_RT_filtering', 'true'],
-                     ['mz_scoring_by_elements', 'false'],
-                     ['elements', 'CHNOPSClBrFeBSeIF'],
-                     ['report_chromatograms', 'true'],
-                     ['isotope_filtering_model','none'],
-                     ['remove_single_traces', 'true'],
-                     ['report_convex_hulls', 'true']
+                     ['use_smoothed_intensities', 'true'],
+                     ['mz_scoring_by_elements', 'true'], # not default for pyopenms,but manditory for DeepHalo
+                     ['elements', 'CHNOPS'], 
+                     ['report_chromatograms', 'false'],
+                     ['isotope_filtering_model','none'], # not default for pyopenms, but manditory for DeepHalo
+                     ['remove_single_traces', 'true'], # not deault for pyopenms, but manditory for DeepHalo
+                     ['report_convex_hulls', 'true'] # not default for pyopenms, but manditory for DeepHalo
                      ]
 # For details on the above parameters, please refer to pyopenms.
 
@@ -37,34 +48,35 @@ min_feature_int = 10000  # the threshold for further halo-containing analysis. H
 [datasets]
 
 paths = [
- ["E:/XinBackup/source_data/datasets/NPAtlas_download.json","mol_formula",],
-#        [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
-#         "mol_formula",
-#     ],
-#    [
-#         "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
-#         "MS-Ready_Mol_Formula",
-#     ],
-#     [
-#         "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
-#         "chemical_formula",
-#     ],
-#     [
-#         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
-#         "Formula",
-#     ],
-#     [
-#         "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
-#         "formula",
-#     ],
-#     [
-#         "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
-#         "CHEMICAL_DATA",
-#     ],
+ 
+        [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
+        "mol_formula",
+     ],
+    [
+         "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+         "MS-Ready_Mol_Formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+         "chemical_formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+         "Formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+         "formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+         "CHEMICAL_DATA",
+     ],
  
 ]
 #数据库文件路径
-type_list = ['base','Fe','B','Se','hydro']
+# type_list = ['base','Fe','B','Se','hydro']
+type_list = ['base']
 element_list = ['C','H','O','N','P','Cl','Br','F','I','S','Fe','Se','B']#训练集中所包含的元素种类
 mz_start = 50#质荷比起始值
 mz_end = 3000#质荷比终止值
@@ -92,10 +104,10 @@ use_hydroisomer_data = "True"
 
 #模型训练参数
 [model_construct]
-train_batch = 32
-val_batch = 32
+train_batch = 8
+val_batch = 8
 classes = 8
-epochs = 1
+epochs = 10
 learning_rate = 0.0003
 
 #模型训练权重

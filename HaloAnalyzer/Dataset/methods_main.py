@@ -38,9 +38,9 @@ def formula_clf(formula_dict,type=None) :
         # else:
             group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
-        # if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
         #     group = 10
-        if ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+        # elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
             group = 0
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
             group = 0        
@@ -76,7 +76,7 @@ def isotope_simulation(formula,type=None,rate=None) -> dict:
     elif type == 'Se':
         fm_isos = get_selenium_additive_isotopes(formula).dataframe()
     else:
-        fm_isos =fm.spectrum(min_intensity=0.0001).dataframe()
+        fm_isos =fm.spectrum(min_intensity=0.000001).dataframe()
 
     # print(fm_isos)
     #获取relative_mass
