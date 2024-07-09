@@ -53,6 +53,18 @@ def add_predict(df,model_path,features_list):
     classes_pred = np.argmax(res, axis=1)
     # Add the prediction results to df_features
     df.loc[:, 'class_pred'] = classes_pred
+    # anomaly detection
+    querys_2 =df[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int']]
+    # queery_3 = df[['m2_m1','m1_m0']]**20
+    # querys_2 = pd.concat([querys_2,queery_3],axis=1)
+    querys_2 = querys_2.values
+    querys_2 = querys_2.astype('float32')
+    anomy_sco = tf.keras.models.load_model(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms\autoencoder_6_features_16_4_2_nodes.h5')
+    reconstructed_X = anomy_sco.predict(querys_2)
+    reconstruction_error = np.mean(np.power(querys_2 - reconstructed_X, 2), axis=1)
+    df.loc[:, 'reconstruction_error'] = reconstruction_error
+    outliers = reconstruction_error > 0.03
+    print("Outliers detected:", np.sum(outliers))
     return df
 
 def calculate_zig_zag(I):

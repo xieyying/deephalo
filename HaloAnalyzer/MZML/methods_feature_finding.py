@@ -61,7 +61,7 @@ class FeatureDetection:
         ffm.run(self.mass_traces_deconvol, self.feature_map, self.chrom_out)
         self.feature_map.setUniqueIds()
         self.feature_map.setPrimaryMSRunPath([self.file.encode()])
-
+        
     def run(self):
         """Run the feature detection process"""
         self.load_file()

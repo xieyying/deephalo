@@ -39,7 +39,7 @@ class Dataset():
             self.data = self.data.rename(columns={key:'formula'})
 
         #将self.data中的数唯一化
-        self.data = self.data.drop_duplicates(subset=['formula'],keep='first')
+        # self.data = self.data.drop_duplicates(subset=['formula'],keep='first')
 
         #重置index
         self.data = self.data.reset_index(drop=True)
