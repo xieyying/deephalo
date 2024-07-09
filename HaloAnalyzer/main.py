@@ -8,7 +8,8 @@ from HaloAnalyzer.parameters import RunParameters
 from .model_test import path_check
 from .MZML.methods_main import create_blank
 import pyopenms as oms
-
+from multiprocessing import Pool
+from functools import partial
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
     """
@@ -54,9 +55,24 @@ def pipeline_model(args,para) -> None:
         model = my_search(para)
 
 
+def process_file(file, args, para, blank):
+    """
+    Function to process a single .mzML file, now correctly receiving `para` and other arguments.
+    """
+    # Assuming MyMzml uses `para` for its configuration
+    df_f_result, df_scan_result = MyMzml(os.path.join(args.input, file), para).work_flow(blank=blank)
+    # Save results or further processing
+    df_f_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_feature.csv')), index=False)
+    df_scan_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_scan.csv')), index=False)
+    # Assuming saving or further processing logic here
+    print(f'Processed {file}')
+    # return f'Processed {file}'
+
 def pipeline_analyze_mzml(args,para):
+
     path_check('./result')
     blank_featurexml_path = r'./result/blank'
+
     if args.blank is not None :
         if os.path.exists(blank_featurexml_path):
             blank =[]
@@ -76,10 +92,22 @@ def pipeline_analyze_mzml(args,para):
     else:
         blank = None
 
-    df_f_result,df_scan_result = MyMzml(args.input,para).work_flow(blank=blank)
-    df_f_result.to_csv('./result/df_f_result.csv', index=False)
-    df_scan_result.to_csv('./result/df_scan_result.csv', index=False)
 
+    
+    #如果args.input是文件
+    if os.path.isfile(args.input):
+        process_file(args.input, args, para, blank)
+    #如果args.input是文件夹
+    elif os.path.isdir(args.input):
+        # Process all files in the directory with multiprocessing Pool
+        files_to_process = [file for file in os.listdir(args.input) if file.endswith('.mzML')]
+        pool = Pool(4)
+        fun = partial(process_file, args=args, para=para, blank=blank)
+        pool.map(fun, [file for file in files_to_process])
+
+    else:
+        print('Invalid input path')
+        return
 
 if __file__ == '__main__':
     pass

@@ -29,5 +29,5 @@ dependencies = [
 ]
 
 [project.scripts]
-halo = "HaloAnalyzer.commond_line:main"
+halo = "HaloAnalyzer.command_line:main"
 
