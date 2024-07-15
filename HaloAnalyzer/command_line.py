@@ -26,6 +26,7 @@ def main():
     parser.add_argument('-b', '--blank', help='input directory of blank mzML files for substraction')
     parser.add_argument('-p', '--project', help='set the project path for HaloAnalyzer output')
     parser.add_argument('-m', '--mode', help='train model mode: manual or search')
+    parser.add_argument('-ms2', '--ms2', help='extract ms2 mode: True or False')
     args = parser.parse_args()
 
     #处理命令行参数

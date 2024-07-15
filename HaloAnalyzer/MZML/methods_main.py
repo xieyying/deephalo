@@ -5,6 +5,8 @@ from collections import Counter
 from .methods_feature_finding import FeatureMapProcessor
 import os
 import pyopenms as oms
+from mzml2gnps.methods import *
+
 def feature_finding(file,para):
     """
     Find features from mzML data
@@ -13,7 +15,6 @@ def feature_finding(file,para):
     feature = FeatureMapProcessor(file,para)
     tem = feature.run()
     df_f,df_scan = tem.process()
-
     return df_f,df_scan,tem.feature_map
 
 def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list"):
@@ -197,7 +198,21 @@ def substract_blank(feature_maps):
         df = df[df[files[i]] <= 0.001]
     return df
 
-def flow_base(file,model_path,pars,blank=None):
+def ms2_extraction(file,df):
+    """
+    Extract MS2 data from mzML file
+    """
+    precmz = df['mz'].tolist() if 'mz' in df.columns else None
+    rt = df['RT'].tolist() if 'RT' in df.columns else None
+    RTstart = df['RTstart'].tolist() if 'RTstart' in df.columns else None
+    RTend = df['RTend'].tolist() if 'RTend' in df.columns else None
+    ms2_output = r'./result/ms2_output'
+    if not os.path.exists(ms2_output):  # Check if directory exists
+        os.makedirs(ms2_output)  # Create the directory if it does not exist
+    output = os.path.join(ms2_output, os.path.basename(file))
+    pipline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=None)
+    
+def flow_base(file,model_path,pars,blank=None,ms2=None):
     """
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
@@ -217,6 +232,11 @@ def flow_base(file,model_path,pars,blank=None):
         df_f_result = df_f_result[df_f_result['RT'].isin(df_f_['RT'])]
         df_f_result = df_f_result[df_f_result['mz'].isin(df_f_['mz'])]
 
+    df_f_result = df_f_result[df_f_result['H_score'] >= 0.8] # TODO: Need to be adjusted
+    df_f_result = df_f_result[df_f_result['reconstruction_error'] <9.87e-5] # TODO: Need to be adjusted based on quantile，currently 0.999
+    df_scan_result = df_scan_result[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
+    if ms2 != None:
+        ms2_extraction(file,df_f_result)
     return df_f_result,df_scan_result
 
 if __name__ == '__main__':

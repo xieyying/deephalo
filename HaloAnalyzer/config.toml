@@ -5,7 +5,7 @@
 mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 # default:5.0 Change according to experiment conditions
                         ['min_trace_length', 1.0], # default：5.0 # default:5.0 Change according to experiment conditions
                         ['noise_threshold_int', 200.0], # not default # default:5.0 Change according to experiment conditions
-                        ['chrom_peak_snr',3.0],
+                        ['chrom_peak_snr',10.0],
                         ['trace_termination_criterion', 'outlier'],
                         ['trace_termination_outliers', 5],
                         ['min_sample_rate', 0.5],
@@ -16,7 +16,7 @@ mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 # default:5.0 C
 
 elution_peak_detection = [
                           ['chrom_fwhm', 3.0], # default:5.0
-                          ['chrom_peak_snr',3.0],
+                          ['chrom_peak_snr',10.0],
                           ['width_filtering','fixed'],
                           ['min_fwhm',1.0],
                           ['max_fwhm',60.0],

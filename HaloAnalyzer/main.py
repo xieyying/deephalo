@@ -55,12 +55,12 @@ def pipeline_model(args,para) -> None:
         model = my_search(para)
 
 
-def process_file(file, args, para, blank):
+def process_file(file, args, para, blank,ms2):
     """
     Function to process a single .mzML file, now correctly receiving `para` and other arguments.
     """
     # Assuming MyMzml uses `para` for its configuration
-    df_f_result, df_scan_result = MyMzml(os.path.join(args.input, file), para).work_flow(blank=blank)
+    df_f_result, df_scan_result = MyMzml(os.path.join(args.input, file), para).work_flow(blank=blank,ms2=ms2)
     # Save results or further processing
     df_f_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_feature.csv')), index=False)
     df_scan_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_scan.csv')), index=False)
@@ -91,18 +91,19 @@ def pipeline_analyze_mzml(args,para):
                 oms.FeatureXMLFile().store(os.path.join(blank_featurexml_path,file_name), b)
     else:
         blank = None
-
-
-    
+    if args.ms2 is not None:
+        ms2 = True
+    else:
+        ms2 = None
     #如果args.input是文件
     if os.path.isfile(args.input):
-        process_file(args.input, args, para, blank)
+        process_file(args.input, args, para, blank,ms2)
     #如果args.input是文件夹
     elif os.path.isdir(args.input):
         # Process all files in the directory with multiprocessing Pool
         files_to_process = [file for file in os.listdir(args.input) if file.endswith('.mzML')]
         pool = Pool(4)
-        fun = partial(process_file, args=args, para=para, blank=blank)
+        fun = partial(process_file, args=args, para=para, blank=blank,ms2=ms2)
         pool.map(fun, [file for file in files_to_process])
 
     else:
