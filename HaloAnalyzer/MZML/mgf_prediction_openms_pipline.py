@@ -335,12 +335,15 @@ if __name__ == '__main__':
     # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\my_search_10_feature_wise_including_hydro_data\trained_models\pick_halo_ann.h5'
     # model=r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\trained_models_10_parameters\pick_halo_ann.h5'
     # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\trained_models\pick_halo_ann.h5'
-    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms_ClFe\trained_models\pick_halo_ann.h5'
+    # model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms_ClFe\trained_models\pick_halo_ann.h5'
+    model = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms\trained_models\pick_halo_ann.h5'
 
     path =r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset\in_house_dataset\For_haloanalyzer'
     path = r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset\open_dataset\myxo'
     # # # path = r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset\open_dataset\CASMI'
-    path = r'C:\Users\xyy\Desktop\test\test'
+    path = r'D:\workissues\manuscript\halo_mining\HaloAnalyzer\datasets\test_dataset_for_model\in_house_dataset\For_haloanalyzer\test3'
+    path = r'C:\Users\xyy\Desktop\test\test\test'
+    
     # path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\021_main_six_dataset\test_mzml_prediction\test'
     
     files = os.listdir(path)

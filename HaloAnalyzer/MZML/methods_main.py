@@ -6,6 +6,8 @@ from .methods_feature_finding import FeatureMapProcessor
 import os
 import pyopenms as oms
 from mzml2gnps.methods import *
+import mzml2gnps
+print(mzml2gnps.__file__)
 
 def feature_finding(file,para):
     """
@@ -25,7 +27,9 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     mz_list = df[mz_list_name].values
     m2_m1 = [i[2] - i[1] for i in mz_list]
     m1_m0 = [i[1] - i[0] for i in mz_list]
+    mz =[i[0] for i in mz_list]
     # Assign new columns to df
+    df['mz'] = mz*df['charge']
     df['m2_m1'] = m2_m1*df['charge']
     df['m1_m0'] = m1_m0*df['charge']
     
@@ -40,6 +44,20 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
         df[f'p{i}_int'] = inty_df[i].values
     return df
 
+def anormal_isotope_pattern_detection(df_feature):
+    querys_2 = df_feature[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int']]
+    querys_3 = df_feature['mz']/2000
+    querys_2 = pd.concat([querys_2,querys_3],axis=1)
+    querys_2 = querys_2.values.astype('float32')
+    anomy_sco = tf.keras.models.load_model(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms\autoencoder_7_features_32_8_32_mz.h5')
+    reconstructed_X = anomy_sco.predict(querys_2)
+    reconstruction_error = np.mean(np.power(querys_2 - reconstructed_X, 2), axis=1)
+    df_feature.loc[:, 'reconstruction_error'] = reconstruction_error
+    df_feature = df_feature[df_feature['reconstruction_error'] < 0.00046974571210013324] # 99.9%分位数
+    outliers = reconstruction_error > 0.00046974571210013324
+    print("Outliers detected:", np.sum(outliers))
+    return df_feature
+
 def add_predict(df,model_path,features_list):
     """
     Add prediction result based on DNN Halo model
@@ -53,20 +71,10 @@ def add_predict(df,model_path,features_list):
     res = clf.predict(querys)
     classes_pred = np.argmax(res, axis=1)
     # Add the prediction results to df_features
-    df.loc[:, 'class_pred'] = classes_pred
+    df_ = df.copy()
+    df_.loc[:, 'class_pred'] = classes_pred
     # anomaly detection
-    querys_2 =df[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int']]
-    # queery_3 = df[['m2_m1','m1_m0']]**20
-    # querys_2 = pd.concat([querys_2,queery_3],axis=1)
-    querys_2 = querys_2.values
-    querys_2 = querys_2.astype('float32')
-    anomy_sco = tf.keras.models.load_model(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms\autoencoder_6_features_16_4_2_nodes.h5')
-    reconstructed_X = anomy_sco.predict(querys_2)
-    reconstruction_error = np.mean(np.power(querys_2 - reconstructed_X, 2), axis=1)
-    df.loc[:, 'reconstruction_error'] = reconstruction_error
-    outliers = reconstruction_error > 0.03
-    print("Outliers detected:", np.sum(outliers))
-    return df
+    return df_
 
 def calculate_zig_zag(I):
     """
@@ -128,14 +136,15 @@ def roi_scan_based_halo_evaluation(I):
 
     return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio
 
-def halo_evalution(df_f,df_scan):
+def halo_evalution(df_f_,df_scan_):
     """
     Evaluate the probability of features based on both feature isotope patterns and scan based isotope patterns
     """
+    df_f = df_f_.copy()
+    df_scan = df_scan_.copy()
     for i in df_scan['feature_id_flatten'].unique():
         I = df_scan[df_scan['feature_id_flatten'] == i]['class_pred'].tolist()
         scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio = roi_scan_based_halo_evaluation(I)
-        
         df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_class'] = scan_based_halo_class
         df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_score'] = scan_based_halo_score
         df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_sub_class'] = scan_based_halo_sub_class
@@ -217,13 +226,18 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
     df_f,df_scan,feature_map_ = feature_finding(file,pars)
-    df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+    df_feature = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+    df_feature_for_model_input = anormal_isotope_pattern_detection(df_feature)
+    # df_scan = df_scan[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
+    df_scan = df_scan.loc[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
     df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
     df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
     df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
     df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
+    df_f_result = df_f_result[df_f_result['H_score'] >= 0.7] # TODO: Need to be adjusted
+    df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
 
-    if blank != None:
+    if blank != None and df_f_result.shape[0] > 0:
         blank.append(feature_map_)
         df_f_= substract_blank(blank)
         # df_f_.to_csv(r'./result/test.csv', index=False)
@@ -232,10 +246,7 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
         df_f_result = df_f_result[df_f_result['RT'].isin(df_f_['RT'])]
         df_f_result = df_f_result[df_f_result['mz'].isin(df_f_['mz'])]
 
-    df_f_result = df_f_result[df_f_result['H_score'] >= 0.8] # TODO: Need to be adjusted
-    df_f_result = df_f_result[df_f_result['reconstruction_error'] <9.87e-5] # TODO: Need to be adjusted based on quantile，currently 0.999
-    df_scan_result = df_scan_result[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
-    if ms2 != None:
+    if ms2 != None and df_f_result.shape[0] > 0:
         ms2_extraction(file,df_f_result)
     return df_f_result,df_scan_result
 

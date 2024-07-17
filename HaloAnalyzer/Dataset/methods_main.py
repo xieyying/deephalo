@@ -33,14 +33,14 @@ def formula_clf(formula_dict,type=None) :
         group = 7
 
     elif ('Br' in formula_dict.keys()) and ('Cl' in formula_dict.keys()):
-        # if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
-        #     group = 10
-        # else:
+        if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
+            group = 10
+        else:
             group = 0
     elif ('Br' in formula_dict.keys()) or ('Cl' in formula_dict.keys()):
         if 'B' in formula_dict.keys() or 'Se' in formula_dict.keys() or 'Fe' in formula_dict.keys():
-        #     group = 10
-        # elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
+            group = 10
+        elif ('Br' in formula_dict.keys()) and formula_dict['Br']>1:
             group = 0
         elif ('Cl' in formula_dict.keys()) and formula_dict['Cl']>3:
             group = 0        

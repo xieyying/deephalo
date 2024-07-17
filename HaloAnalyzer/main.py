@@ -62,11 +62,11 @@ def process_file(file, args, para, blank,ms2):
     # Assuming MyMzml uses `para` for its configuration
     df_f_result, df_scan_result = MyMzml(os.path.join(args.input, file), para).work_flow(blank=blank,ms2=ms2)
     # Save results or further processing
-    df_f_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_feature.csv')), index=False)
-    df_scan_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_scan.csv')), index=False)
+    if df_f_result.shape[0] > 0:
+        df_f_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_feature.csv')), index=False)
+        df_scan_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_scan.csv')), index=False)
     # Assuming saving or further processing logic here
     print(f'Processed {file}')
-    # return f'Processed {file}'
 
 def pipeline_analyze_mzml(args,para):
 

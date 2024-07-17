@@ -2,6 +2,7 @@ import pyopenms as oms
 import pandas as pd
 import numpy as np
 from scipy.spatial import KDTree
+import tensorflow as tf
 
 
 def set_para(fun_para,para_list):
@@ -127,7 +128,7 @@ class FeatureMapProcessor(FeatureDetection):
     def _merge_feature_df(self):
         """Merge the feature dataframes"""
         self.df_feature = pd.merge(self.df_feature, self.df_feature_, left_on='feature_id', right_on='feature_id', how='left')
-
+            
     def _add_intensity(self):
         """Add intensity to the dataframe"""
         mz_error = 0.01  # 为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
@@ -147,7 +148,7 @@ class FeatureMapProcessor(FeatureDetection):
             'charge': x.sort_values('mz_type')['charge_f'].tolist()[0],
         })).reset_index()
         self.df_scan['mz_list'], self.df_scan['inty_list'] = zip(*self.df_scan.apply(lambda row: zip(*sorted(zip(row['mz_list'], row['inty_list']))), axis=1))
-
+            
     def process(self):
         """Process the feature map"""
         self.df_feature_ = self.feature_map.get_df()
