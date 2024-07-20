@@ -91,7 +91,7 @@ def pipeline_analyze_mzml(args,para):
                 oms.FeatureXMLFile().store(os.path.join(blank_featurexml_path,file_name), b)
     else:
         blank = None
-    if args.ms2 is not None:
+    if args.ms2 == 'True':
         ms2 = True
     else:
         ms2 = None
@@ -102,9 +102,12 @@ def pipeline_analyze_mzml(args,para):
     elif os.path.isdir(args.input):
         # Process all files in the directory with multiprocessing Pool
         files_to_process = [file for file in os.listdir(args.input) if file.endswith('.mzML')]
-        pool = Pool(4)
-        fun = partial(process_file, args=args, para=para, blank=blank,ms2=ms2)
-        pool.map(fun, [file for file in files_to_process])
+        # pool = Pool(1)
+        # fun = partial(process_file, args=args, para=para, blank=blank,ms2=ms2)
+        # pool.map(fun, [file for file in files_to_process])
+        for file in files_to_process:
+            print(f'Processing {file}')
+            process_file(file, args, para, blank,ms2)
 
     else:
         print('Invalid input path')

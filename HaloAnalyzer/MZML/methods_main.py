@@ -6,8 +6,7 @@ from .methods_feature_finding import FeatureMapProcessor
 import os
 import pyopenms as oms
 from mzml2gnps.methods import *
-import mzml2gnps
-print(mzml2gnps.__file__)
+
 
 def feature_finding(file,para):
     """
@@ -23,13 +22,14 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     """
     Process DataFrame and make it ready for halo model inputs
     """
+    
     # get the mz_list and inty_list
     mz_list = df[mz_list_name].values
     m2_m1 = [i[2] - i[1] for i in mz_list]
     m1_m0 = [i[1] - i[0] for i in mz_list]
     mz =[i[0] for i in mz_list]
     # Assign new columns to df
-    df['mz'] = mz*df['charge']
+    df['mz'] = mz*df['charge']-(df['charge']-1)*1.007276466812
     df['m2_m1'] = m2_m1*df['charge']
     df['m1_m0'] = m1_m0*df['charge']
     
@@ -226,15 +226,17 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
     df_f,df_scan,feature_map_ = feature_finding(file,pars)
-    df_feature = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
-    df_feature_for_model_input = anormal_isotope_pattern_detection(df_feature)
-    # df_scan = df_scan[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
+    df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+    df_feature_for_model_input = anormal_isotope_pattern_detection(df_feature_for_model_input)
     df_scan = df_scan.loc[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
+    if df_feature_for_model_input.shape[0] == 0:
+        return df_feature_for_model_input,df_scan
     df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
+    df_scan_for_model_input = anormal_isotope_pattern_detection(df_scan_for_model_input)
     df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
     df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
     df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
-    df_f_result = df_f_result[df_f_result['H_score'] >= 0.7] # TODO: Need to be adjusted
+    df_f_result = df_f_result[df_f_result['H_score'] >= 1.0] # TODO: Need to be adjusted
     df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
 
     if blank != None and df_f_result.shape[0] > 0:

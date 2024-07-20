@@ -1,4 +1,4 @@
-import tomli,tomli_w
+import tomli
 import importlib_resources
 
 class RunParameters:
