@@ -2,10 +2,10 @@
 
 #mzml文件预测参数
 [FeatureFinding]
-mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 # default:5.0 Change according to experiment conditions
-                        ['min_trace_length', 1.0], # default：5.0 # default:5.0 Change according to experiment conditions
-                        ['noise_threshold_int', 1000.0], # not default # default:5.0 Change according to experiment conditions
-                        ['chrom_peak_snr',10.0],
+mass_trace_detection = [["mass_error_ppm", 5.0], # default:20.0 Change according to experiment conditions
+                        ['min_trace_length', 1.0], # default：5.0 Change according to experiment conditions
+                        ['noise_threshold_int', 200.0], # not default Change according to experiment conditions
+                        ['chrom_peak_snr',3.0],
                         ['trace_termination_criterion', 'outlier'],
                         ['trace_termination_outliers', 5],
                         ['min_sample_rate', 0.5],
@@ -16,7 +16,7 @@ mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 # default:5.0 C
 
 elution_peak_detection = [
                           ['chrom_fwhm', 3.0], # default:5.0
-                          ['chrom_peak_snr',10.0],
+                          ['chrom_peak_snr',3.0],
                           ['width_filtering','fixed'],
                           ['min_fwhm',1.0],
                           ['max_fwhm',60.0],
@@ -26,13 +26,14 @@ elution_peak_detection = [
 feature_detection = [['local_rt_range',10.0],
                      ['local_mz_range',5.5], # default 6.5 DeepHalo use 6 isotope peaks, so here set 5.5
                      ['chrom_fwhm', 1.0], # default:5.0 Change according to experiment conditions
+                     ['report_summed_ints', 'true'],
+                     ['mz_scoring_13C', 'false'],
                      ['charge_lower_bound', 1],
                      ['charge_upper_bound', 3],
-                     ['charge_upper_bound', 3],
                      ['enable_RT_filtering', 'true'],
-                     ['use_smoothed_intensities', 'true'],
+                     ['use_smoothed_intensities', 'false'],
                      ['mz_scoring_by_elements', 'true'], # not default for pyopenms,but manditory for DeepHalo
-                     ['elements', 'CHNOPS'], 
+                     ['elements', 'CHNOPSFClBrINa'], 
                      ['report_chromatograms', 'false'],
                      ['isotope_filtering_model','none'], # not default for pyopenms, but manditory for DeepHalo
                      ['remove_single_traces', 'true'], # not deault for pyopenms, but manditory for DeepHalo
@@ -42,7 +43,7 @@ feature_detection = [['local_rt_range',10.0],
 
 [FeatureMapProcessor]
 min_num_of_masstraces = 3 # 含有卤素的化合物最好有3个同位素峰
-min_feature_int = 10000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
+min_feature_int = 5000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
 
 #训练集相关参数
 [datasets]

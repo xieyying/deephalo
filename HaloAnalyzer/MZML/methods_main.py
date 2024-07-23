@@ -27,9 +27,8 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     mz_list = df[mz_list_name].values
     m2_m1 = [i[2] - i[1] for i in mz_list]
     m1_m0 = [i[1] - i[0] for i in mz_list]
-    mz =[i[0] for i in mz_list]
+    
     # Assign new columns to df
-    df['mz'] = mz*df['charge']-(df['charge']-1)*1.007276466812
     df['m2_m1'] = m2_m1*df['charge']
     df['m1_m0'] = m1_m0*df['charge']
     
@@ -42,6 +41,7 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     inty_df = inty_df.div(inty_df.max(axis=1), axis=0)
     for i in range(7):
         df[f'p{i}_int'] = inty_df[i].values
+
     return df
 
 def anormal_isotope_pattern_detection(df_feature):
@@ -177,11 +177,11 @@ def create_blank(args,para):
     else:
         blank_paths = None
 
-    feature_maps_blank = []
+    blank_feature_maps = []
     for file in blank_paths:
-        feature_maps_blank.append(feature_finding(file,para)[2])
+        blank_feature_maps.append(feature_finding(file,para)[2])
 
-    return feature_maps_blank
+    return blank_feature_maps
 
 def substract_blank(feature_maps):
     feature_grouper = oms.FeatureGroupingAlgorithmKD()
@@ -219,7 +219,7 @@ def ms2_extraction(file,df):
     if not os.path.exists(ms2_output):  # Check if directory exists
         os.makedirs(ms2_output)  # Create the directory if it does not exist
     output = os.path.join(ms2_output, os.path.basename(file))
-    pipline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=None)
+    pipline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=True)
     
 def flow_base(file,model_path,pars,blank=None,ms2=None):
     """
@@ -227,6 +227,7 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
     """
     df_f,df_scan,feature_map_ = feature_finding(file,pars)
     df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+    
     df_feature_for_model_input = anormal_isotope_pattern_detection(df_feature_for_model_input)
     df_scan = df_scan.loc[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
     if df_feature_for_model_input.shape[0] == 0:
@@ -236,13 +237,12 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
     df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
     df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
     df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
-    df_f_result = df_f_result[df_f_result['H_score'] >= 1.0] # TODO: Need to be adjusted
+    df_f_result = df_f_result[df_f_result['H_score'] >= 0.5] # TODO: Need to be adjusted
     df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
 
     if blank != None and df_f_result.shape[0] > 0:
         blank.append(feature_map_)
         df_f_= substract_blank(blank)
-        # df_f_.to_csv(r'./result/test.csv', index=False)
         #提取df_f_result中与df_f_中所有RT和mz相同的行
         #此处还需确认
         df_f_result = df_f_result[df_f_result['RT'].isin(df_f_['RT'])]

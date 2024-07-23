@@ -35,7 +35,7 @@ class FeatureDetection:
         """Get the ion dataframes and filter them"""
         self.ion_df = self.exp.get_ion_df()
         filter_threshold = next((item[1] for item in self.pars.mass_trace_detection if item[0] == 'noise_threshold_int'), None)
-        self.ion_df = self.ion_df[self.ion_df['inty'] > filter_threshold]  
+        self.ion_df = self.ion_df[self.ion_df['inty'] > filter_threshold] 
 
     def mass_trace_detection(self):
         """Detect the mass traces"""
@@ -45,13 +45,14 @@ class FeatureDetection:
         mtd.setParameters(mtd_par)
         mtd.run(self.exp, self.mass_traces, 0)
 
+
     def elution_peak_detection(self):
         """Detect the elution peaks"""
         epd = oms.ElutionPeakDetection()
         epd_par = epd.getDefaults()
         set_para(epd_par,self.pars.elution_peak_detection)
         epd.setParameters(epd_par)
-        epd.detectPeaks(self.mass_traces, self.mass_traces_deconvol)
+        epd.detectPeaks(self.mass_traces, self.mass_traces_deconvol)    
 
     def feature_detection(self):
         """Detect the features"""
@@ -62,7 +63,7 @@ class FeatureDetection:
         ffm.run(self.mass_traces_deconvol, self.feature_map, self.chrom_out)
         self.feature_map.setUniqueIds()
         self.feature_map.setPrimaryMSRunPath([self.file.encode()])
-        
+    
     def run(self):
         """Run the feature detection process"""
         self.load_file()
@@ -128,7 +129,7 @@ class FeatureMapProcessor(FeatureDetection):
     def _merge_feature_df(self):
         """Merge the feature dataframes"""
         self.df_feature = pd.merge(self.df_feature, self.df_feature_, left_on='feature_id', right_on='feature_id', how='left')
-            
+
     def _add_intensity(self):
         """Add intensity to the dataframe"""
         mz_error = 0.01  # 为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
@@ -148,7 +149,9 @@ class FeatureMapProcessor(FeatureDetection):
             'charge': x.sort_values('mz_type')['charge_f'].tolist()[0],
         })).reset_index()
         self.df_scan['mz_list'], self.df_scan['inty_list'] = zip(*self.df_scan.apply(lambda row: zip(*sorted(zip(row['mz_list'], row['inty_list']))), axis=1))
-            
+        mz =[i[0] for i in self.df_scan['mz_list']]
+        self.df_scan['mz'] = mz*self.df_scan['charge']-(self.df_scan['charge']-1)*1.007276466812
+        
     def process(self):
         """Process the feature map"""
         self.df_feature_ = self.feature_map.get_df()
