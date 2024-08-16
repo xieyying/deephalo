@@ -52,7 +52,16 @@ class FeatureDetection:
         epd_par = epd.getDefaults()
         set_para(epd_par,self.pars.elution_peak_detection)
         epd.setParameters(epd_par)
-        epd.detectPeaks(self.mass_traces, self.mass_traces_deconvol)    
+        epd.detectPeaks(self.mass_traces, self.mass_traces_deconvol)
+        # mz = []
+        # rt = []
+        # intensity = []
+        # for i in range(len(self.mass_traces_deconvol)):
+        #     mz.append(self.mass_traces_deconvol[i].getCentroidMZ())
+        #     rt.append(self.mass_traces_deconvol[i].getCentroidRT())
+        #     intensity.append(self.mass_traces_deconvol[i].getIntensity(1))
+        # self.df = pd.DataFrame({'mz':mz,'rt':rt,'intensity':intensity})
+        # self.df.to_csv('mass_traces_deconvol.csv')    
 
     def feature_detection(self):
         """Detect the features"""

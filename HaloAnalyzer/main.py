@@ -1,6 +1,7 @@
 #import packages
 import os
 import shutil
+import copy
 from .Dataset.my_dataset import Dataset,Datasets
 from .Model.my_model import MyModel,my_search
 from .MZML.my_mzml import MyMzml
@@ -55,7 +56,7 @@ def pipeline_model(args,para) -> None:
         model = my_search(para)
 
 
-def process_file(file, args, para, blank,ms2):
+def process_file(file, args, para, blank=None,ms2=None):
     """
     Function to process a single .mzML file, now correctly receiving `para` and other arguments.
     """
@@ -75,29 +76,29 @@ def pipeline_analyze_mzml(args,para):
 
     if args.blank is not None :
         if os.path.exists(blank_featurexml_path):
-            blank =[]
+            blank_ =[]
             for file in os.listdir(blank_featurexml_path):
                 b = oms.FeatureMap()
                 print(f"Loading blank feature_map: {file}")
                 oms.FeatureXMLFile().load(os.path.join(blank_featurexml_path,file), b)
-                blank.append(b)
+                blank_.append(b)
         else:
             path_check(blank_featurexml_path)
             print(f"Blank feature_map not found: {blank_featurexml_path}. Creating a new blank feature_map path.")
             
-            blank = create_blank(args,para)
-            for b in blank:
+            blank_ = create_blank(args,para)
+            for b in blank_:
                 file_name = os.path.basename(b.getMetaValue("spectra_data")[0].decode()).replace('.mzML','_blank.featureXML')
                 oms.FeatureXMLFile().store(os.path.join(blank_featurexml_path,file_name), b)
     else:
-        blank = None
+        blank_ = None
     if args.ms2 == 'True':
-        ms2 = True
+        ms2_ = True
     else:
-        ms2 = None
+        ms2_ = None
     #如果args.input是文件
     if os.path.isfile(args.input):
-        process_file(args.input, args, para, blank,ms2)
+        process_file(args.input, args, para, blank=blank_,ms2=ms2_)
     #如果args.input是文件夹
     elif os.path.isdir(args.input):
         # Process all files in the directory with multiprocessing Pool
@@ -107,7 +108,7 @@ def pipeline_analyze_mzml(args,para):
         # pool.map(fun, [file for file in files_to_process])
         for file in files_to_process:
             print(f'Processing {file}')
-            process_file(file, args, para, blank,ms2)
+            process_file(file, args, para, blank=copy.deepcopy(blank_),ms2=ms2_)
 
     else:
         print('Invalid input path')

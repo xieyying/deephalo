@@ -45,16 +45,17 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     return df
 
 def anormal_isotope_pattern_detection(df_feature):
-    querys_2 = df_feature[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int']]
-    querys_3 = df_feature['mz']/2000
+    querys_2 = df_feature[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int','m2_m1','m1_m0']]
+    querys_3 = df_feature['mz']*df_feature['charge']/2000
     querys_2 = pd.concat([querys_2,querys_3],axis=1)
     querys_2 = querys_2.values.astype('float32')
     anomy_sco = tf.keras.models.load_model(r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms\autoencoder_7_features_32_8_32_mz.h5')
     reconstructed_X = anomy_sco.predict(querys_2)
     reconstruction_error = np.mean(np.power(querys_2 - reconstructed_X, 2), axis=1)
     df_feature.loc[:, 'reconstruction_error'] = reconstruction_error
-    df_feature = df_feature[df_feature['reconstruction_error'] < 0.00046974571210013324] # 99.9%分位数
-    outliers = reconstruction_error > 0.00046974571210013324
+    # df_feature = df_feature[df_feature['reconstruction_error'] < 0.00046974571210013324] # 99.9%分位数
+    # df_feature = df_feature[df_feature['reconstruction_error'] <7.319627514163335e-06]
+    outliers = reconstruction_error > 0.0020470078259371585
     print("Outliers detected:", np.sum(outliers))
     return df_feature
 
@@ -183,9 +184,13 @@ def create_blank(args,para):
 
     return blank_feature_maps
 
-def substract_blank(feature_maps):
+def substract_blank(feature_maps,pars):
     feature_grouper = oms.FeatureGroupingAlgorithmKD()
-
+    g_parameters = feature_grouper.getParameters()
+    mz_tol = next((item[1] for item in pars.mass_trace_detection if item[0] == 'mass_error_ppm'), None)
+    g_parameters.setValue('warp:mz_tol', mz_tol)
+    
+    
     consensus_map = oms.ConsensusMap()
     file_descriptions = consensus_map.getColumnHeaders()
     files = []
@@ -203,8 +208,10 @@ def substract_blank(feature_maps):
     # oms.ConsensusXMLFile().store("FeatureMatrix.consensusXML", consensus_map)
 
     df = consensus_map.get_df()
+    df.to_csv(r'./result/blank_feature.csv', index=False)
     for i in range(len(files[:-1])):
         df = df[df[files[i]] <= 0.001]
+    
     return df
 
 def ms2_extraction(file,df):
@@ -219,34 +226,40 @@ def ms2_extraction(file,df):
     if not os.path.exists(ms2_output):  # Check if directory exists
         os.makedirs(ms2_output)  # Create the directory if it does not exist
     output = os.path.join(ms2_output, os.path.basename(file))
-    pipline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=True)
+    pipline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=False)
     
 def flow_base(file,model_path,pars,blank=None,ms2=None):
     """
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
     df_f,df_scan,feature_map_ = feature_finding(file,pars)
-    df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+    df_f.to_csv(r'./result/feature.csv', index=False)
     
+    if blank != None and df_f.shape[0] > 0:
+        blank.append(feature_map_)
+        df_f_= substract_blank(blank,pars)
+        df_f_.to_csv(r'./result/blank_feature_substracted.csv', index=False)
+        #提取df_f_result中与df_f_中所有RT和mz相同的行
+        #此处还需确认
+        df_f = df_f[df_f['RT'].isin(df_f_['RT'])]
+        df_f = df_f[df_f['mz'].isin(df_f_['mz'])]
+        
+    df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
     df_feature_for_model_input = anormal_isotope_pattern_detection(df_feature_for_model_input)
+    
     df_scan = df_scan.loc[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
     if df_feature_for_model_input.shape[0] == 0:
         return df_feature_for_model_input,df_scan
+    
     df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
     df_scan_for_model_input = anormal_isotope_pattern_detection(df_scan_for_model_input)
+    
     df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
     df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
     df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
-    df_f_result = df_f_result[df_f_result['H_score'] >= 0.5] # TODO: Need to be adjusted
-    df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
-
-    if blank != None and df_f_result.shape[0] > 0:
-        blank.append(feature_map_)
-        df_f_= substract_blank(blank)
-        #提取df_f_result中与df_f_中所有RT和mz相同的行
-        #此处还需确认
-        df_f_result = df_f_result[df_f_result['RT'].isin(df_f_['RT'])]
-        df_f_result = df_f_result[df_f_result['mz'].isin(df_f_['mz'])]
+    
+    # df_f_result = df_f_result[df_f_result['H_score'] >= 0.8] # TODO: Need to be adjusted
+    # df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
 
     if ms2 != None and df_f_result.shape[0] > 0:
         ms2_extraction(file,df_f_result)
