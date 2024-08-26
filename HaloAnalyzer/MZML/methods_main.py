@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 from collections import Counter
-from .methods_feature_finding import FeatureMapProcessor
+from .methods_feature_finding import FeatureMapProcessor,set_para
 import os
 import pyopenms as oms
 from mzml2gnps.methods import *
@@ -16,6 +16,7 @@ def feature_finding(file,para):
     feature = FeatureMapProcessor(file,para)
     tem = feature.run()
     df_f,df_scan = tem.process()
+
     return df_f,df_scan,tem.feature_map
 
 def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list"):
@@ -45,7 +46,7 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     return df
 
 def anormal_isotope_pattern_detection(df_feature):
-    querys_2 = df_feature[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int','m2_m1','m1_m0']]
+    querys_2 = df_feature[['p0_int','p1_int','p2_int','p3_int','p4_int','p5_int']]
     querys_3 = df_feature['mz']*df_feature['charge']/2000
     querys_2 = pd.concat([querys_2,querys_3],axis=1)
     querys_2 = querys_2.values.astype('float32')
@@ -53,16 +54,17 @@ def anormal_isotope_pattern_detection(df_feature):
     reconstructed_X = anomy_sco.predict(querys_2)
     reconstruction_error = np.mean(np.power(querys_2 - reconstructed_X, 2), axis=1)
     df_feature.loc[:, 'reconstruction_error'] = reconstruction_error
-    # df_feature = df_feature[df_feature['reconstruction_error'] < 0.00046974571210013324] # 99.9%分位数
+    # df_feature = df_feature[df_feature['reconstruction_error'] < 0.000403005337461451] # 99.9%分位数
     # df_feature = df_feature[df_feature['reconstruction_error'] <7.319627514163335e-06]
-    outliers = reconstruction_error > 0.0020470078259371585
-    print("Outliers detected:", np.sum(outliers))
+    # outliers = reconstruction_error > 0.0020470078259371585
+    # print("Outliers detected:", np.sum(outliers))
     return df_feature
 
 def add_predict(df,model_path,features_list):
     """
     Add prediction result based on DNN Halo model
     """
+    
     # Load the TensorFlow model
     clf = tf.keras.models.load_model(model_path)
     # Load the features
@@ -109,9 +111,15 @@ def roi_scan_based_halo_evaluation(I):
     if any(i in com_class for i in [0, 1, 2]):
         scan_based_halo_class = 'halo'
         if len(com_class) == 1:
-            scan_based_halo_score = 100
-            scan_based_halo_sub_score = 100
-            scan_based_halo_sub_class = com_class[0]
+            if len(I) >= 2:
+                scan_based_halo_score = 100
+                scan_based_halo_sub_score = 100
+                scan_based_halo_sub_class = com_class[0]
+            else:
+                scan_based_halo_score = 0
+                scan_based_halo_sub_class = "None"
+                scan_based_halo_sub_score = "None"
+            
         else:
             if {0, 1, 2}.issuperset(set(com_class)):
                 scan_based_halo_score = 100
@@ -161,6 +169,7 @@ def halo_evalution(df_f_,df_scan_):
     feature_based_halo_score = df_f['class_pred'].apply(lambda x: 1 if x in [0,1,2] else 0)
     df_f['feature_based_halo_score'] = feature_based_halo_score
     df_f['H_score'] = (df_f['scan_based_halo_score'])/300 + (df_f['scan_based_halo_ratio'])/3 + (df_f['feature_based_halo_score'])/3 
+    df_scan['H_score'] = (df_scan['scan_based_halo_score'])/300 + (df_scan['scan_based_halo_ratio'])/3 + (df_scan['class_pred'].apply(lambda x: 1 if x in [0,1,2] else 0))/3
     
     return df_f,df_scan
 
@@ -172,7 +181,12 @@ def create_blank(args,para):
     #如果args.blank为文件夹，则blank_paths为文件夹下所有文件，否则为单个文件，都转化为列表
     if args.blank is not None:
         if os.path.isdir(args.blank):
-            blank_paths = [os.path.join(args.blank, f) for f in os.listdir(args.blank)]
+            #利用walk遍历文件夹下所有文件
+            blank_paths = []
+            for root, dirs, files in os.walk(args.blank):
+                for file in files:
+                    if file.endswith('.mzML'):
+                        blank_paths.append(os.path.join(root, file))
         else:
             blank_paths = [args.blank]
     else:
@@ -180,16 +194,20 @@ def create_blank(args,para):
 
     blank_feature_maps = []
     for file in blank_paths:
-        blank_feature_maps.append(feature_finding(file,para)[2])
+        try:
+            blank_feature_maps.append(feature_finding(file,para)[2])
+        except Exception as e:
+            print(f'Encounter error {e} when processing the file: {file}')
+            with open('./error_files.txt', 'a') as f:
+                f.write(file+'\n')
 
     return blank_feature_maps
 
 def substract_blank(feature_maps,pars):
     feature_grouper = oms.FeatureGroupingAlgorithmKD()
     g_parameters = feature_grouper.getParameters()
-    mz_tol = next((item[1] for item in pars.mass_trace_detection if item[0] == 'mass_error_ppm'), None)
-    g_parameters.setValue('warp:mz_tol', mz_tol)
-    
+    set_para(g_parameters,pars.feature_grouping)
+    feature_grouper.setParameters(g_parameters)
     
     consensus_map = oms.ConsensusMap()
     file_descriptions = consensus_map.getColumnHeaders()
@@ -208,7 +226,7 @@ def substract_blank(feature_maps,pars):
     # oms.ConsensusXMLFile().store("FeatureMatrix.consensusXML", consensus_map)
 
     df = consensus_map.get_df()
-    df.to_csv(r'./result/blank_feature.csv', index=False)
+    
     for i in range(len(files[:-1])):
         df = df[df[files[i]] <= 0.001]
     
@@ -232,38 +250,56 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
     """
     The main workflow for feature finding, isotope processing, prediction, and evaluation
     """
-    df_f,df_scan,feature_map_ = feature_finding(file,pars)
-    df_f.to_csv(r'./result/feature.csv', index=False)
     
-    if blank != None and df_f.shape[0] > 0:
+    # Extract features and scan data
+    df_f, df_scan, feature_map_ = feature_finding(file, pars)
+    
+    if blank is not None and df_f.shape[0] > 0:
         blank.append(feature_map_)
-        df_f_= substract_blank(blank,pars)
-        df_f_.to_csv(r'./result/blank_feature_substracted.csv', index=False)
-        #提取df_f_result中与df_f_中所有RT和mz相同的行
-        #此处还需确认
+        df_f_ = substract_blank(blank, pars)
+
+        # Extract rows in df_f that have the same RT and mz as in df_f_
         df_f = df_f[df_f['RT'].isin(df_f_['RT'])]
         df_f = df_f[df_f['mz'].isin(df_f_['mz'])]
-        
-    df_feature_for_model_input = isotope_processing(df_f,'masstrace_centroid_mz','masstrace_intensity')
+
+    if df_f.shape[0] == 0:
+        return pd.DataFrame(), pd.DataFrame()
+    
+    # Process isotope features
+    df_feature_for_model_input = isotope_processing(df_f, 'masstrace_centroid_mz', 'masstrace_intensity')
     df_feature_for_model_input = anormal_isotope_pattern_detection(df_feature_for_model_input)
-    
-    df_scan = df_scan.loc[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
+
     if df_feature_for_model_input.shape[0] == 0:
-        return df_feature_for_model_input,df_scan
+        return pd.DataFrame(), pd.DataFrame()
     
-    df_scan_for_model_input =isotope_processing(df_scan,'mz_list','inty_list')
+    # Filter scan data
+    df_scan = df_scan.loc[df_scan['feature_id_flatten'].isin(df_feature_for_model_input['feature_id'])]
+
+    # Process isotope features for scan data
+    df_scan_for_model_input = isotope_processing(df_scan, 'mz_list', 'inty_list')
     df_scan_for_model_input = anormal_isotope_pattern_detection(df_scan_for_model_input)
+
+    if df_scan_for_model_input.shape[0] == 0:
+        return pd.DataFrame(), pd.DataFrame()
     
-    df_f = add_predict(df_feature_for_model_input,model_path, pars.features_list)
-    df_scan = add_predict(df_scan_for_model_input,model_path, pars.features_list)
-    df_f_result,df_scan_result = halo_evalution(df_f,df_scan)
-    
-    # df_f_result = df_f_result[df_f_result['H_score'] >= 0.8] # TODO: Need to be adjusted
+    # Add prediction results
+    df_f = add_predict(df_feature_for_model_input, model_path, pars.features_list)
+    df_scan = add_predict(df_scan_for_model_input, model_path, pars.features_list)
+
+    # Evaluate results
+    df_f_result, df_scan_result = halo_evalution(df_f, df_scan)
+
+    # Filter high score results
+    # df_f_result = df_f_result[df_f_result['H_score'] >= pars.FeatureFilter_H_score_threshold]  # TODO: Need to be adjusted
     # df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
 
-    if ms2 != None and df_f_result.shape[0] > 0:
-        ms2_extraction(file,df_f_result)
-    return df_f_result,df_scan_result
+    # Extract MS2 data
+    if ms2 is not None and df_f_result.shape[0] > 0:
+        ms2_extraction(file, df_f_result)
+
+    return df_f_result, df_scan_result
+
+
 
 if __name__ == '__main__':
     pass

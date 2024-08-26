@@ -2,7 +2,7 @@
 
 #mzml文件预测参数
 [FeatureFinding]
-mass_trace_detection = [["mass_error_ppm", 5.0], # default:20.0 Change according to experiment conditions
+mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 Change according to experiment conditions
                         ['min_trace_length', 1.0], # default：5.0 Change according to experiment conditions
                         ['noise_threshold_int', 200.0], # not default Change according to experiment conditions
                         ['chrom_peak_snr',3.0],
@@ -26,7 +26,7 @@ elution_peak_detection = [
 feature_detection = [['local_rt_range',10.0],
                      ['local_mz_range',5.5], # default 6.5 DeepHalo use 6 isotope peaks, so here set 5.5
                      ['chrom_fwhm', 1.0], # default:5.0 Change according to experiment conditions
-                     ['report_summed_ints', 'true'],
+                     ['report_summed_ints', 'false'],
                      ['mz_scoring_13C', 'false'],
                      ['charge_lower_bound', 1],
                      ['charge_upper_bound', 3],
@@ -39,11 +39,42 @@ feature_detection = [['local_rt_range',10.0],
                      ['remove_single_traces', 'true'], # not deault for pyopenms, but manditory for DeepHalo
                      ['report_convex_hulls', 'true'] # not default for pyopenms, but manditory for DeepHalo
                      ]
+
+feature_grouping = [['mz_unit', 'ppm'], # Unit of m/z tolerance
+                    ['nr_partitions', 100], # Number of partitions in m/z space
+                    ['warp:enabled', 'true'],  # Whether or not to internally warp feature RTs using LOWESS transformation before linking (reported RTs in results will always be the original RTs)
+                    ['warp:rt_tol', 100.0],  # Width of RT tolerance window (sec)
+                    ['warp:mz_tol', 10.0], # m/z tolerance (in ppm or Da) default is 5.0
+                    ['warp:max_pairwise_log_fc', 2.0], # default: 0.5, Maximum absolute log10 fold change between two compatible signals during compatibility graph construction. Two signals from different maps will not be connected by an edge in the compatibility graph if absolute log fold change exceeds this limit (they might still end up in the same connected component, however). Note: this does not limit fold changes in the linking stage, only during RT alignment, where we try to find high-quality alignment anchor points. Setting this to a value < 0 disables the FC check.
+                    ['warp:min_rel_cc_size', 0.01], # Only connected components containing compatible features from at least max(2, (warp_min_occur * number_of_input_maps)) input maps are considered for computing the warping function
+                    ['warp:max_nr_conflicts', 0], # Allow up to this many conflicts (features from the same map) per connected component to be used for alignment (-1 means allow any number of conflicts)
+                    ['link:rt_tol', 30.0], # Width of RT tolerance window (sec)
+                    ['link:mz_tol', 10.0], # m/z tolerance (in ppm or Da)
+                    ['link:charge_merging', 'With_charge_zero'], # whether to disallow charge mismatches (Identical), allow to link charge zero (i.e., unknown charge state) with every charge state, or disregard charges (Any)
+                    ['link:adduct_merging', 'Any'], # whether to only allow the same adduct for linking (Identical), also allow linking features with adduct-free ones, or disregard adducts (Any)
+                    ['distance_RT:exponent', 1.0], # Normalized RT differences ([0-1], relative to 'max_difference') are raised to this power (using 1 or 2 will be fast, everything else is REALLY slow)
+                    ['distance_RT:weight', 1.0], # Final RT distances are weighted by this factor
+                    ['distance_MZ:exponent', 2.0], # Normalized ([0-1], relative to 'max_difference') m/z differences are raised to this power (using 1 or 2 will be fast, everything else is REALLY slow)
+                    ['distance_MZ:weight', 1.0], # Final m/z distances are weighted by this factor
+                    ['distance_intensity:exponent', 1.0], # Differences in relative intensity ([0-1]) are raised to this power (using 1 or 2 will be fast, everything else is REALLY slow)
+                    ['distance_intensity:weight', 1.0], # Final intensity distances are weighted by this factor
+                    ['distance_intensity:log_transform', 'enabled'], # Log-transform intensities? If disabled, d = |int_f2 - int_f1| / int_max. If enabled, d = |log(int_f2 + 1) - log(int_f1 + 1)| / log(int_max + 1))
+                    ['LOWESS:span', 0.6666666666666666], # Fraction of datapoints (f) to use for each local regression (determines the amount of smoothing). Choosing this parameter in the range .2 to .8 usually results in a good fit.
+                    ['LOWESS:num_iterations', 3], # Number of robustifying iterations for lowess fitting.
+                    ['LOWESS:delta', -1.0], # Nonnegative parameter which may be used to save computations (recommended value is 0.01 of the range of the input, e.g. for data ranging from 1000 seconds to 2000 seconds, it could be set to 10). Setting a negative value will automatically do this.
+                    ['LOWESS:interpolation_type', 'cspline'], # Method to use for interpolation between datapoints computed by lowess. 'linear': Linear interpolation. 'cspline': Use the cubic spline for interpolation. 'akima': Use an akima spline for interpolation
+                    ['LOWESS:extrapolation_type', 'four-point-linear'] # Method to use for extrapolation outside the data range. 'two-point-linear': Uses a line through the first and last point to extrapolate. 'four-point-linear': Uses a line through the first and second point to extrapolate in front and and a line through the last and second-to-last point in the end. 'global-linear': Uses a linear regression to fit a line through all data points and use it for interpolation.
+                    ]
 # For details on the above parameters, please refer to pyopenms.
 
 [FeatureMapProcessor]
 min_num_of_masstraces = 3 # 含有卤素的化合物最好有3个同位素峰
-min_feature_int = 5000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
+min_feature_int = 1000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
+min_scan_number = 3 # 最少含有的scan个数
+
+[FeatureFilter]
+H_score_threshold = 0.7 # 0-1, higher values indicate higher confidence
+
 
 #训练集相关参数
 [datasets]

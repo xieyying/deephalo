@@ -60,7 +60,7 @@ class FeatureDetection:
         #     mz.append(self.mass_traces_deconvol[i].getCentroidMZ())
         #     rt.append(self.mass_traces_deconvol[i].getCentroidRT())
         #     intensity.append(self.mass_traces_deconvol[i].getIntensity(1))
-        # self.df = pd.DataFrame({'mz':mz,'rt':rt,'intensity':intensity})
+        # self.df = pd.DataFrame({'mz':mz,'RT':rt,'intensity':intensity})
         # self.df.to_csv('mass_traces_deconvol.csv')    
 
     def feature_detection(self):
@@ -112,17 +112,17 @@ class FeatureMapProcessor(FeatureDetection):
         """Process each convex hull"""
         for i in range(len(convex_hulls)):
             if i ==0:
-                df_trace1 = pd.DataFrame(convex_hulls[i].getHullPoints(),columns=['rt','mz_m0'])
-                df_trace1 = df_trace1.drop_duplicates(subset=['rt'],keep='first').sort_values(by='rt')
+                df_trace1 = pd.DataFrame(convex_hulls[i].getHullPoints(),columns=['RT','mz_m0'])
+                df_trace1 = df_trace1.drop_duplicates(subset=['RT'],keep='first').sort_values(by='RT')
             else:
                 hull = convex_hulls[i]
                 hull_points = hull.getHullPoints()
                 hull_points = np.array(hull_points)
-                df_trace = pd.DataFrame(hull_points,columns=['rt',f'mz_m{i}'])
-                df_trace = df_trace.drop_duplicates(subset=['rt'],keep='first').sort_values(by='rt')
-                df_trace1 = pd.merge(df_trace1, df_trace, on='rt', how='outer')
+                df_trace = pd.DataFrame(hull_points,columns=['RT',f'mz_m{i}'])
+                df_trace = df_trace.drop_duplicates(subset=['RT'],keep='first').sort_values(by='RT')
+                df_trace1 = pd.merge(df_trace1, df_trace, on='RT', how='outer')
                 df_trace1 = df_trace1.dropna()
-        df_trace1 = df_trace1.melt(id_vars='rt', var_name='mz_type', value_name='mz')
+        df_trace1 = df_trace1.melt(id_vars='RT', var_name='mz_type', value_name='mz')
         self.df_feature_flatten = pd.concat([self.df_feature_flatten,df_trace1])
         self.charge_f.extend ([feature.getCharge() for _ in range(len(df_trace1))])
         self.feature_id_flatten.extend ([str(feature.getUniqueId()) for _ in range(len(df_trace1))])
@@ -143,8 +143,9 @@ class FeatureMapProcessor(FeatureDetection):
         """Add intensity to the dataframe"""
         mz_error = 0.01  # 为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
         rt_error = 0.01  # 为了保证寻找的数据正确，给一个很小的数，固定即可，不需要变动
+       
         tree = KDTree(self.ion_df[['RT', 'mz']].values)
-        distances, indices = tree.query(self.df_feature_flatten[['rt', 'mz']], distance_upper_bound=np.sqrt(mz_error**2 + rt_error**2 ))
+        distances, indices = tree.query(self.df_feature_flatten[['RT', 'mz']], distance_upper_bound=np.sqrt(mz_error**2 + rt_error**2 ))
         valid_indices = indices[distances != np.inf]
         self.df_feature_flatten['inty'] = self.ion_df.iloc[valid_indices]['inty'].values
         self.df_feature_flatten['mz_raw_data'] = self.ion_df.iloc[valid_indices]['mz'].values  # 只是用于过程中检查找到的数据对不对，目前核对正确，正式版可以删除
@@ -152,7 +153,7 @@ class FeatureMapProcessor(FeatureDetection):
 
     def _grouping_df_based_on_feature_plus_scan(self):
         """Group the dataframe based on FeaturePlusScan"""
-        self.df_scan = self.df_feature_flatten.groupby(['feature_id_flatten', 'rt']).apply(lambda x: pd.Series({
+        self.df_scan = self.df_feature_flatten.groupby(['feature_id_flatten', 'RT']).apply(lambda x: pd.Series({
             'mz_list': x.sort_values('mz_type')['mz'].tolist(),
             'inty_list': x.sort_values('mz_type')['inty'].tolist(),
             'charge': x.sort_values('mz_type')['charge_f'].tolist()[0],
@@ -165,9 +166,15 @@ class FeatureMapProcessor(FeatureDetection):
         """Process the feature map"""
         self.df_feature_ = self.feature_map.get_df()
         self.df_feature_ = self.df_feature_.reset_index()
+        
         for feature in self.feature_map:
-            if feature.getMetaValue("num_of_masstraces") >=self.pars.FeatureMapProcessor_min_num_of_masstraces and feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int:
+            if feature.getMetaValue("num_of_masstraces") >=self.pars.FeatureMapProcessor_min_num_of_masstraces and \
+                feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int and \
+                    len(feature.getConvexHulls()[0].getHullPoints()) > self.pars.FeatureMapProcessor_min_scan_number:
                 self._process_feature(feature)
+
+        if self.df_feature_flatten.empty:
+            return pd.DataFrame(), pd.DataFrame()
         self._transform_to_dataframe()
         self._merge_feature_df()
         self._add_intensity()

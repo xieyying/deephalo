@@ -62,11 +62,11 @@ def process_file(file, args, para, blank=None,ms2=None):
     """
     # Assuming MyMzml uses `para` for its configuration
     df_f_result, df_scan_result = MyMzml(os.path.join(args.input, file), para).work_flow(blank=blank,ms2=ms2)
+    
     # Save results or further processing
     if df_f_result.shape[0] > 0:
         df_f_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_feature.csv')), index=False)
         df_scan_result.to_csv(os.path.join('./result', os.path.basename(file).replace('.mzML','_scan.csv')), index=False)
-    # Assuming saving or further processing logic here
     print(f'Processed {file}')
 
 def pipeline_analyze_mzml(args,para):
@@ -74,8 +74,9 @@ def pipeline_analyze_mzml(args,para):
     path_check('./result')
     blank_featurexml_path = r'./result/blank'
 
-    if args.blank is not None :
-        if os.path.exists(blank_featurexml_path):
+    if args.blank is not None:
+
+        if os.path.exists(blank_featurexml_path) and os.listdir(blank_featurexml_path) and not args.overwrite_blank:
             blank_ =[]
             for file in os.listdir(blank_featurexml_path):
                 b = oms.FeatureMap()
@@ -84,31 +85,33 @@ def pipeline_analyze_mzml(args,para):
                 blank_.append(b)
         else:
             path_check(blank_featurexml_path)
-            print(f"Blank feature_map not found: {blank_featurexml_path}. Creating a new blank feature_map path.")
-            
+            print("Creating a new blank feature_map.")
             blank_ = create_blank(args,para)
             for b in blank_:
                 file_name = os.path.basename(b.getMetaValue("spectra_data")[0].decode()).replace('.mzML','_blank.featureXML')
                 oms.FeatureXMLFile().store(os.path.join(blank_featurexml_path,file_name), b)
     else:
         blank_ = None
-    if args.ms2 == 'True':
-        ms2_ = True
-    else:
-        ms2_ = None
-    #如果args.input是文件
+        
+    ms2_ = True if args.ms2 else None
+    
     if os.path.isfile(args.input):
         process_file(args.input, args, para, blank=blank_,ms2=ms2_)
-    #如果args.input是文件夹
     elif os.path.isdir(args.input):
-        # Process all files in the directory with multiprocessing Pool
-        files_to_process = [file for file in os.listdir(args.input) if file.endswith('.mzML')]
-        # pool = Pool(1)
-        # fun = partial(process_file, args=args, para=para, blank=blank,ms2=ms2)
-        # pool.map(fun, [file for file in files_to_process])
+        files_to_process = []
+        for root, dirs, files in os.walk(args.input):
+            for file in files:
+                if file.endswith('.mzML'):
+                    files_to_process.append(os.path.join(root, file))
+
         for file in files_to_process:
             print(f'Processing {file}')
-            process_file(file, args, para, blank=copy.deepcopy(blank_),ms2=ms2_)
+            try:
+                process_file(file, args, para, blank=copy.deepcopy(blank_),ms2=ms2_)
+            except Exception as e:
+                print(f'Encounter error {e} when processing the file: {file}')
+                with open('./error_files.txt', 'a') as f:
+                    f.write(file+'\n')
 
     else:
         print('Invalid input path')

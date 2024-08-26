@@ -41,16 +41,16 @@ class RunParameters:
         self.mass_trace_detection = config['FeatureFinding']['mass_trace_detection']
         self.elution_peak_detection = config['FeatureFinding']['elution_peak_detection']
         self.feature_detection = config['FeatureFinding']['feature_detection']
+        self.feature_grouping = config['FeatureFinding']['feature_grouping']
 
-        # self.FeatureMapProcessor_mz_error = config['FeatureMapProcessor']['mz_error']
-        # self.FeatureMapProcessor_rt_error = config['FeatureMapProcessor']['rt_error']
         self.FeatureMapProcessor_min_num_of_masstraces = config['FeatureMapProcessor']['min_num_of_masstraces']
         self.FeatureMapProcessor_min_feature_int = config['FeatureMapProcessor']['min_feature_int']
-
+        self.FeatureMapProcessor_min_scan_number = config['FeatureMapProcessor']['min_scan_number']
+        
+        self.FeatureFilter_H_score_threshold = config['FeatureFilter']['H_score_threshold']
 
         #vis参数
         self.vis_path = config['visualization']['path']
-
 
 if __name__ == '__main__':
     parameters = RunParameters()
