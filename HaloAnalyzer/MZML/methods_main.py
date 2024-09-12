@@ -26,7 +26,7 @@ def isotope_processing(df, mz_list_name = 'mz_list', inty_list_name = "inty_list
     
     # get the mz_list and inty_list
     mz_list = df[mz_list_name].values
-    m2_m1 = [i[2] - i[1] for i in mz_list]
+    m2_m1 = [i[2] - i[1] if len(i)>2 else 1.0012 for i in mz_list ]
     m1_m0 = [i[1] - i[0] for i in mz_list]
     
     # Assign new columns to df
@@ -290,8 +290,8 @@ def flow_base(file,model_path,pars,blank=None,ms2=None):
     df_f_result, df_scan_result = halo_evalution(df_f, df_scan)
 
     # Filter high score results
-    # df_f_result = df_f_result[df_f_result['H_score'] >= pars.FeatureFilter_H_score_threshold]  # TODO: Need to be adjusted
-    # df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
+    df_f_result = df_f_result[df_f_result['H_score'] >= pars.FeatureFilter_H_score_threshold]  # TODO: Need to be adjusted
+    df_scan_result = df_scan_result.loc[df_scan_result['feature_id_flatten'].isin(df_f_result['feature_id'])]
 
     # Extract MS2 data
     if ms2 is not None and df_f_result.shape[0] > 0:

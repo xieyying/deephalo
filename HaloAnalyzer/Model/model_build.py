@@ -6,8 +6,6 @@ def model(input_shape,  output_shape):
 
     """自定义模型结构_单输出"""
     input = keras.Input(shape=(input_shape,), name="features1")
-    # share = layers.Dense(32, activation="relu")(input)
-    # share = layers.Dense(64, activation="relu")(share)
     input1 = input[:,:-2]
     input1 = layers.GaussianNoise(0.02)(input1)
    

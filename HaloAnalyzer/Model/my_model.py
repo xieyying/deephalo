@@ -33,7 +33,7 @@ class MyModel:
         初始化模型参数，为方便调用，参数以字典形式传入。
 
         Args:
-        para: dict, 模型参数，包括batch_size, epochs, features, paths, test_path, classes, weight, learning_rate
+        para: class, 模型参数, 包括batch_size, epochs, features, paths, test_path, classes, weight, learning_rate
         """
         self.para = para
         self.input_shape = len(self.para.features_list)
@@ -202,14 +202,11 @@ class MyModel:
         model = my_model(para)
         model.work_flow()
         """
-
         self.load_dataset()
         self.get_model()
         self.train()
         self.show_cm()
         
-
-
 class MyHypermodel(kt.HyperModel):
     """
     自定义超参数搜索类，继承自kt.HyperModel
@@ -243,15 +240,16 @@ class MyHypermodel(kt.HyperModel):
         model: keras.Model, 构建好的模型
         """
         # 定义batch_size的搜索空间
-        hp.Choice('batch_size', [8,16,32,64,128],default=4)
+        hp.Choice('batch_size', [8,16,32,64,128],default=8)
         
         # input layer
         inputs = keras.Input(shape=(self.input_shape,), name="features1")
         
         input1 = inputs[:, :-2]
         #add noise
-        input1 = layers.GaussianNoise(hp.Choice('noise1',[0.01,0.02]))(input1)
+        input1 = layers.GaussianNoise(hp.Choice('noise1',[0.03]))(input1)
         input2 = inputs[:, -2:]
+        input2 = layers.GaussianNoise(hp.Choice('noise2',[0.005]))(input2)
         #scaling
         power = hp.Choice('power_num', [0,5,10,15,20],default=0)
         input2 = tf.pow(input2,power)
@@ -308,23 +306,23 @@ def my_search(para):
     超参数搜索函数
 
     Args:
-    para: dict, 参数字典
+    para: class , 模型参数
 
     Returns:
     None
     """
-    paths = para['paths']
-    features = para['features']
+    paths = para.paths
+    features = para.features_list
     input_shape = len(features)
-    output_shape = para['classes']
-    classes_weight = para['weight']
+    output_shape = para.classes
+    classes_weight = para.classes_weight
     
-    X_train, Y_train, X_test, Y_test = create_dataset(features.copy(),paths,para['batch_size'],model='search')
+    X_train, Y_train, X_test, Y_test = create_dataset(features.copy(),paths,para.train_batch,model='search')
     hypermodel = MyHypermodel(input_shape,output_shape,classes_weight)
     tuner = kt.BayesianOptimization(hypermodel,
                     objective="val_accuracy",
                     max_trials=100, # 50-100
-                    directory="my_search_10_feature_wise_including_hydro_data_20trails_batch_size_from_4_",
+                    directory="noisy_mz_005_inty_03",
                     overwrite=False,
                     project_name="kt_base",
                     num_initial_points=5,)  # 2-10
