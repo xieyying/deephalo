@@ -71,12 +71,11 @@ def process_file(file, args, para, blank=None,ms2=None):
 
 def pipeline_analyze_mzml(args,para):
 
-    path_check('./result')
-    blank_featurexml_path = r'./result/blank'
-
     if args.blank is not None:
+        path_check('./result/blank')
+        blank_featurexml_path = './result/blank'
 
-        if os.path.exists(blank_featurexml_path) and os.listdir(blank_featurexml_path) and not args.overwrite_blank:
+        if os.listdir(blank_featurexml_path) and not args.overwrite_blank:
             blank_ =[]
             for file in os.listdir(blank_featurexml_path):
                 b = oms.FeatureMap()
@@ -84,7 +83,8 @@ def pipeline_analyze_mzml(args,para):
                 oms.FeatureXMLFile().load(os.path.join(blank_featurexml_path,file), b)
                 blank_.append(b)
         else:
-            path_check(blank_featurexml_path)
+            shutil.rmtree(blank_featurexml_path)
+            path_check(blank_featurexml_path) 
             print("Creating a new blank feature_map.")
             blank_ = create_blank(args,para)
             for b in blank_:
@@ -106,12 +106,12 @@ def pipeline_analyze_mzml(args,para):
 
         for file in files_to_process:
             print(f'Processing {file}')
-            try:
-                process_file(file, args, para, blank=copy.deepcopy(blank_),ms2=ms2_)
-            except Exception as e:
-                print(f'Encounter error {e} when processing the file: {file}')
-                with open('./error_files.txt', 'a') as f:
-                    f.write(file+'\n')
+            # try:
+            process_file(file, args, para, blank=copy.deepcopy(blank_),ms2=ms2_)
+            # except Exception as e:
+            #     print(f'Encounter error {e} when processing the file: {file}')
+            #     with open('./error_files.txt', 'a') as f:
+            #         f.write(file+'\n')
 
     else:
         print('Invalid input path')
