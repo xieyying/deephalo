@@ -66,6 +66,6 @@ class PipelineVis:
             st.write(charts[i])
 
 if __name__ == '__main__':
-    project_path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms_noClFe\result\F1_plus_standards\target_compounds\target_rt_mz_feature'
+    project_path = r'C:\Users\xyy\Desktop\python\HaloAnalyzer_training\022_six_dataset_openms_noClFe\result\F1_plus_standards\F1_standard_median_threshold\target_compounds\target_rt_mz_feature'
     pv = PipelineVis(project_path)
     pv.main()

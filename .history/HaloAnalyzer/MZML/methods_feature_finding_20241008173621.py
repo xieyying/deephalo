@@ -210,6 +210,7 @@ class FeatureMapProcessor(FeatureDetection):
                feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int and
                len(feature.getConvexHulls()[0].getHullPoints()) > self.pars.FeatureMapProcessor_min_scan_number
         ]
+        print(f'Filtered {len(filtered_features)} features')
 
         # Process features in batches
         batch_size = 100  # Adjust batch size as needed
@@ -217,6 +218,7 @@ class FeatureMapProcessor(FeatureDetection):
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = list(executor.map(self.process_feature_batch, batches))
+        print('parallel analysis is done')
 
         masstrace_intensity = []
         masstrace_centroid_mz = []
@@ -244,6 +246,15 @@ class FeatureMapProcessor(FeatureDetection):
         self.feature_id = feature_id
         self.charge_f = charge_f
         self.feature_id_flatten = feature_id_flatten
+
+        print('filter feature is done')
+
+        filtered_ids = [
+            str(feature.getUniqueId()) for feature in self.feature_map
+            if self.pars.FeatureMapProcessor_min_num_of_masstraces<=feature.getMetaValue("num_of_masstraces") < 3 and
+               feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int and
+               len(feature.getConvexHulls()[0].getHullPoints()) > self.pars.FeatureMapProcessor_min_scan_number
+        ]
         
         if self.df_feature_flatten.empty:
             return pd.DataFrame(), pd.DataFrame()

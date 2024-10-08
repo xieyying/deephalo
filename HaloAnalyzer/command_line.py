@@ -4,7 +4,7 @@ import argparse
 from .parameters import RunParameters
 import importlib_resources
 from .model_test import timeit
-import logging
+import tomli_w
 
 
 #通过终端选择运行模式
@@ -37,6 +37,9 @@ def main():
         if args.project != None:
             os.chdir(args.project)
             para = RunParameters()
+            #Write all parameters in config.toml
+            with open(r'./config.toml','w') as f:
+                f.write(tomli_w.dumps(para.config))
             if args.run == 'create_dataset':
                 pipeline_dataset(para)
             elif args.run == 'train_model':
