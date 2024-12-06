@@ -1,0 +1,159 @@
+#此文件为配置文件，用于配置模型训绨集相关参数
+
+#mzml文件预测参数
+[FeatureFinding]
+mass_trace_detection = [["mass_error_ppm", 10.0], # default:20.0 Change according to experiment conditions
+                        ['min_trace_length', 1.0], # default：5.0 Change according to experiment conditions
+                        ['noise_threshold_int', 500.0], # not default Change according to experiment conditions
+                        ['chrom_peak_snr',5.0],
+                        ['trace_termination_criterion', 'outlier'],
+                        ['trace_termination_outliers', 5],
+                        ['min_sample_rate', 0.5],
+                        ['quant_method', 'area'],
+                        ['reestimate_mt_sd', 'true'],
+                        ['max_trace_length', -1.0],
+                        ]
+
+elution_peak_detection = [
+                          ['chrom_fwhm', 5.0], # default:5.0
+                          ['chrom_peak_snr',3.0],
+                          ['width_filtering','fixed'],
+                          ['min_fwhm',1.0],
+                          ['max_fwhm',60.0],
+                          ['masstrace_snr_filtering','false'],
+                          ]
+
+feature_detection = [['local_rt_range',10.0],
+                     ['local_mz_range',6.5], # default 6.5 DeepHalo use 6 isotope peaks, so here set 5.5
+                     ['chrom_fwhm', 1.0], # default:5.0 Change according to experiment conditions
+                     ['report_summed_ints', 'false'],
+                     ['mz_scoring_13C', 'false'],
+                     ['charge_lower_bound', 1],
+                     ['charge_upper_bound', 3],
+                     ['enable_RT_filtering', 'true'],
+                     ['use_smoothed_intensities', 'true'],
+                     ['mz_scoring_by_elements', 'true'], # not default for pyopenms,but manditory for DeepHalo
+                     ['elements', 'CHNOPSFClBrINa'], 
+                     ['report_chromatograms', 'false'],
+                     ['isotope_filtering_model','none'], # not default for pyopenms, but manditory for DeepHalo
+                     ['remove_single_traces', 'false'], # not deault for pyopenms, but manditory for DeepHalo
+                     ['report_convex_hulls', 'true'] # not default for pyopenms, but manditory for DeepHalo
+                     ]
+
+feature_grouping = [['mz_unit', 'ppm'], # Unit of m/z tolerance
+                    ['nr_partitions', 100], # Number of partitions in m/z space
+                    ['warp:enabled', 'true'],  # Whether or not to internally warp feature RTs using LOWESS transformation before linking (reported RTs in results will always be the original RTs)
+                    ['warp:rt_tol', 100.0],  # Width of RT tolerance window (sec)
+                    ['warp:mz_tol', 10.0], # m/z tolerance (in ppm or Da) default is 5.0
+                    ['warp:max_pairwise_log_fc', 2.0], # default: 0.5, Maximum absolute log10 fold change between two compatible signals during compatibility graph construction. Two signals from different maps will not be connected by an edge in the compatibility graph if absolute log fold change exceeds this limit (they might still end up in the same connected component, however). Note: this does not limit fold changes in the linking stage, only during RT alignment, where we try to find high-quality alignment anchor points. Setting this to a value < 0 disables the FC check.
+                    ['warp:min_rel_cc_size', 0.01], # Only connected components containing compatible features from at least max(2, (warp_min_occur * number_of_input_maps)) input maps are considered for computing the warping function
+                    ['warp:max_nr_conflicts', 0], # Allow up to this many conflicts (features from the same map) per connected component to be used for alignment (-1 means allow any number of conflicts)
+                    ['link:rt_tol', 30.0], # Width of RT tolerance window (sec)
+                    ['link:mz_tol', 10.0], # m/z tolerance (in ppm or Da)
+                    ['link:charge_merging', 'With_charge_zero'], # whether to disallow charge mismatches (Identical), allow to link charge zero (i.e., unknown charge state) with every charge state, or disregard charges (Any)
+                    ['link:adduct_merging', 'Any'], # whether to only allow the same adduct for linking (Identical), also allow linking features with adduct-free ones, or disregard adducts (Any)
+                    ['distance_RT:exponent', 1.0], # Normalized RT differences ([0-1], relative to 'max_difference') are raised to this power (using 1 or 2 will be fast, everything else is REALLY slow)
+                    ['distance_RT:weight', 1.0], # Final RT distances are weighted by this factor
+                    ['distance_MZ:exponent', 2.0], # Normalized ([0-1], relative to 'max_difference') m/z differences are raised to this power (using 1 or 2 will be fast, everything else is REALLY slow)
+                    ['distance_MZ:weight', 1.0], # Final m/z distances are weighted by this factor
+                    ['distance_intensity:exponent', 1.0], # Differences in relative intensity ([0-1]) are raised to this power (using 1 or 2 will be fast, everything else is REALLY slow)
+                    ['distance_intensity:weight', 1.0], # Final intensity distances are weighted by this factor
+                    ['distance_intensity:log_transform', 'enabled'], # Log-transform intensities? If disabled, d = |int_f2 - int_f1| / int_max. If enabled, d = |log(int_f2 + 1) - log(int_f1 + 1)| / log(int_max + 1))
+                    ['LOWESS:span', 0.6666666666666666], # Fraction of datapoints (f) to use for each local regression (determines the amount of smoothing). Choosing this parameter in the range .2 to .8 usually results in a good fit.
+                    ['LOWESS:num_iterations', 3], # Number of robustifying iterations for lowess fitting.
+                    ['LOWESS:delta', -1.0], # Nonnegative parameter which may be used to save computations (recommended value is 0.01 of the range of the input, e.g. for data ranging from 1000 seconds to 2000 seconds, it could be set to 10). Setting a negative value will automatically do this.
+                    ['LOWESS:interpolation_type', 'cspline'], # Method to use for interpolation between datapoints computed by lowess. 'linear': Linear interpolation. 'cspline': Use the cubic spline for interpolation. 'akima': Use an akima spline for interpolation
+                    ['LOWESS:extrapolation_type', 'four-point-linear'] # Method to use for extrapolation outside the data range. 'two-point-linear': Uses a line through the first and last point to extrapolate. 'four-point-linear': Uses a line through the first and second point to extrapolate in front and and a line through the last and second-to-last point in the end. 'global-linear': Uses a linear regression to fit a line through all data points and use it for interpolation.
+                    ]
+# For details on the above parameters, please refer to pyopenms.
+
+[FeatureMapProcessor]
+min_num_of_masstraces = 1 # 含有卤素的化合物最好有3个同位素峰
+min_feature_int = 10000  # the threshold for further halo-containing analysis. Here the intensity is the sum intensity of a candidate featrue.
+min_scan_number = 3 # 最少含有的scan个数
+
+[FeatureFilter]
+H_score_threshold = 0 # 0-1, higher values indicate higher confidence
+
+
+#训练集相关参数
+[datasets]
+
+paths = [
+ 
+        [   "D:/python/wangmengyuan/dataset/datasets/NPAtlas_download.json",
+        "mol_formula",
+     ],
+    [
+         "D:/python/wangmengyuan/dataset/datasets/CFM-ID_metadata_DTXCID.csv",
+         "MS-Ready_Mol_Formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/hmdb_metabolites.csv",
+         "chemical_formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/uniqueNaturalProduct_formula_from_COCONUT.csv",
+         "Formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/ZINC_merged_data_dereplicated.csv",
+         "formula",
+     ],
+     [
+         "D:/python/wangmengyuan/dataset/datasets/ChEBI_database.csv",
+         "CHEMICAL_DATA",
+     ],
+ 
+]
+#数据库文件路径
+# type_list = ['base','Fe','B','Se','hydro']
+type_list = ['base']
+element_list = ['C','H','O','N','P','Cl','Br','F','I','S','Fe','Se','B']#训练集中所包含的元素种类
+mz_start = 50#质荷比起始值
+mz_end = 3000#质荷比终止值
+rate_for_hydro = [0.33,0.66,0.99,1.32,1.65,2.3,5]#模拟hydro所用的rate
+return_from_max_ints = "True"#是否从最大强度的峰开始返回
+
+#模型训练参数
+[model_data]
+#训练使用的特征列表
+feature_list = [
+            "p0_int",
+            "p1_int",
+            "p2_int",
+            "p3_int",
+            "p4_int",
+            "p5_int",
+            "m2_m1",
+            "m1_m0",   
+        ]
+#训练使用的数据集
+use_add_fe_data = "True"
+use_add_b_data =  "True"
+use_add_se_data =  "True"
+use_hydroisomer_data = "True"
+
+#模型训练参数
+[model_construct]
+train_batch = 8
+val_batch = 8
+classes = 8
+epochs = 10
+learning_rate = 0.0003
+
+#模型训练权重
+[model_construct_class_weight.classes_weight]
+
+0 = 1.31312866e-05 
+1 = 9.63363294e-06
+2 = 5.19189234e-06
+3 = 1.96005410e-05
+4 = 1.79784977e-05
+5 = 2.00924252e-05
+6 = 2.47260967e-06
+7 = 2.87867535e-06
+
+#可视化参数
+[visualization]
+path = "C:\\Users\\xyy\\Desktop\\python\\HaloAnalyzer_training\\test1"

@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 from scipy.spatial import KDTree
 import tensorflow as tf
+from .mass_difference_correction import feature_classifier
+
 
 def set_para(fun_para, para_list):
     """Set the parameters for the feature detection process"""
@@ -32,7 +34,7 @@ class FeatureDetection:
         self.ion_df = self.exp.get_ion_df()
         filter_threshold = next((item[1] for item in self.pars.mass_trace_detection if item[0] == 'noise_threshold_int'), None)
         self.ion_df = self.ion_df[self.ion_df['inty'] > filter_threshold]
-
+        
     def mass_trace_detection(self):
         """Detect the mass traces"""
         mtd = oms.MassTraceDetection()
@@ -82,17 +84,15 @@ class FeatureMapProcessor(FeatureDetection):
         self.masstrace_centroid_mz = []
         self.masstrace_lable = []
         self.average_intensity = []
-        self_feature_hulls_rt = []
-        self_feature_hulls_mz = []
         self.df_feature_hulls_intensities = []
 
-    def _process_feature(self, feature):
+    def _process_feature(self, feature,label):
         """Process each feature"""
-        masstrace_intensity = feature.getMetaValue("masstrace_intensity")
-        masstrace_centroid_mz = feature.getMetaValue("masstrace_centroid_mz")
+        masstrace_intensity = feature.getMetaValue("masstrace_intensity")[label:]
+        masstrace_centroid_mz = feature.getMetaValue("masstrace_centroid_mz")[label:]
         masstrace_lable = feature.getMetaValue("label").split("_")
         feature_id = str(feature.getUniqueId())
-        convex_hulls = feature.getConvexHulls()
+        convex_hulls = feature.getConvexHulls()[label:]
         df_feature_flatten, charge_f, feature_id_flatten = self._process_convex_hulls(convex_hulls, feature)
         return masstrace_intensity, masstrace_centroid_mz, masstrace_lable, feature_id, df_feature_flatten, charge_f, feature_id_flatten
 
@@ -123,7 +123,6 @@ class FeatureMapProcessor(FeatureDetection):
         self.df_feature["feature_id"] = self.feature_id
         self.df_feature["masstrace_intensity"] = self.masstrace_intensity
         self.df_feature["masstrace_centroid_mz"] = self.masstrace_centroid_mz
-        print('transform to dataframe is done')
 
     def _merge_feature_df(self):
         """Merge the feature dataframes"""
@@ -140,20 +139,6 @@ class FeatureMapProcessor(FeatureDetection):
         self.df_feature_flatten['inty'] = self.ion_df.iloc[valid_indices]['inty'].values
         self.df_feature_flatten['mz_raw_data'] = self.ion_df.iloc[valid_indices]['mz'].values  # 只是用于过程中检查找到的数据对不对，目前核对正确，正式版可以删除
         self.df_feature_flatten['rt_raw_data'] = self.ion_df.iloc[valid_indices]['RT'].values  ## 只是用于过程中检查找到的数据对不对，目前核对正确，正式版可以删除
-        print('add intensity is done')
-
-    def _grouping_df_based_on_feature_plus_scan_(self):
-        """Group the dataframe based on FeaturePlusScan"""
-        self.df_scan = self.df_feature_flatten.groupby(['feature_id_flatten', 'RT']).apply(lambda x: pd.Series({
-            'mz_list': x.sort_values('mz_type')['mz'].tolist(),
-            'inty_list': x.sort_values('mz_type')['inty'].tolist(),
-            'charge': x.sort_values('mz_type')['charge_f'].tolist()[0],
-        })).reset_index()
-        print('grouping2 is done')
-        self.df_scan['mz_list'], self.df_scan['inty_list'] = zip(*self.df_scan.apply(lambda row: zip(*sorted(zip(row['mz_list'], row['inty_list']))), axis=1))
-        print('grouping2 is done')
-        mz = [i[0] for i in self.df_scan['mz_list']]
-        self.df_scan['mz'] = mz * self.df_scan['charge'] - (self.df_scan['charge'] - 1) * 1.007276466812
 
     def _grouping_df_based_on_feature_plus_scan(self):
         """Group the dataframe based on FeaturePlusScan"""
@@ -186,37 +171,64 @@ class FeatureMapProcessor(FeatureDetection):
         mz = [i[0] for i in self.df_scan['mz_list']]
         self.df_scan['mz'] = mz * self.df_scan['charge'] - (self.df_scan['charge'] - 1) * 1.007276466812
 
-    def process_feature_batch(self, features):
+    def process_feature_batch(self, features, labels):
         """Process a batch of features and return the results"""
         batch_results = []
-        for feature in features:
-            if feature.getMetaValue("num_of_masstraces") >= self.pars.FeatureMapProcessor_min_num_of_masstraces and \
-               feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int and \
-               len(feature.getConvexHulls()[0].getHullPoints()) > self.pars.FeatureMapProcessor_min_scan_number:
-                result = self._process_feature(feature)
+        for i in range(len(features)):
+            if labels[i] is not None:
+                result = self._process_feature(features[i], labels[i])
                 batch_results.append(result)
+                
         return batch_results
 
     def process(self):
         """Process the feature map"""
         self.df_feature_ = self.feature_map.get_df()
         self.df_feature_ = self.df_feature_.reset_index()
-        print('feature map is done')
-
+        
+        print('feature_map:', len(self.df_feature_))
         # Filter features first
         filtered_features = [
             feature for feature in self.feature_map
-            if feature.getMetaValue("num_of_masstraces") >= self.pars.FeatureMapProcessor_min_num_of_masstraces and
+            if feature.getMetaValue("num_of_masstraces") >= 3 and
+               feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int and
+               len(feature.getConvexHulls()[0].getHullPoints()) > self.pars.FeatureMapProcessor_min_scan_number and 
+                ((feature.getMetaValue("masstrace_centroid_mz")[0])*(feature.getCharge()) <= 2000)]
+        print(self.pars.FeatureMapProcessor_use_mass_difference)
+        if self.pars.FeatureMapProcessor_use_mass_difference == 'none': 
+            labels = [0 for _ in filtered_features]
+        else:
+            labels = [feature_classifier(feature.getMetaValue("masstrace_centroid_mz"), feature.getCharge()) for feature in filtered_features]
+            print('labels:', len(labels))
+
+            
+        
+        iso_1_2_features = [
+            (str(feature.getUniqueId()), feature.getMetaValue("masstrace_intensity"), feature.getMetaValue("masstrace_centroid_mz")) for feature in self.feature_map
+            if 3>feature.getMetaValue("num_of_masstraces") >= self.pars.FeatureMapProcessor_min_num_of_masstraces and
                feature.getIntensity() >= self.pars.FeatureMapProcessor_min_feature_int and
                len(feature.getConvexHulls()[0].getHullPoints()) > self.pars.FeatureMapProcessor_min_scan_number
         ]
+    
+        # Create a DataFrame with feature_id and masstrace_intensity
+        iso_1_2_features_df = pd.DataFrame(iso_1_2_features, columns=['feature_id', 'masstrace_intensity', 'masstrace_centroid_mz'])
 
+        # Filter the original DataFrame and merge with the new DataFrame
+        self.iso_12_features_df = self.df_feature_[self.df_feature_['feature_id'].isin(iso_1_2_features_df['feature_id'])]
+        self.iso_12_features_df = self.iso_12_features_df.merge(iso_1_2_features_df, on='feature_id', how='left')
+
+        if filtered_features == [] and len(iso_1_2_features) == 0:
+            return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        elif filtered_features == [] and len(iso_1_2_features) != 0:
+            return pd.DataFrame(), pd.DataFrame(), self.iso_12_features_df
+            
         # Process features in batches
         batch_size = 100  # Adjust batch size as needed
         batches = [filtered_features[i:i + batch_size] for i in range(0, len(filtered_features), batch_size)]
+        labels  = [labels[i:i + batch_size] for i in range(0, len(labels), batch_size)]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            results = list(executor.map(self.process_feature_batch, batches))
+            results = list(executor.map(self.process_feature_batch, batches, labels))
 
         masstrace_intensity = []
         masstrace_centroid_mz = []
@@ -245,10 +257,8 @@ class FeatureMapProcessor(FeatureDetection):
         self.charge_f = charge_f
         self.feature_id_flatten = feature_id_flatten
         
-        if self.df_feature_flatten.empty:
-            return pd.DataFrame(), pd.DataFrame()
         self._transform_to_dataframe()
         self._merge_feature_df()
         self._add_intensity()
         self._grouping_df_based_on_feature_plus_scan()
-        return self.df_feature, self.df_scan
+        return self.df_feature, self.df_scan, self.iso_12_features_df
