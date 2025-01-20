@@ -51,8 +51,7 @@ class RunParameters:
         self.FeatureFilter_H_score_threshold = config['FeatureFilter']['H_score_threshold']
         self.FeatureFilter_Anomaly_detection_threshold = config['FeatureFilter']['Anomaly_detection_threshold']
 
-        #vis参数
-        self.vis_path = config['visualization']['path']
+
 
 if __name__ == '__main__':
     parameters = RunParameters()

@@ -1,13 +1,10 @@
 import pandas as pd
 import numpy as np
-import tensorflow as tf
 from collections import Counter
 from .methods_feature_finding import FeatureMapProcessor,set_para
 import os
-import keras
 import pyopenms as oms
-from mzml2gnps.methods import *
-import importlib_resources
+from mzml2gnps.methods import pipeline
 
 
 def feature_finding(file,para):
@@ -220,22 +217,22 @@ def halo_evalution(df_f_, df_scan_):
 
     return df_f, df_scan
 
-def create_blank(args,para):
+def create_blank(para):
     """
     Create a blank for feature subtraction
     """
     #处理blank mzml文件
     #如果args.blank为文件夹，则blank_paths为文件夹下所有文件，否则为单个文件，都转化为列表
-    if args.blank is not None:
-        if os.path.isdir(args.blank):
+    if para.args_blank is not None:
+        if os.path.isdir(para.args_blank):
             #利用walk遍历文件夹下所有文件
             blank_paths = []
-            for root, dirs, files in os.walk(args.blank):
+            for root, dirs, files in os.walk(para.args_blank):
                 for file in files:
                     if file.endswith('.mzML'):
                         blank_paths.append(os.path.join(root, file))
         else:
-            blank_paths = [args.blank]
+            blank_paths = [para.args_blank]
     else:
         blank_paths = None
 
@@ -291,7 +288,7 @@ def ms2_extraction(file,df):
     if not os.path.exists(ms2_output):  # Check if directory exists
         os.makedirs(ms2_output)  # Create the directory if it does not exist
     output = os.path.join(ms2_output, os.path.basename(file))
-    pipline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=False)
+    pipeline(file, output, precmz, rt, RTstart, RTend, precmz_tolerance=20,rt_tolerance=0.5,precinty_thre=10,correct=True, merge=False)
     
 def flow_base(file,pars, EPM, EPM_dense_output_model, ADM, blank=None,ms2=None):
     """

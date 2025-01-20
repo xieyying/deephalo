@@ -81,8 +81,8 @@ Anomaly_detection_threshold = 7.015356328085893e-05  # 7.015356328085893e-05 for
 [datasets]
 
 paths = [
-        ["D:/workissues/manuscript/halo_mining/HaloAnalyzer/datasets/training_validation_dataset/proprocessed/augmentation_data/NPatlas_COCONUT_CHON_augmentation_merged.csv",
-        "formula",
+        ["E:/XinBackup/Lab/深度学习相关/数据_public/NPAtlas_download.csv",
+        "compound_molecular_formula",
      ],      
 ]
 
@@ -137,7 +137,3 @@ learning_rate = 0.0001
 5 = 0.0037113
 6 = 0.00155595
 7 = 0.00369361
-
-#可视化参数
-[visualization]
-path = "C:\\Users\\xyy\\Desktop\\python\\HaloAnalyzer_training\\test1"

@@ -18,9 +18,11 @@ dependencies = [
         'pyopenms ==  3.1.0',   
         'scipy ==  1.11.4',  
         'tomli ==  2.0.1',
+        'tomli-w ==  1.0.0',
         'importlib_resources == 6.4.0',
+        'mzml2gnps == 1.0.3',
+        'networkx == 3.4.2',
 ]
 
 [project.scripts]
-halo = "HaloAnalyzer.command_line:main"
-
+halo = "HaloAnalyzer.command_line:app"

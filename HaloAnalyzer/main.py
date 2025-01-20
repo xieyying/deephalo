@@ -15,36 +15,6 @@ import importlib.resources
 import tensorflow as tf
 from tensorflow import keras
 
-def load_trained_model():
-    """
-    Load a trained model and extract the output of a specified layer.
-
-    Args:
-        model_path (str): Path to the trained model file.
-        layer_name (str): Name of the layer to extract the output from.
-
-    Returns:
-        Model: A sub-model that outputs the specified layer's output.
-    """
-    # Load the trained model
-    EPM_path = importlib.resources.files('HaloAnalyzer') / 'models/deephalo_ann_model.h5'
-    EPM = keras.models.load_model(EPM_path)
-
-    # Ensure the layer name is correct
-    try:
-        target_layer = EPM.get_layer('dense')
-    except ValueError:
-        print(f"Layer name 'dense' not found. Please check the model's layer names.")
-    
-    # Create a sub-model
-    EPM_dense_output_model = keras.models.Model(inputs=EPM.input, outputs=target_layer.output)
-    
-    # Anomaly Detection model
-    ADM_path = importlib.resources.files('HaloAnalyzer') / 'models/anomaly_detection_model.h5'
-    ADM_model = keras.models.load_model(ADM_path)
-    
-    return EPM, EPM_dense_output_model, ADM_model,
-
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
     """
@@ -62,7 +32,7 @@ def pipeline_dataset(para) -> None:
         raw_data.work_flow(para,type)
 
 #Model Pipeline
-def pipeline_model(args,para) -> None:
+def pipeline_model(para) -> None:
     # pass
     # """
     # train model and save model
@@ -85,20 +55,50 @@ def pipeline_model(args,para) -> None:
     para.paths = paths
     para.test_path = './dataset/test.csv'
 
-    if args.mode == 'manual':
+    if para.args_mode == 'manual':
         model = MyModel(para)
         model.work_flow()
-    elif args.mode == 'search':
+    elif para.args_mode == 'search':
         model = my_search(para)
 
+def load_trained_model():
+    """
+    Load a trained model and extract the output of a specified layer.
 
-def process_file(file, args, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=None):
+    Args:
+        model_path (str): Path to the trained model file.
+        layer_name (str): Name of the layer to extract the output from.
+
+    Returns:
+        Model: A sub-model that outputs the specified layer's output.
+    """
+    # Load the trained model
+    # EPM_path = importlib.resources.files('HaloAnalyzer') / 'models/deephalo_ann_model.h5'
+    EPM_path = importlib.resources.files('HaloAnalyzer') / 'models/deephalo_ann_model.h5'
+    EPM = keras.models.load_model(EPM_path)
+
+    # Ensure the layer name is correct
+    try:
+        target_layer = EPM.get_layer('dense')
+    except ValueError:
+        print(f"Layer name 'dense' not found. Please check the model's layer names.")
+    
+    # Create a sub-model
+    EPM_dense_output_model = keras.models.Model(inputs=EPM.input, outputs=target_layer.output)
+    
+    # Anomaly Detection model
+    ADM_path = importlib.resources.files('HaloAnalyzer') / 'models/anomaly_detection_model.h5'
+    ADM_model = keras.models.load_model(ADM_path)
+    
+    return EPM, EPM_dense_output_model, ADM_model,
+
+def process_file(file, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=None):
     """
     Function to process a single .mzML file, now correctly receiving `para` and other arguments.
     """
 
     # Assuming MyMzml uses `para` for its configuration
-    df_f_result, df_scan_result,iso_12_df,df_Se,df_B,df_Fe= MyMzml(os.path.join(args.input, file), para).work_flow(EPM, EPM_dense_output_model, ADM, blank=blank,ms2=ms2)
+    df_f_result, df_scan_result,iso_12_df,df_Se,df_B,df_Fe= MyMzml(os.path.join(para.args_input, file), para).work_flow(EPM, EPM_dense_output_model, ADM, blank=blank,ms2=ms2)
 
     # Save results or further processing
     if df_f_result.shape[0] > 0:
@@ -116,7 +116,7 @@ def process_file(file, args, para,  EPM, EPM_dense_output_model, ADM, blank=None
         iso_12_df.to_csv(os.path.join('./result/iso_12', os.path.basename(file).lower().replace('.mzml', '_1_or_2_iso.csv')), index=False)
     print(f'Processed {file}')
 
-def pipeline_analyze_mzml(args,para):
+def pipeline_analyze_mzml(para):
     
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
     
@@ -126,11 +126,11 @@ def pipeline_analyze_mzml(args,para):
     path_check('./result/Fe')
     path_check('./result/iso_12')
     
-    if args.blank is not None:
+    if para.args_blank is not None:
         path_check('./result/blank')
         blank_featurexml_path = './result/blank'
 
-        if os.listdir(blank_featurexml_path) and not args.overwrite_blank:
+        if os.listdir(blank_featurexml_path) and not para.args_overwrite_blank:
             blank_ =[]
             for file in os.listdir(blank_featurexml_path):
                 b = oms.FeatureMap()
@@ -141,22 +141,22 @@ def pipeline_analyze_mzml(args,para):
             shutil.rmtree(blank_featurexml_path)
             path_check(blank_featurexml_path) 
             print("Creating a new blank feature_map.")
-            blank_ = create_blank(args,para)
+            blank_ = create_blank(para)
             for b in blank_:
                 file_name = os.path.basename(b.getMetaValue("spectra_data")[0].decode()).replace('.mzML','_blank.featureXML').replace('.mzml','_blank.featureXML')
                 oms.FeatureXMLFile().store(os.path.join(blank_featurexml_path,file_name), b)
     else:
         blank_ = None
         
-    ms2_ = True if args.ms2 else None
+    ms2_ = True if para.args_ms2 else None
     
-    if os.path.isfile(args.input):
-        process_file(args.input, args, para, EPM_model, EPM_dense_output_model, ADM_model, blank=blank_,ms2=ms2_)
+    if os.path.isfile(para.args_input):
+        process_file(para.args_input, para, EPM_model, EPM_dense_output_model, ADM_model, blank=blank_,ms2=ms2_)
    
-    elif os.path.isdir(args.input):
+    elif os.path.isdir(para.args_input):
         
         files_to_process = []
-        for root, dirs, files in os.walk(args.input):
+        for root, dirs, files in os.walk(para.args_input):
             for file in files:
                 if file.lower().endswith(('.mzml')):
                     files_to_process.append(os.path.join(root, file))
@@ -164,7 +164,7 @@ def pipeline_analyze_mzml(args,para):
         for file in files_to_process:
             print(f'Processing {file}')
             try:
-                process_file(file, args, para, EPM_model, EPM_dense_output_model, ADM_model,blank=copy.deepcopy(blank_),ms2=ms2_)
+                process_file(file, para, EPM_model, EPM_dense_output_model, ADM_model,blank=copy.deepcopy(blank_),ms2=ms2_)
                 n += 1
                 print(f'Processed {n} files in total.')
             except Exception as e:
@@ -175,6 +175,55 @@ def pipeline_analyze_mzml(args,para):
     else:
         print('Invalid input path')
         return
+
+def pipeline_dereplication(para):
+    #创建排重数据集
+    #如果使用基础数据库，加载预处理完的基础数据库
+    # import pandas as pd
+    # base_dereplication_database_path = importlib.resources.files('HaloAnalyzer')/ 'Dereplication/Base_Dereplication_Databases/Demo_dereplication_database_for_dereplication.csv'
+    # base_dereplication_database = pd.read_csv(base_dereplication_database_path)
+    #如果使用用户数据库，将用户数据库文件进行转化为用户数据库
+    
+    if para.args_user_database:
+        from .Dereplication.database_processing import DereplicationDataset
+        user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
+    else:
+        raise FileNotFoundError('No user database provided')
+    # #如过两种数据库都要使用，将两种数据库合并
+    # if para.args_use_base_database and para.args_user_database!= '[]':
+    #     dereplication_databases = {'user_database':user_dereplication_database, 'base_database':base_dereplication_database}
+    # elif para.args_use_base_database:
+    #     dereplication_databases = {'base_database':base_dereplication_database}
+    # elif para.args_user_database:
+    #     dereplication_databases = {'user_database':user_dereplication_database}
+    # else:
+    #     print('No database provided')
+    dereplication_databases = {'user_database':user_dereplication_database}
+
+    #进行排重，将结果输入到dereplication文件夹中
+    from .Dereplication.dereplication import Dereplication
+    Deephalo_output_result = os.path.join(para.args_project_path, 'result/halo')
+    #确认Deephalo输出文件夹中的feature文件是否存在
+    if not os.path.exists(Deephalo_output_result):
+        raise FileNotFoundError(f'{Deephalo_output_result} does not exist,plesae check the path')
+
+    files = os.listdir(Deephalo_output_result)
+    Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
+    dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
+    os.makedirs(dereplication_folder, exist_ok=True)
+
+    import pandas as pd
+    for Deephalo_output in Deephalo_outputs:
+        Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
+        df = Dereplication(dereplication_databases, Deephalo_output_df,50).workflow()
+        df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
+
+    #如果提供了GNPS分析分件，将排重及分析结果整合到GNPS文件中，输出新的网络文件
+    if para.args_GNPS_folder != None:
+        from .Dereplication.method_main import add_deephalo_results_to_graphml
+        add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
+    else:
+        print('No GNPS folder provided')
 
 if __file__ == '__main__':
     pass

@@ -1,5 +1,6 @@
-#创建统计函数运行时间的修饰器
 import time
+import os
+#创建统计函数运行时间的修饰器
 def timeit(method):
     """
     统计函数运行时间的修饰器
@@ -13,8 +14,7 @@ def timeit(method):
         return result
     return timed
 
-import os
-
+#创建路径检查函数
 def path_check(path):
     if not os.path.exists(path):
         os.makedirs(path)

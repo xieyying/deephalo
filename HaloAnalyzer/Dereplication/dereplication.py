@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import numpy as np
+from .method_main import cosine_similarity, combine_columns
 
 class Dereplication:
     def __init__(self, databases, Deephalo_output,error_ppm) -> None:
@@ -16,10 +17,7 @@ class Dereplication:
         data (dict): {'dataname': DataFrame of the database}.
         Deephalo_output (pd.DataFrame): Deephalo output results.
         """
-        self.data = {}
-        for dataname, path in databases.items():
-            data = pd.read_csv(path, low_memory=False, encoding='utf-8-sig')
-            self.data[dataname] = data
+        self.data = databases
         self.Deephalo_output = Deephalo_output
         self.error_ppm = error_ppm
 
@@ -34,19 +32,14 @@ class Dereplication:
             # data['M+NH4'] = pd.to_numeric(data['M+NH4'], errors='coerce')
             
             # Rename columns to 'compound_names' if necessary
-            if 'compound_name' in data.columns:
-                data = data.rename(columns={'compound_name': 'compound_names'})
-            elif 'names' in data.columns:
-                data = data.rename(columns={'names': 'compound_names'})
-            elif 'compound' in data.columns:
-                data = data.rename(columns={'compound': 'compound_names'})
-            elif 'compounds' in data.columns:
-                data = data.rename(columns={'compounds': 'compound_names'})
-            elif 'compound_names' in data.columns:
-                pass
-            else:
-                raise ValueError('The database does not contain a column with compound names.')
-            
+            for each in ['compound_names', 'names', 'compound', 'compounds']:
+                if each in data.columns:
+                    data = data.rename(columns={each: 'compound_names'})
+                    break
+                else:
+                    raise ValueError('The database does not contain a column with compound names.')
+
+
             for idx, row in self.Deephalo_output.iterrows():
                 mz = (row['mz']*row['charge'])-((row['charge']-1)*1.007825)
                 # Find compounds in the database that are close to the mz value in Deephalo_output
@@ -127,40 +120,7 @@ class Dereplication:
         df = self.merge_columns(df, datanames)
         return df
           
-def cosine_similarity(inty_list1, inty_list2):
-    """
-    Calculate the cosine similarity between inty_list1 and inty_list2.
 
-    Parameters:
-    inty_list1 (list or array): First list of intensities.
-    inty_list2 (list or array): Second list of intensities.
-
-    Returns:
-    float: Cosine similarity between inty_list1 and inty_list2.
-    """
-    # Convert lists to numpy arrays of float type
-    inty_list1 = np.array(inty_list1, dtype=float)
-    inty_list2 = np.array(inty_list2, dtype=float)
-
-    # Calculate the dot product
-    dot_product = np.dot(inty_list1, inty_list2)
-    
-    # Calculate the norms (magnitudes) of the vectors
-    norm1 = np.linalg.norm(inty_list1)
-    norm2 = np.linalg.norm(inty_list2)
-    
-    # Calculate the cosine similarity
-    if norm1 == 0 or norm2 == 0:
-        return 0.0  # Avoid division by zero
-    cosine_similarity = dot_product / (norm1 * norm2)
-    
-    return cosine_similarity
-
-def combine_columns( row, columns):
-    for col in columns:
-        if row[col] != 'None' and row[col] != 1e6:
-            return row[col]
-    return 'None' if 'error_ppm' not in columns else 1e6
 
 
 if __name__ == '__main__':
@@ -176,12 +136,12 @@ if __name__ == '__main__':
     files = os.listdir(Deephalo_output_result)
     Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
     dereplication_folder = Deephalo_output_result.replace('test', 'dereplication')
-    # os.makedirs(dereplication_folder, exist_ok=True)
+    os.makedirs(dereplication_folder, exist_ok=True)
     
-    # for Deephalo_output in Deephalo_outputs:
-    #     Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
-    #     df = Dereplication(databases, Deephalo_output_df,50).workflow()
-    #     df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
+    for Deephalo_output in Deephalo_outputs:
+        Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
+        df = Dereplication(databases, Deephalo_output_df,50).workflow()
+        df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
     
     dereplication_folder_2 = Deephalo_output_result.replace('test', 'dereplication_2')
     os.makedirs(dereplication_folder_2, exist_ok=True)

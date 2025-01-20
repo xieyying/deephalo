@@ -1,11 +1,8 @@
 import pandas as pd
-from molmass import Formula
 from multiprocessing import Pool
-from HaloAnalyzer.Dataset.methods_main import isotope_simulation
-from functools import partial
-import os
+from ..Dataset.methods_main import isotope_simulation
 
-class Dataset:
+class DereplicationDataset:
     def __init__(self, path, key) -> None:
         """
         This class is used to create a dataset from a given file.
@@ -75,11 +72,8 @@ class Dataset:
         self.create_dataset('base')
         
         # Save the dataset to the specified path
-        self.df_data.to_csv(self.path.replace('.csv', '_for_dereplication.csv'))
+        return self.df_data
 
 if __name__ == '__main__':
-    # Create a Dataset object and execute the workflow
-    database_file = r'D:\workissues\manuscript\halo_mining\mining\dereplication_database\FunGBE\FunGBE_V202412.csv'
-    test = Dataset(database_file, 'formula')
-    test.work_flow()
+    pass
 
