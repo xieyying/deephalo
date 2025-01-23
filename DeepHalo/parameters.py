@@ -6,7 +6,7 @@ class RunParameters:
     读取config.toml文件中的参数
     """
     def __init__(self):
-        file_path = importlib_resources.files('HaloAnalyzer') / 'config.toml'
+        file_path = importlib_resources.files('DeepHalo') / 'config.toml'
         with open(file_path,'rb') as f:
             config = tomli.load(f)
 

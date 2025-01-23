@@ -1,6 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from HaloAnalyzer.main import pipeline_dataset,pipeline_model,pipeline_analyze_mzml,pipeline_dereplication
+from DeepHalo.main import pipeline_dataset,pipeline_model,pipeline_analyze_mzml,pipeline_dereplication
 from .parameters import RunParameters
 from .model_test import timeit
 import typer

@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from HaloAnalyzer.Dereplication.dereplication import Dereplication
+from DeepHalo.Dereplication.dereplication import Dereplication
 
 
 if __name__ == '__main__':

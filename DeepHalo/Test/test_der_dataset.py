@@ -1,4 +1,4 @@
-from HaloAnalyzer.Dereplication.Database_processing import DereplicationDataset
+from DeepHalo.Dereplication.Database_processing import DereplicationDataset
 
 if __name__ == '__main__':
     # Create a Dataset object and execute the workflow

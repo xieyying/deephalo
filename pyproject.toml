@@ -4,8 +4,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "HaloAnalyzer"
-version = "0.1.0"
+name = "DeepHalo"
+version = "0.0.1"
 dependencies = [
         'pandas ==  2.0.3',
         'numpy ==  1.22.0',     
@@ -25,4 +25,4 @@ dependencies = [
 ]
 
 [project.scripts]
-halo = "HaloAnalyzer.command_line:app"
+halo = "DeepHalo.command_line:app"

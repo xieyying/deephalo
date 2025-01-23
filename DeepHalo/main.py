@@ -5,14 +5,11 @@ import copy
 from .Dataset.my_dataset import Dataset,Datasets
 from .Model.my_model import MyModel,my_search
 from .MZML.my_mzml import MyMzml
-from HaloAnalyzer.parameters import RunParameters
 from .model_test import path_check
 from .MZML.methods_main import create_blank
 import pyopenms as oms
 from multiprocessing import Pool
-from functools import partial
 import importlib.resources
-import tensorflow as tf
 from tensorflow import keras
 
 #Dataset Pipeline
@@ -74,7 +71,7 @@ def load_trained_model():
     """
     # Load the trained model
     # EPM_path = importlib.resources.files('HaloAnalyzer') / 'models/deephalo_ann_model.h5'
-    EPM_path = importlib.resources.files('HaloAnalyzer') / 'models/deephalo_ann_model.h5'
+    EPM_path = importlib.resources.files('DeepHalo') / 'models/deephalo_ann_model.h5'
     EPM = keras.models.load_model(EPM_path)
 
     # Ensure the layer name is correct
@@ -87,7 +84,7 @@ def load_trained_model():
     EPM_dense_output_model = keras.models.Model(inputs=EPM.input, outputs=target_layer.output)
     
     # Anomaly Detection model
-    ADM_path = importlib.resources.files('HaloAnalyzer') / 'models/anomaly_detection_model.h5'
+    ADM_path = importlib.resources.files('DeepHalo') / 'models/anomaly_detection_model.h5'
     ADM_model = keras.models.load_model(ADM_path)
     
     return EPM, EPM_dense_output_model, ADM_model,
