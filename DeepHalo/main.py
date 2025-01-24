@@ -11,6 +11,10 @@ import pyopenms as oms
 from multiprocessing import Pool
 import importlib.resources
 from tensorflow import keras
+from .Dereplication.database_processing import DereplicationDataset
+from .Dereplication.dereplication import Dereplication
+import pandas as pd
+from .Dereplication.method_main import add_deephalo_results_to_graphml
 
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
@@ -174,53 +178,32 @@ def pipeline_analyze_mzml(para):
         return
 
 def pipeline_dereplication(para):
-    #创建排重数据集
-    #如果使用基础数据库，加载预处理完的基础数据库
-    # import pandas as pd
-    # base_dereplication_database_path = importlib.resources.files('HaloAnalyzer')/ 'Dereplication/Base_Dereplication_Databases/Demo_dereplication_database_for_dereplication.csv'
-    # base_dereplication_database = pd.read_csv(base_dereplication_database_path)
-    #如果使用用户数据库，将用户数据库文件进行转化为用户数据库
-    
-    if para.args_user_database:
-        from .Dereplication.database_processing import DereplicationDataset
-        user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
-    else:
-        raise FileNotFoundError('No user database provided')
-    # #如过两种数据库都要使用，将两种数据库合并
-    # if para.args_use_base_database and para.args_user_database!= '[]':
-    #     dereplication_databases = {'user_database':user_dereplication_database, 'base_database':base_dereplication_database}
-    # elif para.args_use_base_database:
-    #     dereplication_databases = {'base_database':base_dereplication_database}
-    # elif para.args_user_database:
-    #     dereplication_databases = {'user_database':user_dereplication_database}
-    # else:
-    #     print('No database provided')
-    dereplication_databases = {'user_database':user_dereplication_database}
-
-    #进行排重，将结果输入到dereplication文件夹中
-    from .Dereplication.dereplication import Dereplication
-    Deephalo_output_result = os.path.join(para.args_project_path, 'result/halo')
     #确认Deephalo输出文件夹中的feature文件是否存在
+    Deephalo_output_result = os.path.join(para.args_project_path, 'result/halo')
     if not os.path.exists(Deephalo_output_result):
         raise FileNotFoundError(f'{Deephalo_output_result} does not exist,plesae check the path')
 
+    #读取Deephalo输出文件夹中的feature文件
     files = os.listdir(Deephalo_output_result)
     Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
-    dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
-    os.makedirs(dereplication_folder, exist_ok=True)
 
-    import pandas as pd
-    for Deephalo_output in Deephalo_outputs:
-        Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
-        df = Dereplication(dereplication_databases, Deephalo_output_df,50).workflow()
-        df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
+    #如果提供了用户数据库，用用户数据库进行排重
+    if para.args_user_database:
+        user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
+        dereplication_databases = {'user_database':user_dereplication_database}
+        dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
+        os.makedirs(dereplication_folder, exist_ok=True)
+        for Deephalo_output in Deephalo_outputs:
+            Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
+            df = Dereplication(dereplication_databases, Deephalo_output_df,50).workflow()
+            df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
 
     #如果提供了GNPS分析分件，将排重及分析结果整合到GNPS文件中，输出新的网络文件
     if para.args_GNPS_folder != None:
-        from .Dereplication.method_main import add_deephalo_results_to_graphml
+        if para.args_user_database == None:
+            dereplication_folder = Deephalo_output_result
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
-    else:
-        print('No GNPS folder provided')
+        print('The results have been added to the GNPS file')
 
 if __file__ == '__main__':
     pass

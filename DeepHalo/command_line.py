@@ -61,6 +61,8 @@ def dereplication(
     """
     Dereplication
     """
+    if GNPS_folder == None and user_database == None:
+        raise ValueError('Please provide the GNPS file or user database')
     para.args_project_path = project_path
     para.args_GNPS_folder = GNPS_folder
     para.args_user_database = user_database
