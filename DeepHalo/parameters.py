@@ -5,8 +5,11 @@ class RunParameters:
     """
     读取config.toml文件中的参数
     """
-    def __init__(self):
-        file_path = importlib_resources.files('DeepHalo') / 'config.toml'
+    def __init__(self, user_config=None):
+        if user_config is not None:
+            file_path = user_config
+        else:
+            file_path = importlib_resources.files('DeepHalo') / 'config.toml'
         with open(file_path,'rb') as f:
             config = tomli.load(f)
 

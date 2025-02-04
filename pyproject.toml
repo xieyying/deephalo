@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "DeepHalo"
-version = "0.0.1"
+version = "0.0.5"
 dependencies = [
         'pandas ==  2.0.3',
         'numpy ==  1.22.0',     
@@ -22,7 +22,19 @@ dependencies = [
         'importlib_resources == 6.4.0',
         'mzml2gnps == 1.0.3',
         'networkx == 3.4.2',
+        'typer == 0.15.1',
 ]
+
+readme = "README.md"
 
 [project.scripts]
 halo = "DeepHalo.command_line:app"
+
+[tool.setuptools.packages.find]
+exclude = ["DeepHalo.Test"]
+
+[tool.setuptools.package-data]
+# Include all configuration files
+"DeepHalo" = ["*.toml"]
+# Include all h5 files in the DeepHalo\model directory
+"DeepHalo.models" = ["*.h5"]

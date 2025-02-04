@@ -8,34 +8,38 @@ import typer
 #通过终端选择运行模式
 __version__ = '0.9'
 
-para = RunParameters()
 app = typer.Typer()
 
 @app.command()
 def create_dataset(
     project_path: str = typer.Argument(..., help="The path of the project"),
+    user_config: str = typer.Option(None, '-c', '--config', help='The path of the user config file'),
     ):
     """
     Create a Dataset object and execute the workflow
     """
+    para = RunParameters(user_config=user_config)
     os.chdir(project_path)
     pipeline_dataset(para)
 
 @app.command()
 def create_model(
     project_path: str = typer.Argument(..., help="The path of the project"),
+    user_config: str = typer.Option(None, '-c', '--config', help='The path of the user config file'),
     mode: str = typer.Option('manual', '-m', '--mode', help="The mode of the training process: manual or search"),
     ):
     """
     Create a Model object and execute the workflow
     """
     os.chdir(project_path)
+    para = RunParameters(user_config=user_config)
     para.args_mode = mode
     pipeline_model(para)
 
 @app.command()
 def analyze_mzml(
     project_path: str = typer.Argument(..., help="The path of the project"),
+    user_config: str = typer.Option(None, '-c', '--config', help='The path of the user config file'),
     input_path: str = typer.Argument(..., help="The path of the input mzML file"),
     blank_path: str = typer.Option(None, '-b', '--blank', help='input directory of blank mzML files for subtraction'),
     overwrite_blank: bool = typer.Option(False, '-ob', '--overwrite-blank', help='overwrite blank mode: True or False'),
@@ -45,6 +49,7 @@ def analyze_mzml(
     Analyze mzML files
     """
     os.chdir(project_path)
+    para = RunParameters(user_config=user_config)
     para.args_input = input_path
     para.args_blank = blank_path
     para.args_overwrite_blank = overwrite_blank
@@ -54,6 +59,7 @@ def analyze_mzml(
 @app.command()
 def dereplication(
     project_path: str = typer.Argument(..., help="The path of the project"),
+    user_config: str = typer.Option(None, '-c', '--config', help='The path of the user config file'),
     GNPS_folder: str = typer.Option(None, '-g', '--GNPS-file', help='The path of the GNPS file'),
     user_database: str = typer.Option(None, '-ud', '--user-database', help='The path of the user database and key of the column'),
     user_database_key: str = typer.Option(None, '-udk', '--user-database-key', help='The key of the column in the user database'),
@@ -63,6 +69,7 @@ def dereplication(
     """
     if GNPS_folder == None and user_database == None:
         raise ValueError('Please provide the GNPS file or user database')
+    para = RunParameters(user_config=user_config)
     para.args_project_path = project_path
     para.args_GNPS_folder = GNPS_folder
     para.args_user_database = user_database
