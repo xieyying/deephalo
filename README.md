@@ -84,66 +84,6 @@ Binary installers of DeepHalo are available at the Python Package Index (PyPI).
 
 ## Installation
 
-# DeepHalo: High-Confidence Detection of Halogenated Compounds in Untargeted Metabolomics
-
-**An open-source pipeline for mining chlorine/bromine-containing natural products from complex HRMS data**
-
----
-
-## Core Innovations
-
-### Halogen Prediction
-- **Element Prediction Model (EPM)**  
-  - Bimodal DNN Architecture  
-  - Mass range: 50-2000 Da (wider coverage than existing tools)  
-  - Detects Cl/Br with interference resistance to B/Se/Fe/dehydro isomers  
-
-### Isotope Validation
-- **Dual detection system**:  
-  - Statistical rule-based filtering  
-  - Autoencoder Deep Model (ADM) for anomaly detection  
-
-### Multi-Level Scoring
-- **H-score integration**:  
-  - Feature centroid analysis  
-  - Scan-level validation  
-  - Eliminates oversaturation/peak overlap errors  
-
-### Dereplication
-- **Dual-strategy approach**:  
-  1. Custom database matching:  
-     - Exact mass  
-     - Halogen pattern  
-     - Isotope intensity similarity  
-  2. MS2 networking via GNPS  
-  - Improved identification efficiency  
-
----
-
-## Technical Advantages
-- **Throughput**: Batch analysis of LC-MS/MS datasets with rapid processing times (<30 sec/sample) on standard laptop hardware (Core i9, 16GB RAM)  
-- **Accuracy**: >98.6% precision in halogenated compound detection across simulated and experimental LC-MS datasets (n=4)  
-- **Interoperability**:  
-  - Input: `.mzML`  
-  - Output: Cytoscape-compatible network files  
-
----
-
-## Target Applications
-- Natural product discovery  
-- Halogenated metabolite annotation  
-
----
-
-## Key Differentiators
-1. First tool integrating scan-level halogen validation  
-2. Bimodal DNN Architecture for element prediction  
-3. Dual dereplication combining:  
-   - Custom database matching  
-   - MS2 networking  
-
----
-
 ## Installation
 
 **Note**  
@@ -157,13 +97,11 @@ Python 3.10 is required. Verify your Python version with:
 pip install DeepHalo
 ``` 
 ### Install from Local Wheel
-- 
 ```bash
 pip install path/to/DeepHalo-xxx.whl
 ```
 
 ### Install from Source
-- In the DeepHalo directory, installing in development mode:
 ```bash
 git clone https://github.com/xieyying/DeepHalo.git
 cd DeepHalo
