@@ -1,6 +1,5 @@
 # DeepHalo
-
--**Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Natural Products in Complex HRMS Data**
+   **Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Natural Products in Complex HRMS Data**
 ---
 ##  Core Innovations
 
@@ -82,6 +81,7 @@ Binary installers of DeepHalo are available at the Python Package Index (PyPI).
 - typer == 0.15.1
 
 ## Installation
+
 
 **Note**  
 Python 3.10 is required. Verify your Python version with:  
