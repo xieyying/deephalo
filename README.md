@@ -9,15 +9,15 @@
   - Mass range: 50-2000 Da (wider coverage than existing tools)  
   - Detects Cl/Br with interference resistance to B/Se/Fe/dehydro isomers  
 
-### Isotope Validation
-- **Dual detection system**:  
-  - Statistical rule-based filtering  
-  - Autoencoder Deep Model (ADM) for anomaly detection  
+### Isotope patterns Validation
+- **Dual validation system**:  
+  - Statistical rule-based correction in mass dimension  
+  - Autoencoder Deep Model (ADM) for anomaly detection in intensity dimension
 
 ### Multi-Level Scoring
 - **H-score integration**:  
-  - Feature centroid analysis  
-  - Scan-level validation  
+  1. Feature centroid analysis  
+  2. Scan-level validation  
   - Eliminates oversaturation/peak overlap errors  
 
 ### Dereplication
@@ -79,8 +79,6 @@ Binary installers of DeepHalo are available at the Python Package Index (PyPI).
 - mzml2gnps == 1.0.3
 - networkx == 3.4.2
 - typer == 0.15.1
-
-## Installation
 
 ## Installation
 
