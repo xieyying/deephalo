@@ -1,5 +1,6 @@
 # DeepHalo
-**Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Natural Products in Complex HRMS Data**
+
+-**Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Natural Products in Complex HRMS Data**
 ---
 ##  Core Innovations
 
