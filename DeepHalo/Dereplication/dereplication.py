@@ -32,7 +32,8 @@ class Dereplication:
             # data['M+NH4'] = pd.to_numeric(data['M+NH4'], errors='coerce')
             
             # Rename columns to 'compound_names' if necessary
-            for each in ['compound_names', 'names', 'compound', 'compounds']:
+            for each in ['compound_names', 'names', 'compound', 'compounds', 'name', 'Name', 'Compound', 'Compounds', 
+                         'Compound_name', 'Compound_names', 'Compound Name', 'Compound Names', 'Compound name', 'Compound names','Compound_names']:
                 if each in data.columns:
                     data = data.rename(columns={each: 'compound_names'})
                     break

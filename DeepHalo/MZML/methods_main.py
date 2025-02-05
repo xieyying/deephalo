@@ -75,7 +75,7 @@ def add_predict(df,EPM,features_list):
     classes_pred = np.argmax(res, axis=1)
     # Add the prediction results to df_features
     df_ = df.copy()
-    df_.loc[:, 'class_pred'] = classes_pred
+    df_.loc[:, 'Feature_based_prediction'] = classes_pred
 
     return df_
 
@@ -152,7 +152,7 @@ def halo_evalution_(df_f_,df_scan_):
     df_f = df_f_.copy()
     df_scan = df_scan_.copy()
     for i in df_scan['feature_id_flatten'].unique():
-        I = df_scan[df_scan['feature_id_flatten'] == i]['class_pred'].tolist()
+        I = df_scan[df_scan['feature_id_flatten'] == i]['Feature_based_prediction'].tolist()
         scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio = roi_scan_based_halo_evaluation(I)
         df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_class'] = scan_based_halo_class
         df_scan.loc[df_scan['feature_id_flatten'] == i,'scan_based_halo_score'] = scan_based_halo_score
@@ -166,10 +166,10 @@ def halo_evalution_(df_f_,df_scan_):
         df_f.loc[df_f['feature_id'] == i,'scan_based_halo_sub_score'] = scan_based_halo_sub_score
         df_f.loc[df_f['feature_id'] == i,'scan_based_halo_ratio'] = scan_based_halo_ratio
         
-    feature_based_halo_score = df_f['class_pred'].apply(lambda x: 1 if x in [0,1,2] else 0)
+    feature_based_halo_score = df_f['Feature_based_prediction'].apply(lambda x: 1 if x in [0,1,2] else 0)
     df_f['feature_based_halo_score'] = feature_based_halo_score
     df_f['H_score'] = (df_f['scan_based_halo_score'])/300 + (df_f['scan_based_halo_ratio'])/3 + (df_f['feature_based_halo_score'])/3 
-    df_scan['H_score'] = (df_scan['scan_based_halo_score'])/300 + (df_scan['scan_based_halo_ratio'])/3 + (df_scan['class_pred'].apply(lambda x: 1 if x in [0,1,2] else 0))/3
+    df_scan['H_score'] = (df_scan['scan_based_halo_score'])/300 + (df_scan['scan_based_halo_ratio'])/3 + (df_scan['Feature_based_prediction'].apply(lambda x: 1 if x in [0,1,2] else 0))/3
     
     return df_f,df_scan
 
@@ -191,7 +191,7 @@ def halo_evalution(df_f_, df_scan_):
     }
 
     for i in df_scan['feature_id_flatten'].unique():
-        I = df_scan[df_scan['feature_id_flatten'] == i]['class_pred'].tolist()
+        I = df_scan[df_scan['feature_id_flatten'] == i]['Feature_based_prediction'].tolist()
         scan_based_halo_class, scan_based_halo_score, scan_based_halo_sub_class, scan_based_halo_sub_score, scan_based_halo_ratio = roi_scan_based_halo_evaluation(I)
         
         results['feature_id_flatten'].append(i)
@@ -209,11 +209,11 @@ def halo_evalution(df_f_, df_scan_):
     df_f = df_f.merge(results_df.rename(columns={'feature_id_flatten': 'feature_id'}), on='feature_id', how='left')
 
     # Calculate feature_based_halo_score
-    df_f['feature_based_halo_score'] = df_f['class_pred'].apply(lambda x: 1 if x in [0, 1, 2] else 0)
+    df_f['feature_based_halo_score'] = df_f['Feature_based_prediction'].apply(lambda x: 1 if x in [0, 1, 2] else 0)
 
     # Calculate H_score
     df_f['H_score'] = (df_f['scan_based_halo_score']) / 300 + (df_f['scan_based_halo_ratio']) / 3 + (df_f['feature_based_halo_score']) / 3
-    df_scan['H_score'] = (df_scan['scan_based_halo_score']) / 300 + (df_scan['scan_based_halo_ratio']) / 3 + (df_scan['class_pred'].apply(lambda x: 1 if x in [0, 1, 2] else 0)) / 3
+    df_scan['H_score'] = (df_scan['scan_based_halo_score']) / 300 + (df_scan['scan_based_halo_ratio']) / 3 + (df_scan['Feature_based_prediction'].apply(lambda x: 1 if x in [0, 1, 2] else 0)) / 3
 
     return df_f, df_scan
 
@@ -346,10 +346,10 @@ def flow_base(file,pars, EPM, EPM_dense_output_model, ADM, blank=None,ms2=None):
     # Evaluate results
     df_f_result, df_scan_result = halo_evalution(df_f, df_scan)
     
-    # Seperate the results based on the class_pred
-    df_Se = df_f_result[df_f_result['class_pred']==3]
-    df_B = df_f_result[df_f_result['class_pred']==4]
-    df_Fe = df_f_result[df_f_result['class_pred']==5]
+    # Seperate the results based on the Feature_based_prediction
+    df_Se = df_f_result[df_f_result['Feature_based_prediction']==3]
+    df_B = df_f_result[df_f_result['Feature_based_prediction']==4]
+    df_Fe = df_f_result[df_f_result['Feature_based_prediction']==5]
     
     # Filter high score AND the reconstruction error results for halo group
     df_f_result = df_f_result[df_f_result['reconstruction_error'] <= pars.FeatureFilter_Anomaly_detection_threshold]

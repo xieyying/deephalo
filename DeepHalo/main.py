@@ -103,18 +103,18 @@ def process_file(file, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=N
 
     # Save results or further processing
     if df_f_result.shape[0] > 0:
-        if file.lower().endswith(('.mzml', '.mzxml')):
-            df_f_result.to_csv(os.path.join('./result/halo', os.path.basename(file).lower().replace('.mzml', '_feature.csv')), index=False)
-            df_scan_result.to_csv(os.path.join('./result/halo', os.path.basename(file).lower().replace('.mzml', '_scan.csv')), index=False)
+        if file.lower().endswith(('.mzml')):
+            df_f_result.to_csv(os.path.join('./result/halo', os.path.basename(file).replace('.mzML', '_feature.csv').replace('.mzml', '_feature.csv')), index=False)
+            df_scan_result.to_csv(os.path.join('./result/halo', os.path.basename(file).replace('.mzML', '_scan.csv').replace('.mzml', '_scan.csv')), index=False)
 
-    if df_Se.shape[0] > 0:
-        df_Se.to_csv(os.path.join('./result/Se', os.path.basename(file).lower().replace('.mzml', '_Se.csv')), index=False)
-    if df_B.shape[0] > 0:
-        df_B.to_csv(os.path.join('./result/B', os.path.basename(file).lower().replace('.mzml', '_B.csv')), index=False)
-    if df_Fe.shape[0] > 0:
-        df_Fe.to_csv(os.path.join('./result/Fe', os.path.basename(file).lower().replace('.mzml', '_Fe.csv')), index=False)
-    if iso_12_df is not None:
-        iso_12_df.to_csv(os.path.join('./result/iso_12', os.path.basename(file).lower().replace('.mzml', '_1_or_2_iso.csv')), index=False)
+    # if df_Se.shape[0] > 0:
+    #     df_Se.to_csv(os.path.join('./result/Se', os.path.basename(file).lower().replace('.mzml', '_Se.csv')), index=False)
+    # if df_B.shape[0] > 0:
+    #     df_B.to_csv(os.path.join('./result/B', os.path.basename(file).lower().replace('.mzml', '_B.csv')), index=False)
+    # if df_Fe.shape[0] > 0:
+    #     df_Fe.to_csv(os.path.join('./result/Fe', os.path.basename(file).lower().replace('.mzml', '_Fe.csv')), index=False)
+    # if iso_12_df is not None:
+    #     iso_12_df.to_csv(os.path.join('./result/iso_12', os.path.basename(file).lower().replace('.mzml', '_1_or_2_iso.csv')), index=False)
     print(f'Processed {file}')
 
 def pipeline_analyze_mzml(para):
@@ -122,10 +122,10 @@ def pipeline_analyze_mzml(para):
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
     
     path_check('./result/halo')
-    path_check('./result/Se')
-    path_check('./result/B')
-    path_check('./result/Fe')
-    path_check('./result/iso_12')
+    # path_check('./result/Se')
+    # path_check('./result/B')
+    # path_check('./result/Fe')
+    # path_check('./result/iso_12')
     
     if para.args_blank is not None:
         path_check('./result/blank')
@@ -195,7 +195,7 @@ def pipeline_dereplication(para):
         os.makedirs(dereplication_folder, exist_ok=True)
         for Deephalo_output in Deephalo_outputs:
             Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
-            df = Dereplication(dereplication_databases, Deephalo_output_df,50).workflow()
+            df = Dereplication(dereplication_databases, Deephalo_output_df,10).workflow()
             df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
 
     #如果提供了GNPS分析分件，将排重及分析结果整合到GNPS文件中，输出新的网络文件
@@ -204,6 +204,7 @@ def pipeline_dereplication(para):
             dereplication_folder = Deephalo_output_result
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
         print('The results have been added to the GNPS file')
+        print('Feature_based_prediction Groups 0-7 representing Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
 
 if __file__ == '__main__':
     pass
