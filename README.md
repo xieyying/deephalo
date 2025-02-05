@@ -1,13 +1,11 @@
-# DeepHalo: High-Confidence Detection of Halogenated Compounds in Untargeted Metabolomics  
-**An open-source pipeline for mining chlorine/bromine-containing natural products from complex HRMS data**
-
+# DeepHalo
+**Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Natural Products in Complex HRMS Data**
 ---
-
 ##  Core Innovations
 
 ### Halogen Prediction
 - **Element Prediction Model (EPM)**  
-  - Bimodal DNN Architecture  
+  - Bimodal DNN Architecture with high accuracy 
   - Mass range: 50-2000 Da (wider coverage than existing tools)  
   - Detects Cl/Br with interference resistance to B/Se/Fe/dehydro isomers  
 
