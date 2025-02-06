@@ -54,7 +54,9 @@ class RunParameters:
         self.FeatureFilter_H_score_threshold = config['FeatureFilter']['H_score_threshold']
         self.FeatureFilter_Anomaly_detection_threshold = config['FeatureFilter']['Anomaly_detection_threshold']
 
-
+        # dereplication parameters
+        self.dereplication_error = config['Dereplication']['error_ppm']
+        self.dereplication_Inty_cosine_score = config['Dereplication']['Inty_cosine_score']
 
 if __name__ == '__main__':
     parameters = RunParameters()

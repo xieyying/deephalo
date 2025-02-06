@@ -178,27 +178,33 @@ def pipeline_analyze_mzml(para):
         return
 
 def pipeline_dereplication(para):
-    #确认Deephalo输出文件夹中的feature文件是否存在
+    # Confirm that the feature files exist in the Deephalo output folder
     Deephalo_output_result = os.path.join(para.args_project_path, 'result/halo')
     if not os.path.exists(Deephalo_output_result):
-        raise FileNotFoundError(f'{Deephalo_output_result} does not exist,plesae check the path')
+        raise FileNotFoundError(f'{Deephalo_output_result} does not exist, please check the path')
 
-    #读取Deephalo输出文件夹中的feature文件
+    # Read the feature files from the Deephalo output folder
     files = os.listdir(Deephalo_output_result)
     Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
 
-    #如果提供了用户数据库，用用户数据库进行排重
+    # If a user database is provided, perform dereplication using the user database
     if para.args_user_database:
-        user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
-        dereplication_databases = {'user_database':user_dereplication_database}
+        #check database is raw database or ready database
+        if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
+            user_dereplication_database = pd.read_csv(para.args_user_database).dropna(subset=['M+H'])
+        else:
+            user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
+            user_dereplication_database.to_csv(str(para.args_user_database).rsplit('.',1)[0]+"_DeepHalo_dereplication_ready_database.csv",index=False)
+        dereplication_database = {'user_database':user_dereplication_database}
         dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
         os.makedirs(dereplication_folder, exist_ok=True)
         for Deephalo_output in Deephalo_outputs:
             Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
-            df = Dereplication(dereplication_databases, Deephalo_output_df,10).workflow()
+            df = Dereplication(dereplication_database, Deephalo_output_df, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
             df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
 
-    #如果提供了GNPS分析分件，将排重及分析结果整合到GNPS文件中，输出新的网络文件
+    # If a GNPS analysis folder is provided, integrate the dereplication and analysis results
+    # into the GNPS file and output a new network file
     if para.args_GNPS_folder != None:
         if para.args_user_database == None:
             dereplication_folder = Deephalo_output_result

@@ -4,7 +4,7 @@ import numpy as np
 from .method_main import cosine_similarity, combine_columns
 
 class Dereplication:
-    def __init__(self, databases, Deephalo_output,error_ppm) -> None:
+    def __init__(self, databases, Deephalo_output,error_ppm=10,Inty_cosine_score=0.96) -> None:
         """
         Perform dereplication based on databases and the output of Deephalo.
         To dereplicate compounds based on multiple databases.
@@ -20,6 +20,8 @@ class Dereplication:
         self.data = databases
         self.Deephalo_output = Deephalo_output
         self.error_ppm = error_ppm
+        self.Inty_cosine_score = Inty_cosine_score
+
 
     def dereplication(self):
         """
@@ -63,7 +65,7 @@ class Dereplication:
                         row['inty_list'] = row[['p0_int', 'p1_int', 'p2_int', 'p3_int', 'p4_int']].tolist()
                         row_['inty_list'] = row_[['p0_int', 'p1_int', 'p2_int', 'p3_int', 'p4_int']].tolist()
                         row_['Inty_cosine_score'] = cosine_similarity(row['inty_list'], row_['inty_list'])
-                        if row_['Inty_cosine_score']>0.96:
+                        if row_['Inty_cosine_score']>self.Inty_cosine_score:
                             dereplications['compound_names'].append(row_['compound_names'])
                             dereplications['Inty_cosine_score'].append(row_['Inty_cosine_score'])
                             dereplications['Smiles'].append(row_.get('Smiles', 'None'))
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     files = os.listdir(dereplication_folder)
     for  f in files:
         df = pd.read_csv(os.path.join(dereplication_folder, f))
-        df = df[df['Inty_cosine_score']>=0.96]
+        df = df[df['Inty_cosine_score']>=self.Inty_cosine_score]
         if df.empty:
             continue
         df.to_csv(os.path.join(dereplication_folder_2, f), index=False)
