@@ -73,7 +73,7 @@ feature_grouping = [['mz_unit', 'ppm'], # Unit of m/z tolerance
 
 [FeatureMapProcessor]
 min_num_of_masstraces = 3 # Halogenated compounds should have at least 3 isotope peaks
-min_feature_int = 5000  # Minimum feature intensity for further analysis of halogenated compounds (sum intensity of a candidate feature).
+min_feature_int = 50000  # Minimum feature intensity for further analysis of halogenated compounds (sum intensity of a candidate feature).
 min_scan_number = 3       # Minimum number of scans required.
 use_mass_difference = ''  # Set to 'none' to disable mass difference correction for isotope patterns, or leave empty ('') to enable it.
 

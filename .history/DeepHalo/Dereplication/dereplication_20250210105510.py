@@ -33,14 +33,16 @@ class Dereplication:
             data['M+Na'] = pd.to_numeric(data['M+Na'], errors='coerce')
             # data['M+NH4'] = pd.to_numeric(data['M+NH4'], errors='coerce')
             
-            # Rename any column containing 'name' (case insensitive) to 'compound_names'
-            name_columns = [col for col in data.columns if 'name' in col.lower()]
-            if name_columns:
-                # If multiple columns match, use the first one
-                data = data.rename(columns={name_columns[0]: 'compound_names'})
-            else:
-                raise ValueError('The database does not contain a column with compound names.')
-            
+            # Rename columns to 'compound_names' if necessary
+            for each in ['compound_names', 'names', 'compound', 'compounds', 'name', 'Name', 'Compound', 'Compounds', 
+                         'Compound_name', 'Compound_names', 'Compound Name', 'Compound Names', 'Compound name', 'Compound names','Compound_names']:
+                if each in data.columns:
+                    data = data.rename(columns={each: 'compound_names'})
+                    break
+                else:
+                    raise ValueError('The database does not contain a column with compound names.')
+
+
             for idx, row in self.Deephalo_output.iterrows():
                 mz = (row['mz']*row['charge'])-((row['charge']-1)*1.007825)
                 # Find compounds in the database that are close to the mz value in Deephalo_output

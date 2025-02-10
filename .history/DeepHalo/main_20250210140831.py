@@ -120,9 +120,6 @@ def process_file(file, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=N
 def pipeline_analyze_mzml(para):
     
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
-    # save config file
-    with open('./result/config.txt', 'w') as f:
-        f.write(str(para))
     
     path_check('./result/halo')
     # path_check('./result/Se')

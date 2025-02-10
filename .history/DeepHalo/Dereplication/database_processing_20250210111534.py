@@ -4,23 +4,6 @@ from ..Dataset.methods_main import isotope_simulation
 from molmass.molmass import FormulaError
 import logging
 
-def safe_isotope_simulation(formula):
-    """
-    Safely apply isotope simulation with error handling
-    """
-    try:
-        return isotope_simulation(formula)
-    except FormulaError as e:
-        logging.warning(f"Invalid formula: {formula}. Error: {str(e)}")
-        return {
-            'mz_0': 0,
-            'p0_int': 0,
-            'p1_int': 0,
-            'p2_int': 0,
-            'p3_int': 0,
-            'p4_int': 0
-        }
-
 class DereplicationDataset:
     def __init__(self, path, key) -> None:
         """
@@ -40,7 +23,22 @@ class DereplicationDataset:
         # Rename the specified key column to 'formula'
         self.data = self.data.rename(columns={key: 'formula'})
         self.path = path
-
+    def safe_isotope_simulation(formula):
+        """
+        Safely apply isotope simulation with error handling
+        """
+        try:
+            return isotope_simulation(formula)
+        except FormulaError as e:
+            logging.warning(f"Invalid formula: {formula}. Error: {str(e)}")
+            return {
+                'mz_0': 0,
+                'p0_int': 0,
+                'p1_int': 0,
+                'p2_int': 0,
+                'p3_int': 0,
+                'p4_int': 0
+            }
 
     def create_dataset(self, type):
         """

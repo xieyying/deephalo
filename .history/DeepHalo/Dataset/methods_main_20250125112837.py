@@ -86,8 +86,8 @@ def isotope_simulation(formula,type=None,rate=None) -> dict:
     #获取intensity
     intensity = fm_isos['Intensity %'].tolist()[:6]
     
-    # if max(intensity) < 99.8:
-    #     print(max(intensity),type,formula)
+    if max(intensity) < 99.8:
+        print(max(intensity),type,formula)
     #如果len(relative_mass) < 7,则补全relative_mass和intensity
     while len(relative_mass) < 6:
         relative_mass.append(0)

@@ -120,9 +120,6 @@ def process_file(file, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=N
 def pipeline_analyze_mzml(para):
     
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
-    # save config file
-    with open('./result/config.txt', 'w') as f:
-        f.write(str(para))
     
     path_check('./result/halo')
     # path_check('./result/Se')
@@ -196,10 +193,8 @@ def pipeline_dereplication(para):
         if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
             user_dereplication_database = pd.read_csv(para.args_user_database).dropna(subset=['M+H'])
         else:
-            print('Processing user database...(this may take a while)')
             user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
             user_dereplication_database.to_csv(str(para.args_user_database).rsplit('.',1)[0]+"_DeepHalo_dereplication_ready_database.csv",index=False)
-            print(f"User database has been processed and saved as {str(para.args_user_database).rsplit('.',1)[0]}_DeepHalo_dereplication_ready_database.csv")
         dereplication_database = {'user_database':user_dereplication_database}
         dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
         os.makedirs(dereplication_folder, exist_ok=True)

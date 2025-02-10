@@ -2,9 +2,8 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from DeepHalo.main import pipeline_dataset, pipeline_model, pipeline_analyze_mzml, pipeline_dereplication
 from .parameters import RunParameters
-from .model_test import path_check
+from .model_test import timeit
 import typer
-
 
 # CLI interface for DeepHalo with version information
 __version__ = '0.9'
@@ -40,7 +39,9 @@ def analyze_mzml(
 ):
     """High-throughput detection of halogenated compounds"""
     # Create output directory if it doesn't exist
-    path_check(project_path)
+    if not os.path.exists(project_path):
+        os.makedirs(project_path)
+        typer.echo(f"Created output directory: {project_path}")
     
     os.chdir(project_path)
     para = RunParameters(user_config=user_config)
