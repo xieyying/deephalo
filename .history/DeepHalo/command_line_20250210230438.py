@@ -10,15 +10,11 @@ def timer_decorator(func):
     """Decorator to measure and display function execution time"""
     def wrapper(*args, **kwargs):
         start_time = time.time()
-        typer.echo(f"\nStarting {func.__name__}...")
         result = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        typer.echo(f"{func.__name__} completed in {elapsed_time:.2f} seconds")
+        typer.echo(f"\nCommand execution time: {elapsed_time:.2f} seconds")
         return result
-    # Preserve the original function metadata
-    from functools import update_wrapper
-    update_wrapper(wrapper, func)
     return wrapper
 
 # CLI interface for DeepHalo with version information
@@ -67,8 +63,8 @@ def analyze_mzml(
     para.args_ms2 = ms2
     pipeline_analyze_mzml(para)
     
-@app.command()
 @timer_decorator
+@app.command()
 def dereplication(
     project_path: str = typer.Option(
         ...,
@@ -103,8 +99,8 @@ def dereplication(
     para.args_user_database_key = user_database_key
     pipeline_dereplication(para)
 
-@app.command()
 @timer_decorator
+@app.command()
 def create_dataset(
     project_path: str = typer.Argument(
         ...,
@@ -119,8 +115,8 @@ def create_dataset(
     os.chdir(project_path)
     pipeline_dataset(para)
 
-@app.command()
 @timer_decorator
+@app.command()
 def create_model(
     project_path: str = typer.Argument(
         ...,

@@ -15,8 +15,6 @@ from .Dereplication.database_processing import DereplicationDataset
 from .Dereplication.dereplication import Dereplication
 import pandas as pd
 from .Dereplication.method_main import add_deephalo_results_to_graphml
-import time
-import typer
 
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
@@ -122,16 +120,16 @@ def process_file(file, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=N
 def pipeline_analyze_mzml(para):
     
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
-
+    # save config file
+    with open('./result/config.txt', 'w') as f:
+        f.write(str(para))
+    
     path_check('./result/halo')
     # path_check('./result/Se')
     # path_check('./result/B')
     # path_check('./result/Fe')
     # path_check('./result/iso_12')
-        # save config file 
-    with open('./result/config.toml', 'w') as f:
-        f.write(str(para))
-        
+    
     if para.args_blank is not None:
         path_check('./result/blank')
         blank_featurexml_path = './result/blank'
@@ -218,18 +216,6 @@ def pipeline_dereplication(para):
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
         print('The results have been added to the GNPS file')
         print('Feature_based_prediction Groups 0-7 representing Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
-
-def timer_decorator(func):
-    """Decorator to measure and display function execution time"""
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        typer.echo(f"\nCommand execution time: {elapsed_time:.2f} seconds")
-        return result
-    return wrapper
-
 
 if __file__ == '__main__':
     pass

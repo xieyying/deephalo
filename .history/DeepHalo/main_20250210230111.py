@@ -129,7 +129,7 @@ def pipeline_analyze_mzml(para):
     # path_check('./result/Fe')
     # path_check('./result/iso_12')
         # save config file 
-    with open('./result/config.toml', 'w') as f:
+    with open('./result/config.txt', 'w') as f:
         f.write(str(para))
         
     if para.args_blank is not None:

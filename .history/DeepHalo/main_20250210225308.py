@@ -122,16 +122,16 @@ def process_file(file, para,  EPM, EPM_dense_output_model, ADM, blank=None,ms2=N
 def pipeline_analyze_mzml(para):
     
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
-
+    # save config file
+    with open('./result/config.txt', 'w') as f:
+        f.write(str(para))
+    
     path_check('./result/halo')
     # path_check('./result/Se')
     # path_check('./result/B')
     # path_check('./result/Fe')
     # path_check('./result/iso_12')
-        # save config file 
-    with open('./result/config.toml', 'w') as f:
-        f.write(str(para))
-        
+    
     if para.args_blank is not None:
         path_check('./result/blank')
         blank_featurexml_path = './result/blank'
