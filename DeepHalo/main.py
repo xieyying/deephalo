@@ -5,7 +5,6 @@ import copy
 from .Dataset.my_dataset import Dataset,Datasets
 from .Model.my_model import MyModel,my_search
 from .MZML.my_mzml import MyMzml
-from .model_test import path_check
 from .MZML.methods_main import create_blank
 import pyopenms as oms
 from multiprocessing import Pool
@@ -17,13 +16,14 @@ import pandas as pd
 from .Dereplication.method_main import add_deephalo_results_to_graphml
 import time
 import typer
+import tomli_w
 
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
     """
     generate dataset for training and testing
     """
-    path_check('./dataset')
+    os.makedirs('./dataset',exist_ok=True)
     datas = []
     print(para.datasets)
     for data_df, col_formula in para.datasets:
@@ -43,7 +43,7 @@ def pipeline_model(para) -> None:
     # Args:
     # mode: str, default 'manual', optional 'manual','search','feature_importance','read_feature_importance'
     # """
-    path_check('./trained_models')
+    os.makedirs('./trained_models',exist_ok=True)
     
     # #根据配置文件选择训练数据
     paths = ['./dataset/base.csv']
@@ -123,17 +123,20 @@ def pipeline_analyze_mzml(para):
     
     EPM_model, EPM_dense_output_model, ADM_model = load_trained_model()
 
-    path_check('./result/halo')
-    # path_check('./result/Se')
-    # path_check('./result/B')
-    # path_check('./result/Fe')
-    # path_check('./result/iso_12')
-        # save config file 
-    with open('./result/config.toml', 'w') as f:
-        f.write(str(para))
-        
+    os.makedirs('./result/halo',exist_ok=True)
+    # os.makedirs('./result/Se',exist_ok=True)
+    # os.makedirs('./result/B',exist_ok=True)
+    # os.makedirs('./result/Fe',exist_ok=True)
+    # os.makedirs('./result/iso_12',exist_ok=True)
+    # save config file 
+    try:
+        with open('./result/config.toml', 'wb') as f:
+            tomli_w.dump(para.config, f)
+    except Exception as e:
+        print(f"Warning: Could not save config file: {str(e)}")
+          
     if para.args_blank is not None:
-        path_check('./result/blank')
+        os.makedirs('./result/blank')
         blank_featurexml_path = './result/blank'
 
         if os.listdir(blank_featurexml_path) and not para.args_overwrite_blank:
@@ -145,7 +148,7 @@ def pipeline_analyze_mzml(para):
                 blank_.append(b)
         else:
             shutil.rmtree(blank_featurexml_path)
-            path_check(blank_featurexml_path) 
+            os.makedirs(blank_featurexml_path) 
             print("Creating a new blank feature_map.")
             blank_ = create_blank(para)
             for b in blank_:
@@ -216,20 +219,10 @@ def pipeline_dereplication(para):
         if para.args_user_database == None:
             dereplication_folder = Deephalo_output_result
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
-        print('The results have been added to the GNPS file')
-        print('Feature_based_prediction Groups 0-7 representing Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
-
-def timer_decorator(func):
-    """Decorator to measure and display function execution time"""
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        typer.echo(f"\nCommand execution time: {elapsed_time:.2f} seconds")
-        return result
-    return wrapper
-
+        print('The results have been added to the GNPS file ending with "_adding_DeepHalo_results.graphml"')
+        print("_______________________")
+    print('Feature_based_prediction Groups 0-7 representing:') 
+    print('Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
 
 if __file__ == '__main__':
     pass

@@ -58,6 +58,32 @@ class RunParameters:
         self.dereplication_error = config['Dereplication']['error_ppm']
         self.dereplication_Inty_cosine_score = config['Dereplication']['Inty_cosine_score']
 
+def save_config(config_dict: dict, output_path: str) -> None:
+    """Save config dictionary to TOML file with preserved formatting"""
+    
+    def format_value(v):
+        if isinstance(v, list):
+            lines = []
+            for item in v:
+                if isinstance(item, list) and len(item) == 2:
+                    # Handle comments if present in original
+                    comment = item[2] if len(item) > 2 else ''
+                    lines.append(f'    [{repr(item[0])}, {repr(item[1])}],{f" # {comment}" if comment else ""}')
+            return '[\n' + '\n'.join(lines) + '\n]'
+        return repr(v)
+
+    with open(output_path, 'w') as f:
+        # Write header comments
+        f.write('# This file is a configuration file used to set parameters for DeepHalo.\n\n')
+        f.write('# Parameters for the analyze-mzml subcommand.\n\n')
+        
+        for section, params in config_dict.items():
+            f.write(f'[{section}]\n')
+            for key, value in params.items():
+                formatted_value = format_value(value)
+                f.write(f'{key} = {formatted_value}\n')
+            f.write('\n')
+            
 if __name__ == '__main__':
     parameters = RunParameters()
     print((parameters.datasets))

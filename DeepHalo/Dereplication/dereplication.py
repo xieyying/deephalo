@@ -34,7 +34,7 @@ class Dereplication:
             # data['M+NH4'] = pd.to_numeric(data['M+NH4'], errors='coerce')
             
             # Rename any column containing 'name' (case insensitive) to 'compound_names'
-            name_columns = [col for col in data.columns if 'name' in col.lower()]
+            name_columns = [col for col in data.columns if ('compound_name' or 'compounds_name') in col.lower()]
             if name_columns:
                 # If multiple columns match, use the first one
                 data = data.rename(columns={name_columns[0]: 'compound_names'})
