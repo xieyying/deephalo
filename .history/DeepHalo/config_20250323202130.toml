@@ -88,7 +88,7 @@ Anomaly_detection_threshold = 7.015356328085893e-05  # Isotope peak intensity re
 error_ppm = 10 # Precursor mass tolerance in ppm
 Inty_cosine_score = 0.96 # Minimum cosine score threshold between experimental and theoretical intensities
 
-# Parameters for the create-dataset subcommand,not active now.
+# Parameters for the create-dataset subcommand
 [datasets]
 paths = [
         ["", #Custom database file (CSV/JSON)

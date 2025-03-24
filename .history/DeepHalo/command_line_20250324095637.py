@@ -4,7 +4,6 @@ from DeepHalo.main import pipeline_dataset, pipeline_model, pipeline_analyze_mzm
 from .parameters import RunParameters
 import typer
 import time
-from typing import Optional
 
 def timer_decorator(func):
     """Decorator to measure and display function execution time"""
@@ -22,7 +21,7 @@ def timer_decorator(func):
     return wrapper
 
 # CLI interface for DeepHalo with version information
-__version__ = "0.9.1"
+__version__ = "0.9"
 
 app = typer.Typer()
 

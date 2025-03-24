@@ -22,7 +22,7 @@ def timer_decorator(func):
     return wrapper
 
 # CLI interface for DeepHalo with version information
-__version__ = "0.9.1"
+__version__ = "0.9"
 
 app = typer.Typer()
 

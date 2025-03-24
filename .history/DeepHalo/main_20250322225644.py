@@ -201,7 +201,7 @@ def pipeline_dereplication(para):
             user_dereplication_database = pd.read_csv(para.args_user_database,low_memory=False).dropna(subset=['M+H'])
         else:
             print('Processing user database...(this may take a while)')
-            user_dereplication_database = DereplicationDataset(para.args_user_database,'formula').work_flow()
+            user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
             user_dereplication_database.to_csv(str(para.args_user_database).rsplit('.',1)[0]+"_DeepHalo_dereplication_ready_database.csv",index=False)
             print(f"User database has been processed and saved as {str(para.args_user_database).rsplit('.',1)[0]}_DeepHalo_dereplication_ready_database.csv")
         dereplication_database = {'user_database':user_dereplication_database}

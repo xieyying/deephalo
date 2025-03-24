@@ -45,9 +45,6 @@ class DereplicationDataset:
         
         # Drop rows with missing values in the 'formula' column
         self.data = self.data.dropna(subset=['formula'])
-        
-        if 'Smiles' not in self.data.columns:
-            self.data['Smiles'] = 'None'
            
         self.path = path
 

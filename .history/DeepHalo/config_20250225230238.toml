@@ -6,7 +6,7 @@
 mass_trace_detection = [
     ["mass_error_ppm", 10.0], # Precursor mass error in ppm (default: 20.0; adjust based on experimental conditions)
     ["min_trace_length", 3.0], # Minimum trace length (default: 5.0; adjust based on experimental conditions)
-    ["noise_threshold_int", 1000.0], # Noise intensity threshold (adjust based on experimental conditions)
+    ["noise_threshold_int", 10000.0], # Noise intensity threshold (adjust based on experimental conditions)
     ["chrom_peak_snr", 10.0], # Chromatographic peak signal-to-noise ratio (adjust based on experimental conditions)
     ["trace_termination_criterion", "outlier"],
     ["trace_termination_outliers", 5],
@@ -88,10 +88,11 @@ Anomaly_detection_threshold = 7.015356328085893e-05  # Isotope peak intensity re
 error_ppm = 10 # Precursor mass tolerance in ppm
 Inty_cosine_score = 0.96 # Minimum cosine score threshold between experimental and theoretical intensities
 
-# Parameters for the create-dataset subcommand,not active now.
+# Parameters for the create-dataset subcommand
 [datasets]
 paths = [
-        ["", #Custom database file (CSV/JSON)
+        ["E:/XinBackup/Lab/深度学习相关/数据_public/NPAtlas_download.csv",
+        "compound_molecular_formula",
      ],      
 ]
 

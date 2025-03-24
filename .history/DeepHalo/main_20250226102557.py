@@ -76,7 +76,8 @@ def load_trained_model():
         Model: A sub-model that outputs the specified layer's output.
     """
     # Load the trained model
-    EPM_path = importlib.resources.files('DeepHalo') / 'models/isonn_element_prediction_model.h5'
+    # EPM_path = importlib.resources.files('HaloAnalyzer') / 'models/deephalo_ann_model.h5'
+    EPM_path = importlib.resources.files('DeepHalo') / 'models/deephalo_ann_model.h5'
     EPM = keras.models.load_model(EPM_path)
 
     # Ensure the layer name is correct
@@ -135,7 +136,7 @@ def pipeline_analyze_mzml(para):
         print(f"Warning: Could not save config file: {str(e)}")
           
     if para.args_blank is not None:
-        os.makedirs('./result/blank',exist_ok=True)
+        os.makedirs('./result/blank')
         blank_featurexml_path = './result/blank'
 
         if os.listdir(blank_featurexml_path) and not para.args_overwrite_blank:
@@ -201,7 +202,7 @@ def pipeline_dereplication(para):
             user_dereplication_database = pd.read_csv(para.args_user_database,low_memory=False).dropna(subset=['M+H'])
         else:
             print('Processing user database...(this may take a while)')
-            user_dereplication_database = DereplicationDataset(para.args_user_database,'formula').work_flow()
+            user_dereplication_database = DereplicationDataset(para.args_user_database,para.args_user_database_key).work_flow()
             user_dereplication_database.to_csv(str(para.args_user_database).rsplit('.',1)[0]+"_DeepHalo_dereplication_ready_database.csv",index=False)
             print(f"User database has been processed and saved as {str(para.args_user_database).rsplit('.',1)[0]}_DeepHalo_dereplication_ready_database.csv")
         dereplication_database = {'user_database':user_dereplication_database}

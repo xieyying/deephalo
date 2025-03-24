@@ -34,7 +34,12 @@ class DereplicationDataset:
             self.data = pd.read_json(path)
         elif path.endswith('.csv'):
             self.data = pd.read_csv(path, low_memory=False)
-                    
+        
+        # Drop rows with missing values in the specified key column
+        self.data = self.data.dropna(subset=[key])
+        # Rename the specified key column to 'formula'
+        self.data = self.data.rename(columns={key: 'formula'})
+        
         # Rename any column containing 'Formula' (case insensitive) to 'formula'
         formula_columns = [col for col in self.data.columns if 'formula' in col.lower()]
         if formula_columns:
@@ -42,12 +47,6 @@ class DereplicationDataset:
             self.data = self.data.rename(columns={formula_columns[0]: 'formula'})
         else:
             raise ValueError('The database does not contain a column with formulas.')
-        
-        # Drop rows with missing values in the 'formula' column
-        self.data = self.data.dropna(subset=['formula'])
-        
-        if 'Smiles' not in self.data.columns:
-            self.data['Smiles'] = 'None'
            
         self.path = path
 

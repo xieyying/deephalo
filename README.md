@@ -1,43 +1,58 @@
 # DeepHalo
-   **Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Natural Products in Complex HRMS Data**
+
+**Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Compounds in Complex HRMS Data**
+
 ---
-##  Core Innovations
 
-### Halogen Prediction
-- **Element Prediction Model (EPM)**  
-  - Bimodal DNN Architecture with high accuracy 
-  - Mass range: 50-2000 Da (wider coverage than existing tools)  
-  - Detects Cl/Br with interference resistance to B/Se/Fe/dehydro isomers  
+## Core Features
 
-### Isotope patterns Validation
-- **Dual validation system**:  
-  - Statistical rule-based correction in mass dimension  
-  - Autoencoder Deep Model (ADM) for anomaly detection in intensity dimension
+### 1. Halogen Prediction
+- **Element Prediction Model (EPM)**
+  - Dual-branch Isotope Neural Network (IsoNN) architecture
+  - High accuracy Cl/Br detection (>98.6% precision)
+  - Wide mass range coverage (50-2000 Da)
+  - Robust interference resistance to B/Se/Fe/dehydro isomers
 
-### Multi-Level Scoring
-- **H-score integration**:  
-  1. Feature centroid analysis  
-  2. Scan-level validation  
-  - Eliminates oversaturation/peak overlap errors  
+### 2. Quality Control System
+- **Dual Validation Strategy**
+  - Statistical rule-based mass correction
+  - Autoencoder-based Anomaly Detection Model (ADM) for intensity pattern validation
+- **Multi-Level Scoring**
+  - Feature-level centroid analysis
+  - Scan-level validation
+  - H-score integration for peak overlap/saturation error elimination
 
-### Dereplication
-- **Dual-strategy approach**:  
-  1. Custom database matching:  
-     - Exact mass  
-     - Halogen pattern  
-     - Isotope intensity similarity  
-  2. MS2 networking via GNPS  
-  - Improved identification efficiency  
-
+### 3. Enhanced Dereplication
+- **Dual-Strategy Approach**
+  - Custom Database Matching
+    - Exact mass analysis
+    - Halogen presence verification
+    - Isotope intensity similarity scoring
+  - GNPS Integration
+    - MS2 molecular networking
+    - Element dimension annotation
+    - GraphML file enhancement
 ---
 
 ##  Technical Advantages
-- **Throughput**: batch analysis of LC-MS/MS datasets with rapid processing times ( <30 sec/sample) on standard laptop hardware (Core i9, 16GB RAM)   
-- **Accuracy**: more than 98.6% precision in halogenated compound detection across simulated and experimental LC-MS datasets (n=4)
-- **Interoperability**:  
-  - Input: `.mzML` 
-  - Output: Cytoscape-compatible network files  
 
+- **High Throughput**
+  - Batch analysis of unlimited LC-MS/MS datasets
+  - Rapid processing (<30 sec/sample) on standard hardware (Core i9, 16GB RAM)
+
+- **High Accuracy**
+  - >98.6% precision in halogen detection
+  - Validated across both simulated and experimental LC-MS datasets
+
+- **Comprehensive Integration**
+  - Input: Supports `.mzML` format
+  - Output: Cytoscape-compatible network files
+  - Seamless integration with GNPS molecular networking
+
+- **Enhanced Dereplication**
+  - Embeds element detection results into GNPS output GraphML files
+  - Significantly higher efficiency compared to molecular networking alone
+  - Enables molecular network annotation in the element dimension
 ---
 
 ## Target Applications
@@ -47,11 +62,10 @@
 ---
 
 ## Key Differentiators
-1. First tool integrating scan-level halogen validation  
-2. Bimodal DNN Architecture for element prediction  
-3. Dual dereplication combining:  
-   - Custom database matching  
-   - MS2 networking  
+1. First integrated multi-level halogen detection system  
+2. Novel dual-branch IsoNN architecture
+3. Comprehensive dereplication workflow
+4. Enhanced GNPS molecular networking
 
 ---
 
