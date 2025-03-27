@@ -223,42 +223,42 @@ def pipeline_dereplication(para):
     files = os.listdir(Deephalo_output_result)
     Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
 
-    # If a user database is provided, prepare the dereplication database
-    if para.args_user_database:
-        if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
-            user_dereplication_database = pd.read_csv(para.args_user_database, low_memory=False).dropna(subset=['M+H'])
-        else:
-            print('Processing user database...(this may take a while)')
-            user_dereplication_database = DereplicationDataset(para.args_user_database, 'formula').work_flow()
-            ready_db_path = str(para.args_user_database).rsplit('.', 1)[0] + "_DeepHalo_dereplication_ready_database.csv"
-            user_dereplication_database.to_csv(ready_db_path, index=False)
-            print(f"User database has been processed and saved as {ready_db_path}")
-        dereplication_database = {'user_database': user_dereplication_database}
+    # # If a user database is provided, prepare the dereplication database
+    # if para.args_user_database:
+    #     if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
+    #         user_dereplication_database = pd.read_csv(para.args_user_database, low_memory=False).dropna(subset=['M+H'])
+    #     else:
+    #         print('Processing user database...(this may take a while)')
+    #         user_dereplication_database = DereplicationDataset(para.args_user_database, 'formula').work_flow()
+    #         ready_db_path = str(para.args_user_database).rsplit('.', 1)[0] + "_DeepHalo_dereplication_ready_database.csv"
+    #         user_dereplication_database.to_csv(ready_db_path, index=False)
+    #         print(f"User database has been processed and saved as {ready_db_path}")
+    #     dereplication_database = {'user_database': user_dereplication_database}
 
-        # Create the output folder for dereplication results
-        dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
-        os.makedirs(dereplication_folder, exist_ok=True)
+    #     # Create the output folder for dereplication results
+    #     dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
+    #     os.makedirs(dereplication_folder, exist_ok=True)
 
-        # Process each file in parallel
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [
-                executor.submit(process_dereplication_file, file, Deephalo_output_result,
-                                dereplication_database, para, dereplication_folder)
-                for file in Deephalo_outputs
-            ]
+    #     # Process each file in parallel
+    #     with concurrent.futures.ProcessPoolExecutor() as executor:
+    #         futures = [
+    #             executor.submit(process_dereplication_file, file, Deephalo_output_result,
+    #                             dereplication_database, para, dereplication_folder)
+    #             for file in Deephalo_outputs
+    #         ]
             
-            # Wait for all tasks to complete and retrieve results
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    processed_file = future.result()
-                    print(f"Successfully processed: {processed_file}")
-                except Exception as e:
-                    print(f"Error processing file: {e}")
-    else:
-        raise ValueError("User database is required for dereplication.")
+    #         # Wait for all tasks to complete and retrieve results
+    #         for future in concurrent.futures.as_completed(futures):
+    #             try:
+    #                 processed_file = future.result()
+    #                 print(f"Successfully processed: {processed_file}")
+    #             except Exception as e:
+    #                 print(f"Error processing file: {e}")
+    # else:
+    #     raise ValueError("User database is required for dereplication.")
 
-    # If a GNPS analysis folder is provided, integrate the dereplication and analysis results
-    # into the GNPS file and output a new network file
+    # # If a GNPS analysis folder is provided, integrate the dereplication and analysis results
+    # # into the GNPS file and output a new network file
     if para.args_GNPS_folder != None:
         if para.args_user_database == None:
             dereplication_folder = Deephalo_output_result

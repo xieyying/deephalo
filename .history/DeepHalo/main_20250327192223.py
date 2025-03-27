@@ -200,7 +200,12 @@ def process_dereplication_file(file, Deephalo_output_result, dereplication_datab
         df_non_halo = df_non_halo.copy()
         for col in df_derep.columns:
             if col not in df_non_halo.columns:
-                df_non_halo[col] = None
+                if col == 'Inty_cosine_score':
+                    df_non_halo[col] = 0
+                elif col == 'error_ppm':
+                    df_non_halo[col] = 1e6
+                else:
+                    df_non_halo[col] = None
         # Combine results with non-halo features
         df_final = pd.concat([df_derep, df_non_halo])
     else:

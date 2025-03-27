@@ -27,7 +27,6 @@ class Dereplication:
         """
         Perform dereplication using the database.
         """
-        self.Deephalo_output = self.Deephalo_output.copy()
         for dataname, data in self.data.items():
             # Ensure relevant columns are numeric
             data['M+H'] = pd.to_numeric(data['M+H'], errors='coerce')
@@ -121,11 +120,11 @@ class Dereplication:
                             
                     
         return self.Deephalo_output
+
     def merge_columns(self, df, datanames):
-        df = df.copy()  # Ensure working on a copy to avoid SettingWithCopyWarning
         for col in ['compound_names', 'Inty_cosine_score', 'error_ppm', 'Smiles', 'adducts']:
             columns = [f'{col}_{dataname}' for dataname in datanames]
-            df.loc[:, col] = df.apply(lambda row: combine_columns(row, columns), axis=1)
+            df[col] = df.apply(lambda row: combine_columns(row, columns), axis=1)
         return df
     
     def workflow(self):

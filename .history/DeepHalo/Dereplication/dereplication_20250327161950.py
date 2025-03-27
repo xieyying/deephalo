@@ -27,7 +27,6 @@ class Dereplication:
         """
         Perform dereplication using the database.
         """
-        self.Deephalo_output = self.Deephalo_output.copy()
         for dataname, data in self.data.items():
             # Ensure relevant columns are numeric
             data['M+H'] = pd.to_numeric(data['M+H'], errors='coerce')
@@ -92,25 +91,18 @@ class Dereplication:
                         dereplications_df = pd.DataFrame(dereplications)
                         # max_intensity_idx = dereplications_df['Inty_cosine_score'].idxmax()
                         #if multiple compounds in dereplications_df, keep all compounds
-                        if len(dereplications_df)>1:
-                            self.Deephalo_output.loc[idx, f'compound_names_{dataname}'] = str(dereplications_df['compound_names'].tolist())
-                            self.Deephalo_output.loc[idx, f'Inty_cosine_score_{dataname}'] = str(dereplications_df['Inty_cosine_score'].tolist())
-                            self.Deephalo_output.loc[idx, f'error_ppm_{dataname}'] = str(dereplications_df['error_ppm'].tolist())
-                            self.Deephalo_output.loc[idx, f'Smiles_{dataname}'] = str(dereplications_df['Smiles'].tolist())
-                            self.Deephalo_output.loc[idx, f'adducts_{dataname}'] = str(dereplications_df['adducts'].tolist())
-                        else:
-                            self.Deephalo_output.loc[idx, f'compound_names_{dataname}'] = dereplications_df.loc[0, 'compound_names']
-                            self.Deephalo_output.loc[idx, f'Inty_cosine_score_{dataname}'] = dereplications_df.loc[0, 'Inty_cosine_score']
-                            self.Deephalo_output.loc[idx, f'error_ppm_{dataname}'] = dereplications_df.loc[0, 'error_ppm']
-                            self.Deephalo_output.loc[idx, f'Smiles_{dataname}'] = dereplications_df.loc[0, 'Smiles']
-                            self.Deephalo_output.loc[idx, f'adducts_{dataname}'] = dereplications_df.loc[0, 'adducts']
+                        self.Deephalo_output.loc[idx, f'compound_names_{dataname}'] = str(dereplications_df['compound_names'])
+                        self.Deephalo_output.loc[idx, f'Inty_cosine_score_{dataname}'] = str(dereplications_df['Inty_cosine_score'])
+                        self.Deephalo_output.loc[idx, f'error_ppm_{dataname}'] = str(dereplications_df['error_ppm'])
+                        self.Deephalo_output.loc[idx, f'Smiles_{dataname}'] = str(dereplications_df['Smiles'])
+                        self.Deephalo_output.loc[idx, f'adducts_{dataname}'] = str(dereplications_df['adducts'])
                         
                         
-                            # self.Deephalo_output.loc[idx, f'compound_names_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'compound_names']
-                            # self.Deephalo_output.loc[idx, f'Inty_cosine_score_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'Inty_cosine_score']
-                            # self.Deephalo_output.loc[idx, f'error_ppm_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'error_ppm']
-                            # self.Deephalo_output.loc[idx, f'Smiles_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'Smiles']
-                            # self.Deephalo_output.loc[idx, f'adducts_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'adducts']
+                        # self.Deephalo_output.loc[idx, f'compound_names_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'compound_names']
+                        # self.Deephalo_output.loc[idx, f'Inty_cosine_score_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'Inty_cosine_score']
+                        # self.Deephalo_output.loc[idx, f'error_ppm_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'error_ppm']
+                        # self.Deephalo_output.loc[idx, f'Smiles_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'Smiles']
+                        # self.Deephalo_output.loc[idx, f'adducts_{dataname}'] = dereplications_df.loc[max_intensity_idx, 'adducts']
                     else:
                         self.Deephalo_output.loc[idx, f'compound_names_{dataname}'] = 'None'
                         self.Deephalo_output.loc[idx, f'Inty_cosine_score_{dataname}'] = 0
@@ -121,11 +113,11 @@ class Dereplication:
                             
                     
         return self.Deephalo_output
+
     def merge_columns(self, df, datanames):
-        df = df.copy()  # Ensure working on a copy to avoid SettingWithCopyWarning
         for col in ['compound_names', 'Inty_cosine_score', 'error_ppm', 'Smiles', 'adducts']:
             columns = [f'{col}_{dataname}' for dataname in datanames]
-            df.loc[:, col] = df.apply(lambda row: combine_columns(row, columns), axis=1)
+            df[col] = df.apply(lambda row: combine_columns(row, columns), axis=1)
         return df
     
     def workflow(self):

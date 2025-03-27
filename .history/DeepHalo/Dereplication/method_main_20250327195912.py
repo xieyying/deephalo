@@ -23,7 +23,7 @@ def combine_columns(row, columns):
 def parse_inty(x):
     return ast.literal_eval(x) if isinstance(x, str) else float(x)
 
-def compute_attributes(halo_data_):
+def compute_attributes(halo_data_, default_Feature_based_prediction):
     # Compute basic attributes from non-empty halo_data_
     h_score_mean = round(float(halo_data_['H_score'].mean()), 2)
     Feature_based_prediction = str(halo_data_['Feature_based_prediction'].tolist())
@@ -109,9 +109,9 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
         # If valid halo data is found, compute the attributes; otherwise use defaults.
         if not halo_data_.empty:
             h_score_mean = round(float(halo_data_['H_score'].mean()), 2)
-            comp_attrs = compute_attributes(halo_data_)
+            comp_attrs = compute_attributes(halo_data_, default_Feature_based_prediction)
             # Unpack attributes
-            compound_names, Inty_cosine_score, error_ppm, Smiles, Adducts,Feature_based_prediction = comp_attrs[1:7]
+            compound_names, Inty_cosine_score, error_ppm, Smiles, Adducts = comp_attrs[1:6]
         else:
             h_score_mean = default_h_score_mean
             compound_names = default_compound_names
@@ -119,7 +119,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
             error_ppm = default_error_ppm
             Smiles = default_Smiles
             Adducts = default_adducts
-            Feature_based_prediction = default_Feature_based_prediction
+            default_Feature_based_prediction = default_Feature_based_prediction
         
         # Update graph node attributes
         graph.nodes[node].update({
@@ -129,7 +129,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
             'error_ppm': error_ppm,
             'Smiles': Smiles,
             'Adducts': Adducts,
-            'Feature_based_prediction': Feature_based_prediction,
+            'Feature_based_prediction': default_Feature_based_prediction,
         })
     
     # Ensure that nodes’ attributes are stored as plain strings

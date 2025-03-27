@@ -14,8 +14,10 @@ from .Dereplication.database_processing import DereplicationDataset
 from .Dereplication.dereplication import Dereplication
 import pandas as pd
 from .Dereplication.method_main import add_deephalo_results_to_graphml
+import time
+import typer
 import tomli_w
-import concurrent.futures
+
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
     """
@@ -182,80 +184,37 @@ def pipeline_analyze_mzml(para):
         print('Invalid input path')
         return
 
-def process_dereplication_file(file, Deephalo_output_result, dereplication_database, para, dereplication_folder):
-    """
-    Process a single dereplication file.
-    """
-    # Read the feature file
-    file_path = os.path.join(Deephalo_output_result, file)
-    Deephalo_output_df = pd.read_csv(file_path)
-    if para.FeatureFilter_H_score_threshold < 0.4:
-        # Split data based on H_score threshold
-        df_halo = Deephalo_output_df[Deephalo_output_df['H_score'] >= 0.4]
-        df_non_halo = Deephalo_output_df[Deephalo_output_df['H_score'] < 0.4]
-        
-        # Run the dereplication process on the high-confidence (halo) subset
-        df_derep = Dereplication(dereplication_database, df_halo, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
-        # df_non_halo中没有的列，用None填充
-        df_non_halo = df_non_halo.copy()
-        for col in df_derep.columns:
-            if col not in df_non_halo.columns:
-                df_non_halo[col] = None
-        # Combine results with non-halo features
-        df_final = pd.concat([df_derep, df_non_halo])
-    else:
-        df_final = Dereplication(dereplication_database, Deephalo_output_df, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
-    
-    # Save results to dereplication folder
-    output_path = os.path.join(dereplication_folder, file)
-    df_final.to_csv(output_path, index=False)
-    
-    print(f"Dereplication completed for {file}")
-    return file
-
 def pipeline_dereplication(para):
     # Confirm that the feature files exist in the Deephalo output folder
     Deephalo_output_result = os.path.join(para.args_project_path, 'result/halo')
     if not os.path.exists(Deephalo_output_result):
-        raise FileNotFoundError(f"{Deephalo_output_result} does not exist, please check the path")
+        raise FileNotFoundError(f'{Deephalo_output_result} does not exist, please check the path')
 
     # Read the feature files from the Deephalo output folder
     files = os.listdir(Deephalo_output_result)
     Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
 
-    # If a user database is provided, prepare the dereplication database
+    # If a user database is provided, perform dereplication using the user database
     if para.args_user_database:
+        #check database is raw database or ready database
         if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
-            user_dereplication_database = pd.read_csv(para.args_user_database, low_memory=False).dropna(subset=['M+H'])
+            user_dereplication_database = pd.read_csv(para.args_user_database,low_memory=False).dropna(subset=['M+H'])
         else:
             print('Processing user database...(this may take a while)')
-            user_dereplication_database = DereplicationDataset(para.args_user_database, 'formula').work_flow()
-            ready_db_path = str(para.args_user_database).rsplit('.', 1)[0] + "_DeepHalo_dereplication_ready_database.csv"
-            user_dereplication_database.to_csv(ready_db_path, index=False)
-            print(f"User database has been processed and saved as {ready_db_path}")
-        dereplication_database = {'user_database': user_dereplication_database}
-
-        # Create the output folder for dereplication results
+            user_dereplication_database = DereplicationDataset(para.args_user_database,'formula').work_flow()
+            user_dereplication_database.to_csv(str(para.args_user_database).rsplit('.',1)[0]+"_DeepHalo_dereplication_ready_database.csv",index=False)
+            print(f"User database has been processed and saved as {str(para.args_user_database).rsplit('.',1)[0]}_DeepHalo_dereplication_ready_database.csv")
+        dereplication_database = {'user_database':user_dereplication_database}
         dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
         os.makedirs(dereplication_folder, exist_ok=True)
-
-        # Process each file in parallel
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [
-                executor.submit(process_dereplication_file, file, Deephalo_output_result,
-                                dereplication_database, para, dereplication_folder)
-                for file in Deephalo_outputs
-            ]
-            
-            # Wait for all tasks to complete and retrieve results
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    processed_file = future.result()
-                    print(f"Successfully processed: {processed_file}")
-                except Exception as e:
-                    print(f"Error processing file: {e}")
-    else:
-        raise ValueError("User database is required for dereplication.")
+        for Deephalo_output in Deephalo_outputs:
+            Deephalo_output_df = pd.read_csv(os.path.join(Deephalo_output_result, Deephalo_output))
+            Deephalo_output_df_halo = Deephalo_output_df[Deephalo_output_df['H_score'] >=0.4]
+            Deephalo_output_df_non_halo = Deephalo_output_df[Deephalo_output_df['H_score'] <0.4]
+            df = Dereplication(dereplication_database, Deephalo_output_df_halo, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
+            df = pd.concat([df,Deephalo_output_df_non_halo])
+            print(f'Dereplication results for {Deephalo_output}')
+            df.to_csv(os.path.join(dereplication_folder, Deephalo_output), index=False)
 
     # If a GNPS analysis folder is provided, integrate the dereplication and analysis results
     # into the GNPS file and output a new network file

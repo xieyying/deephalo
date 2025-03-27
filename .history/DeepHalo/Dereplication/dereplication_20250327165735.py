@@ -27,7 +27,6 @@ class Dereplication:
         """
         Perform dereplication using the database.
         """
-        self.Deephalo_output = self.Deephalo_output.copy()
         for dataname, data in self.data.items():
             # Ensure relevant columns are numeric
             data['M+H'] = pd.to_numeric(data['M+H'], errors='coerce')

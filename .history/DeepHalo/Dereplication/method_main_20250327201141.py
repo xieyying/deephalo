@@ -98,7 +98,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
             halo_file = os.path.join(deephalo_result_dereplication_folder, f)
             halo_data = pd.read_csv(halo_file)
             # Filter by m/z proximity to precursor_mass
-            halo_data = halo_data[halo_data['mz'].between(precursor_mass - 0.05, precursor_mass + 0.05)]
+            halo_data = halo_data[halo_data['mz'].between(precursor_mass - 0.02, precursor_mass + 0.02)]
             # If multiple rows are present, pick the row(s) with the minimal m/z difference
             if len(halo_data) > 1:
                 mz_diff = abs(halo_data['mz'] - precursor_mass).round(5)

@@ -235,7 +235,7 @@ def pipeline_dereplication(para):
             print(f"User database has been processed and saved as {ready_db_path}")
         dereplication_database = {'user_database': user_dereplication_database}
 
-        # Create the output folder for dereplication results
+        Create the output folder for dereplication results
         dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
         os.makedirs(dereplication_folder, exist_ok=True)
 

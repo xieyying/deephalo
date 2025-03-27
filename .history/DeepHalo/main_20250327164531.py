@@ -189,22 +189,16 @@ def process_dereplication_file(file, Deephalo_output_result, dereplication_datab
     # Read the feature file
     file_path = os.path.join(Deephalo_output_result, file)
     Deephalo_output_df = pd.read_csv(file_path)
-    if para.FeatureFilter_H_score_threshold < 0.4:
-        # Split data based on H_score threshold
-        df_halo = Deephalo_output_df[Deephalo_output_df['H_score'] >= 0.4]
-        df_non_halo = Deephalo_output_df[Deephalo_output_df['H_score'] < 0.4]
-        
-        # Run the dereplication process on the high-confidence (halo) subset
-        df_derep = Dereplication(dereplication_database, df_halo, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
-        # df_non_halo中没有的列，用None填充
-        df_non_halo = df_non_halo.copy()
-        for col in df_derep.columns:
-            if col not in df_non_halo.columns:
-                df_non_halo[col] = None
-        # Combine results with non-halo features
-        df_final = pd.concat([df_derep, df_non_halo])
-    else:
-        df_final = Dereplication(dereplication_database, Deephalo_output_df, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
+    
+    # Split data based on H_score threshold
+    df_halo = Deephalo_output_df[Deephalo_output_df['H_score'] >= 0.4]
+    df_non_halo = Deephalo_output_df[Deephalo_output_df['H_score'] < 0.4]
+    
+    # Run the dereplication process on the high-confidence (halo) subset
+    df_derep = Dereplication(dereplication_database, df_halo, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
+    
+    # Combine results with non-halo features
+    df_final = pd.concat([df_derep, df_non_halo])
     
     # Save results to dereplication folder
     output_path = os.path.join(dereplication_folder, file)

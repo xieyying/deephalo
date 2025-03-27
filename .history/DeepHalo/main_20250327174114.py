@@ -197,7 +197,6 @@ def process_dereplication_file(file, Deephalo_output_result, dereplication_datab
         # Run the dereplication process on the high-confidence (halo) subset
         df_derep = Dereplication(dereplication_database, df_halo, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
         # df_non_halo中没有的列，用None填充
-        df_non_halo = df_non_halo.copy()
         for col in df_derep.columns:
             if col not in df_non_halo.columns:
                 df_non_halo[col] = None
