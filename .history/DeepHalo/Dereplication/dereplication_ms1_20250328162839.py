@@ -1,7 +1,10 @@
 import pandas as pd
-import os
 import numpy as np
-from .method_main import cosine_similarity, combine_columns
+import concurrent.futures
+import os
+from .database_processing import DereplicationDataset
+
+
 
 class Dereplication:
     def __init__(self, databases, Deephalo_output,error_ppm=10,Inty_cosine_score=0.96) -> None:
@@ -136,4 +139,99 @@ class Dereplication:
         datanames = list(self.data.keys())
         df = self.merge_columns(df, datanames)
         return df
+
+def cosine_similarity(inty_list1, inty_list2):
+    inty_list1 = np.array(inty_list1, dtype=float)
+    inty_list2 = np.array(inty_list2, dtype=float)
+    dot_product = np.dot(inty_list1, inty_list2)
+    norm1 = np.linalg.norm(inty_list1)
+    norm2 = np.linalg.norm(inty_list2)
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+    return dot_product / (norm1 * norm2)
+
+def combine_columns(row, columns):
+    for col in columns:
+        if row[col] not in ['None', 1e6]:
+            return row[col]
+    return 'None' if 'error_ppm' not in columns else 1e6
+
+def process_dereplication_file(file, Deephalo_output_result, dereplication_database, para, dereplication_folder):
+    """
+    Process a single dereplication file.
+    """
+    # Read the feature file
+    file_path = os.path.join(Deephalo_output_result, file)
+    Deephalo_output_df = pd.read_csv(file_path)
+    if para.FeatureFilter_H_score_threshold < 0.4:
+        # Split data based on H_score threshold
+        df_halo = Deephalo_output_df[Deephalo_output_df['H_score'] >= 0.4]
+        df_non_halo = Deephalo_output_df[Deephalo_output_df['H_score'] < 0.4]
+        
+        # Run the dereplication process on the high-confidence (halo) subset
+        df_derep = Dereplication(dereplication_database, df_halo, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
+        # df_non_halo中没有的列，用None填充
+        df_non_halo = df_non_halo.copy()
+        for col in df_derep.columns:
+            if col not in df_non_halo.columns:
+                df_non_halo[col] = None
+        # Combine results with non-halo features
+        df_final = pd.concat([df_derep, df_non_halo])
+    else:
+        df_final = Dereplication(dereplication_database, Deephalo_output_df, para.dereplication_error, para.dereplication_Inty_cosine_score).workflow()
+    
+    # Save results to dereplication folder
+    output_path = os.path.join(dereplication_folder, file)
+    df_final.to_csv(output_path, index=False)
+    
+    print(f"Dereplication completed for {file}")
+    return file
+
+def dereplication_ms1(para):
+    # Confirm that the feature files exist in the Deephalo output folder
+    Deephalo_output_result = os.path.join(para.args_project_path, 'result/halo')
+    if not os.path.exists(Deephalo_output_result):
+        raise FileNotFoundError(f"{Deephalo_output_result} does not exist, please check the path")
+
+    # Read the feature files from the Deephalo output folder
+    files = os.listdir(Deephalo_output_result)
+    Deephalo_outputs = [file for file in files if file.endswith('feature.csv')]
+
+    # If a user database is provided, prepare the dereplication database
+    if para.args_user_database:
+        if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
+            user_dereplication_database = pd.read_csv(para.args_user_database, low_memory=False).dropna(subset=['M+H'])
+        else:
+            print('Processing user database...(this may take a while)')
+            user_dereplication_database = DereplicationDataset(para.args_user_database, 'formula').work_flow()
+            ready_db_path = str(para.args_user_database).rsplit('.', 1)[0] + "_DeepHalo_dereplication_ready_database.csv"
+            user_dereplication_database.to_csv(ready_db_path, index=False)
+            print(f"User database has been processed and saved as {ready_db_path}")
+        dereplication_database = {'user_database': user_dereplication_database}
+
+        # Create the output folder for dereplication results
+        dereplication_folder = os.path.join(para.args_project_path, 'dereplication')
+        os.makedirs(dereplication_folder, exist_ok=True)
+
+        # Process each file in parallel
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(process_dereplication_file, file, Deephalo_output_result,
+                                dereplication_database, para, dereplication_folder)
+                for file in Deephalo_outputs
+            ]
+            
+            # Wait for all tasks to complete and retrieve results
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    processed_file = future.result()
+                    print(f"Successfully processed: {processed_file}")
+                except Exception as e:
+                    print(f"Error processing file: {e}")
+    else:
+        raise ValueError("User database is required for dereplication.")
+    
+    return dereplication_folder
+
+
 

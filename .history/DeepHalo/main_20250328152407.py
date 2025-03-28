@@ -1,6 +1,5 @@
 #import packages
 import os
-import pandas as pd
 import shutil
 import copy
 from .Dataset.my_dataset import Dataset,Datasets
@@ -8,11 +7,13 @@ from .Model.my_model import MyModel,my_search
 from .MZML.my_mzml import MyMzml
 from .MZML.methods_main import create_blank
 import pyopenms as oms
+from multiprocessing import Pool
 import importlib.resources
 from tensorflow import keras
 from .Dereplication.database_processing import DereplicationDataset
-from .Dereplication.dereplication2networks import add_deephalo_results_to_graphml
-from .Dereplication.dereplication_ms1 import dereplicationms1
+from .Dereplication.dereplication import Dereplication
+import pandas as pd
+from .Dereplication.method_main import add_deephalo_results_to_graphml
 import tomli_w
 
 
@@ -182,37 +183,21 @@ def pipeline_analyze_mzml(para):
         print('Invalid input path')
         return
 
-def pipeline_dereplication(para):
+def pipeline_deepHalo(para):
     """
-    Perform dereplication using GNPS output and/or user database.
-    """
-    #MS1 dereplication
-    # If a user database is provided, prepare the dereplication database
-    if para.args_user_database:
-        if 'DeepHalo_dereplication_ready_database' in str(para.args_user_database):
-            user_dereplication_database = pd.read_csv(para.args_user_database, low_memory=False).dropna(subset=['M+H'])
-        else:
-            print('Processing user database...(this may take a while)')
-            user_dereplication_database = DereplicationDataset(para.args_user_database, 'formula').work_flow()
-            ready_db_path = str(para.args_user_database).rsplit('.', 1)[0] + "_DeepHalo_dereplication_ready_database.csv"
-            user_dereplication_database.to_csv(ready_db_path, index=False)
-            print(f"User database has been processed and saved as {ready_db_path}")
-        dereplication_database = {'user_database': user_dereplication_database}
-        dereplication_folder = dereplicationms1(para, dereplication_database)
-    else:
-        dereplication_folder = dereplicationms1(para, None)
+    Run the DeepHalo pipeline, including dataset preparation, model training, and mzML analysis.
     
-    # If a GNPS analysis folder is provided, integrate the dereplication and analysis results
-    # into the GNPS file and output a new network file
+    """
+
     if para.args_GNPS_folder != None:
         if para.args_user_database == None:
-            dereplication_folder = dereplication_folder
+            dereplication_folder = Deephalo_output_result
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
         print('The results have been added to the GNPS file ending with "_adding_DeepHalo_results.graphml"')
         print("_______________________")
     print('Feature_based_prediction Groups 0-7 representing:') 
     print('Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
-  
+
 if __file__ == '__main__':
     pass
 

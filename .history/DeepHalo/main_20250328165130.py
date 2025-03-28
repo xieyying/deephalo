@@ -12,9 +12,8 @@ import importlib.resources
 from tensorflow import keras
 from .Dereplication.database_processing import DereplicationDataset
 from .Dereplication.dereplication2networks import add_deephalo_results_to_graphml
-from .Dereplication.dereplication_ms1 import dereplicationms1
+from .Dereplication.dereplication_ms1 import dereplication_ms1
 import tomli_w
-
 
 #Dataset Pipeline
 def pipeline_dataset(para) -> None:
@@ -198,9 +197,9 @@ def pipeline_dereplication(para):
             user_dereplication_database.to_csv(ready_db_path, index=False)
             print(f"User database has been processed and saved as {ready_db_path}")
         dereplication_database = {'user_database': user_dereplication_database}
-        dereplication_folder = dereplicationms1(para, dereplication_database)
+        dereplication_folder = dereplication_ms1(para, dereplication_database)
     else:
-        dereplication_folder = dereplicationms1(para, None)
+        dereplication_folder = dereplication_ms1(para, None)
     
     # If a GNPS analysis folder is provided, integrate the dereplication and analysis results
     # into the GNPS file and output a new network file
@@ -212,7 +211,7 @@ def pipeline_dereplication(para):
         print("_______________________")
     print('Feature_based_prediction Groups 0-7 representing:') 
     print('Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
-  
+    
 if __file__ == '__main__':
     pass
 
