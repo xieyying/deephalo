@@ -1,0 +1,67 @@
+from collections import Counter
+
+def calculate_zig_zag(I):
+    """
+    Calculate the ZigZag score based on the classification results of all scans in an ROI
+    """
+    # Calculate the maximum and minimum values of I
+    Imax= max(I)
+    Imin = min(I)
+    N = len(I) 
+    total = 0
+    # Calculate the ZigZag score for I
+    for n in range(1,N-1):
+        term = (2 * I[n] - I[n - 1] - I[n + 1])**2 
+        total += term
+    zigzag = total/(N*(Imax-Imin)**2)
+    # Convert the ZigZag score to a percentage
+    score = (4-8/N-zigzag)/(4-8/N)*100
+    return score
+
+def roi_scan_based_halo_evaluation(I):
+    """
+    Determine the probability of an ROI being a halo based on the classification results of all scans in the ROI
+    """
+    # Get the common classes in the ROI
+    com_class = list(Counter(I).keys())
+    counter = Counter(I)
+    # Calculate the ratio of 0,1,2 in I
+    scan_based_halo_ratio = sum(1 for i in I if i in {0, 1, 2}) / len(I)
+
+    # Determine the halo classification for the ROI
+    if any(i in com_class for i in [0, 1, 2]):
+        scan_based_halo_class = 'halo'
+        if len(com_class) == 1:
+            if len(I) >= 2:
+                scan_based_halo_score = 100
+                scan_based_halo_sub_score = 100
+                scan_based_halo_sub_class = com_class[0]
+            else:
+                scan_based_halo_score = 0
+                scan_based_halo_sub_class = "None"
+                scan_based_halo_sub_score = "None"
+            
+        else:
+            if {0, 1, 2}.issuperset(set(com_class)):
+                scan_based_halo_score = 100
+                scan_based_halo_sub_class =max(counter.items(), key=lambda x: x[1])[0]
+                scan_based_halo_sub_class_ratio = counter[scan_based_halo_sub_class] / len(I)
+                if len(I) > 2:
+                    scan_based_halo_sub_score = calculate_zig_zag(I) * scan_based_halo_sub_class_ratio
+                else:
+                    scan_based_halo_sub_score = scan_based_halo_ratio
+            else:
+                I_new = [1 if i in [0,1,2] else 0 for i in I]
+                if len(I) > 2:
+                    scan_based_halo_score = calculate_zig_zag(I_new) * scan_based_halo_ratio
+                else:
+                    scan_based_halo_score = scan_based_halo_ratio
+                scan_based_halo_sub_class = "None"
+                scan_based_halo_sub_score = "None"
+    else:
+        scan_based_halo_class = 'non-halo'
+        scan_based_halo_score = 0
+        scan_based_halo_sub_class = 'None'
+        scan_based_halo_sub_score = 'None'
+
+    return scan_based_halo_class,scan_based_halo_score,scan_based_halo_sub_class,scan_based_halo_sub_score,scan_based_halo_ratio

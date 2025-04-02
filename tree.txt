@@ -1,0 +1,62 @@
+文件夹 PATH 列表
+卷序列号为 9222-1C50
+C:.
+│  LICENSE
+│  pyproject.toml
+│  README.md
+│  tree.txt
+│  
+├─deephalo
+│  │  config.toml
+│  │  halo_cli.py
+│  │  main.py
+│  │  parameters.py
+│  │  __init__.py
+│  │  
+│  ├─assets
+│  │  └─pretrained_models
+│  │          anomaly_detection_model.h5
+│  │          isonn_element_prediction_model.h5
+│  │          
+│  ├─dataset
+│  │      data_creation.py
+│  │      fake_isotope_generator.py
+│  │      training_dataset_generator.py
+│  │      __init__.py
+│  │      
+│  ├─dereplication
+│  │      database_processing.py
+│  │      dereplication2networks.py
+│  │      dereplication_ms1.py
+│  │      __init__.py
+│  │      
+│  ├─model
+│  │      anomaly_detector_model.py
+│  │      model_build.py
+│  │      model_training.py
+│  │      training_data.py
+│  │      __init__.py
+│  │      
+│  └─msanalysis
+│          H_scoring.py
+│          isotope_extraction.py
+│          msanalysis_main.py
+│          __init__.py
+│          
+├─docs
+│      Documentation.docx
+│      Documentation.pdf
+│      
+└─tests
+    └─test_data
+        │  Demo_data_1.mzML
+        │  Demo_data_2.mzML
+        │  Demo_dereplication_database.csv
+        │  FunGBE20250113.csv
+        │  NPAtlas_download_1000.csv
+        │  NPAtlas_download_2024_09.tsv
+        │  
+        └─batch
+                Demo_data_1.mzML
+                Demo_data_2.mzML
+                
