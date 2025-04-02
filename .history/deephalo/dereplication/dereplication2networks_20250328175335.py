@@ -11,12 +11,12 @@ def compute_attributes(halo_data_):
     # Compute basic attributes from non-empty halo_data_
     h_score_mean = round(float(halo_data_['H_score'].mean()), 2)
     
-    if 'classification' in halo_data_.columns:
-        classification = str(halo_data_['classification'].tolist())
+    if 'Feature_based_prediction' in halo_data_.columns:
+        Feature_based_prediction = str(halo_data_['Feature_based_prediction'].tolist())
     elif 'Class_pred' in halo_data_.columns:
-        classification = str(halo_data_['Class_pred'].tolist())
+        Feature_based_prediction = str(halo_data_['Class_pred'].tolist())
     else:
-        classification = ''
+        Feature_based_prediction = ''
     # Check if 'compound_names' column exists and contains valid data
     
     if 'compound_names' in halo_data_.columns:
@@ -41,9 +41,9 @@ def compute_attributes(halo_data_):
                 # Process Smiles and Adducts
                 Smiles = str(halo_data_['Smiles'].loc[indices].unique()[0])
                 Adducts = str(halo_data_['adducts'].loc[indices].unique()[0])
-                return h_score_mean, compound_names, Inty_cosine_score, error_ppm, Smiles, Adducts, classification
+                return h_score_mean, compound_names, Inty_cosine_score, error_ppm, Smiles, Adducts, Feature_based_prediction
     # Default blank attributes if compounds are not valid
-    return h_score_mean, '', '', '', '', '', classification
+    return h_score_mean, '', '', '', '', '', Feature_based_prediction
 
 def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_folder):
     # Define defaults
@@ -53,7 +53,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
     default_error_ppm = ''
     default_Smiles = ''
     default_adducts = ''
-    default_classification = ''
+    default_Feature_based_prediction = ''
     
     # Read GraphML file from the provided folder
     graphml_file = next(file for file in os.listdir(gnps_folder) if file.endswith('.graphml'))
@@ -76,7 +76,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
                 'error_ppm': default_error_ppm,
                 'Smiles': default_Smiles,
                 'Adducts': default_adducts,
-                'classification': default_classification,
+                'Feature_based_prediction': default_Feature_based_prediction,
             })
             continue
         
@@ -103,7 +103,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
             h_score_mean = round(float(halo_data_['H_score'].mean()), 2)
             comp_attrs = compute_attributes(halo_data_)
             # Unpack attributes
-            compound_names, Inty_cosine_score, error_ppm, Smiles, Adducts,classification = comp_attrs[1:7]
+            compound_names, Inty_cosine_score, error_ppm, Smiles, Adducts,Feature_based_prediction = comp_attrs[1:7]
         else:
             h_score_mean = default_h_score_mean
             compound_names = default_compound_names
@@ -111,7 +111,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
             error_ppm = default_error_ppm
             Smiles = default_Smiles
             Adducts = default_adducts
-            classification = default_classification
+            Feature_based_prediction = default_Feature_based_prediction
         
         # Update graph node attributes
         graph.nodes[node].update({
@@ -121,7 +121,7 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
             'error_ppm': error_ppm,
             'Smiles': Smiles,
             'Adducts': Adducts,
-            'classification': classification,
+            'Feature_based_prediction': Feature_based_prediction,
         })
     
     # Ensure that nodes’ attributes are stored as plain strings
@@ -135,5 +135,4 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
     # Write the modified graph to a new GraphML file
     output_file = os.path.join(gnps_folder, graphml_file.replace('.graphml', '_adding_DeepHalo_results.graphml'))
     nx.write_graphml(graph, output_file)
-    print("--------------------")
     print(f"Modified GraphML file saved to {output_file}")

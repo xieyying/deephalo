@@ -182,7 +182,8 @@ def process_dereplication_file(file, Deephalo_output_result, dereplication_datab
         print(f"No halo in {file}.")
     else:
         df_final.to_csv(output_path, index=False)
-
+    
+    print(f"Dereplication completed for {file}")
     return file
 
 def dereplicationms1(para, dereplication_database):

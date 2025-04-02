@@ -224,9 +224,9 @@ def pipeline_dereplication(para):
         if para.args_user_database == None:
             dereplication_folder = dereplication_folder
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
-        print("--------------------")
+        print("_______________________")
         print('The results have been added to the GNPS file ending with "_adding_DeepHalo_results.graphml"')
-        print("--------------------")
+        print("_______________________")
     print('Element pattern classifications (0-7):')
     print('0: Complex halogens (Cl₃+, Br₂+, or mixed Cl/Br)')
     print('1: Medium halogen patterns (Cl₃/Br)')

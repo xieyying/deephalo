@@ -224,18 +224,11 @@ def pipeline_dereplication(para):
         if para.args_user_database == None:
             dereplication_folder = dereplication_folder
         add_deephalo_results_to_graphml(para.args_GNPS_folder, dereplication_folder)
-        print("--------------------")
         print('The results have been added to the GNPS file ending with "_adding_DeepHalo_results.graphml"')
-        print("--------------------")
-    print('Element pattern classifications (0-7):')
-    print('0: Complex halogens (Cl₃+, Br₂+, or mixed Cl/Br)')
-    print('1: Medium halogen patterns (Cl₃/Br)')
-    print('2: Simple halogen patterns (Cl/Cl₂)')
-    print('3: Selenium compounds')
-    print('4: Boron compounds')
-    print('5: Iron compounds') 
-    print('6: CHONFPSNa compounds')
-    print('7: Overlapping isotope patterns')
+        print("_______________________")
+    print('classifications 0-7 representing:') 
+    print('Cln/Brm (n>3, m>1 or Cl&Br), Cl3/Br, Cl/Cl2, Se, B, Fe, CHONFPSINa-containing compounds, and overlapping hydro isomers, respectively.')
+  
 if __file__ == '__main__':
     pass
 

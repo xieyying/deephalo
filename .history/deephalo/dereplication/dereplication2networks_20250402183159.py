@@ -135,5 +135,5 @@ def add_deephalo_results_to_graphml(gnps_folder, deephalo_result_dereplication_f
     # Write the modified graph to a new GraphML file
     output_file = os.path.join(gnps_folder, graphml_file.replace('.graphml', '_adding_DeepHalo_results.graphml'))
     nx.write_graphml(graph, output_file)
-    print("--------------------")
+    print("_______________________")
     print(f"Modified GraphML file saved to {output_file}")

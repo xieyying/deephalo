@@ -135,6 +135,7 @@ def create_blank(para):
     Create a blank for feature subtraction
     """
     # Check if args_blank is provided
+
     if para.args_blank is not None:
         blank_paths = get_blank_paths(para)
         if len(blank_paths) == 0:
