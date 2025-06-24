@@ -15,6 +15,8 @@ def compute_attributes(halo_data_):
         classification = str(halo_data_['classification'].tolist())
     elif 'Class_pred' in halo_data_.columns:
         classification = str(halo_data_['Class_pred'].tolist())
+    elif 'Feature_based_prediction' in halo_data_.columns:
+        classification = str(halo_data_['Feature_based_prediction'].tolist())
     else:
         classification = ''
     # Check if 'compound_names' column exists and contains valid data

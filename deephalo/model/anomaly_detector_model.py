@@ -122,11 +122,15 @@ def train_autoencoder(autoencoder, data, epochs=50, batch_size=32):
     
 def main():
     # Configure paths and parameters
-    work_folder = 'deephalo\assets\pretrained_models'
-    model_path = os.path.join(work_folder,  '\isonn_element_prediction_model.h5')
+    work_folder = 'deephalo/assets/pretrained_models'
+    model_path = os.path.join(work_folder, 'isonn_element_prediction_model.h5')
     layer_name = "dense"  # Adjust according to the model summary
+    # load model and model summary
+    model = keras.models.load_model(model_path)
+    model.summary()
+
     data_file = os.path.join(work_folder, 'training_and_val_data.csv') # Adjust according to actual data file path
-    
+
     features = [
         "p0_int",
         "p1_int",
@@ -234,15 +238,15 @@ def plot_quantile_curve(df, col='reconstruction_error'):
     print(f'Max slope point: Threshold = {max_slope_threshold}, Quantile = {max_slope_quantile}')
    
 if __name__ == "__main__":
-    # main()
+    main()
     
-    input = r'\training_and_val_data.csv' # Adjust according to actual data file path
-    df_feature = pd.read_csv (input)
-    #group = 0, 1, 2, 6
-    df_feature = df_feature[df_feature['group'].isin([0,1,2,6])]   
-    df_ = anormal_isotope_pattern_detection(df_feature)
+    # input = r'\training_and_val_data.csv' # Adjust according to actual data file path
+    # df_feature = pd.read_csv (input)
+    # #group = 0, 1, 2, 6
+    # df_feature = df_feature[df_feature['group'].isin([0,1,2,6])]   
+    # df_ = anormal_isotope_pattern_detection(df_feature)
 
-    plot_quantile_curve(df_, col='reconstruction_error')
+    # plot_quantile_curve(df_, col='reconstruction_error')
     
   
  

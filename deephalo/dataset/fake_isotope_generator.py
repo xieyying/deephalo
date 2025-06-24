@@ -100,7 +100,7 @@ class FakeIsotopeGenerator:
 
     def get_iron_additive_isotopes(self) -> Spectrum:
         """Get the isotopic distribution of the formula with iron additive."""
-        f = Formula(self.formula + "Fe") - Formula('H2')
+        f = Formula(self.formula + "Fe") - Formula('H3')
         return f.spectrum()
 
     def get_boron_additive_isotopes(self) -> Spectrum:

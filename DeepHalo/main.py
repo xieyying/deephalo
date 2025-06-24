@@ -183,7 +183,7 @@ def pipeline_ms_analyze(para):
             for file in files:
                 if file.lower().endswith(('.mzml')):
                     files_to_process.append(os.path.join(root, file))
-        print(f'Found {files_to_process} files to process.')
+        print(f'Found {len(files_to_process)} files to process.')
         for file in files_to_process:
             print(f'Processing {file}')
             try:
@@ -228,14 +228,13 @@ def pipeline_dereplication(para):
         print('The results have been added to the GNPS file ending with "_adding_DeepHalo_results.graphml"')
         print("--------------------")
     print('Element pattern classifications (0-7):')
-    print('0: Complex halogens (Cl₃+, Br₂+, or mixed Cl/Br)')
-    print('1: Medium halogen patterns (Cl₃/Br)')
-    print('2: Simple halogen patterns (Cl/Cl₂)')
-    print('3: Selenium compounds')
-    print('4: Boron compounds')
-    print('5: Iron compounds') 
-    print('6: CHONFPSNa compounds')
-    print('7: Overlapping isotope patterns')
+    print('0: X-type (mixed/polyhalogenated)')
+    print('1: Br-type (Br/Cl₃)')
+    print('2: Cl-type (Cl/Cl₂)')
+    print('3: Se-type (Selenium compounds)')
+    print('4: B-type (Boron compounds)')
+    print('5: Fe-type (Iron compounds)')
+    print('6: C-type (CHONFPSNa compounds)')
+    print('7: artifact-type (artifact isotope patterns)')
 if __file__ == '__main__':
     pass
-

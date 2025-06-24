@@ -1,7 +1,6 @@
 # DeepHalo
 
-**Open-Source Pipeline for High-Confidence and High-throughput Detection of Halogenated Compounds in Complex HRMS Data**
-
+**A Hierarchically Optimized Workflow for High-Confidence and High-throughput Detection of Halogenated Compounds in Complex HRMS Data**
 ---
 
 ## Core Features
@@ -9,40 +8,43 @@
 ### 1. Halogen Prediction
 - **Element Prediction Model (EPM)**
   - Dual-branch Isotope Neural Network (IsoNN) architecture
-  - High accuracy Cl/Br detection (>98.6% precision)
+  - High accuracy Cl/Br detection (>99.9% precision based on benchmark results)
   - Wide mass range coverage (50-2000 Da)
   - Robust interference resistance to B/Se/Fe/dehydro isomers
 
-### 2. Quality Control System
-- **Dual Validation Strategy**
-  - Statistical rule-based mass correction
-  - Autoencoder-based Anomaly Detection Model (ADM) for intensity pattern validation
-- **Multi-Level Scoring**
-  - Feature-level centroid analysis
-  - Scan-level validation
-  - H-score integration for peak overlap/saturation error elimination
+### 2. Isotope Pattern Validation
+- **Dual Validation System**
+  - Mass Dimension: Statistical rule-based correction.
+  - Intensity Dimension: Autoencoder-based Anomaly Detection Model (ADM).
+
+### 3. Multi-Level Halogen Confidence Scoring (H-score)
+- **Dual levels**
+  - Prediction based on centroid-level isotope patterns
+  - Prediction based on Scan-level isotope patterns
+  - H-score integration for comprehensive assessment on the above both levels
 
 ### 3. Enhanced Dereplication
 - **Dual-Strategy Approach**
-  - Custom Database Matching
+  - MS1-Based Dereplication Using Custom Database Matching
     - Exact mass analysis
     - Halogen presence verification
     - Isotope intensity similarity scoring
-  - GNPS Integration
+  - MS2-Based Dereplication by Integrating GNPS
     - MS2 molecular networking
-    - Element dimension annotation
+    - Halogenated compound annotation
     - GraphML file enhancement
 ---
 
 ##  Technical Advantages
 
 - **High Throughput**
-  - Batch analysis of unlimited LC-MS/MS datasets
-  - Rapid processing (<30 sec/sample) on standard hardware (Core i9, 16GB RAM)
+  - end-to-end automated analysis
+  - Batch processing of unlimited LC-MS/MS datasets
+  - Rapid processing (several to dozens of seconds per sample) on standard hardware (Core i9, 16GB RAM)
 
 - **High Accuracy**
-  - >98.6% precision in halogen detection
-  - Validated across both simulated and experimental LC-MS datasets
+  - >98.3% precision in halogen detection across simulated and experimental LC-MS datasets.
+  - Comprehensively validation across both simulated and experimental LC-MS datasets
 
 - **Comprehensive Integration**
   - Input: Supports `.mzML` format
@@ -50,9 +52,8 @@
   - Seamless integration with GNPS molecular networking
 
 - **Enhanced Dereplication**
-  - Embeds element detection results into GNPS output GraphML files
-  - Significantly higher efficiency compared to molecular networking alone
-  - Enables molecular network annotation in the element dimension
+  - Embeds halogen prediction results into GNPS output GraphML files
+  - Significantly higher dereplicaton rate compared to molecular networking alone
 ---
 
 ## Target Applications
@@ -62,14 +63,15 @@
 ---
 
 ## Key Differentiators
-1. First integrated multi-level halogen detection system  
-2. Novel dual-branch IsoNN architecture
-3. Comprehensive dereplication workflow
-4. Enhanced GNPS molecular networking
+1. Deep leaning-based halogen prediction resistance to Fe/dehydro isomers
+2. First Isotope Pattern Validation strategies specific for halogenated molecules
+3. hierarchical halogen scoring system (H-score) 
+4. Comprehensive dereplication workflow
+5. Enhanced GNPS molecular networking
 
 ---
 
-*For methodology details and validation datasets, see [Methods and Benchmarks](#).*  
+*For methodology details and validation datasets, see [Methods](#).*  
 
 ## Where to get it？
 The source code is hosted on GitHub at: https://github.com/xieyying/DeepHalo
@@ -122,39 +124,43 @@ pip install -e .
 ## Quickstart
 ### High-throughput Detection of Halogenated Compounds
 ```bash
-halo analyze-mzml -i /path/to/mzml_files -o /path/to/output_directory -ms2
+halo detect -i /path/to/mzml_files -o /path/to/output_directory -ms2
 ```
 ### Dereplication
 ```bash
-halo dereplication -o /path/to/output_directory -g /path/to/GNPS_results -ud /path/to/custom_database.csv -udk Formula
+halo dereplicate -o /path/to/output_directory -g /path/to/GNPS_results -ud /path/to/custom_database.csv
 ```
 ## Full Usage Guide
 ### Get help
 ```bash
 halo --help                 # Show all commands
-halo analyze-mzml --help    # Detailed parameters for a subcommand
+halo detect --help    # Detailed parameters for the subcommand 'detect'
+halo dereplicate --help  # Detailed parameters for the subcommand 'dereplicate'
 ```
-###  Main Functions
-- Analyze mzml file:
-```bash
-halo analyze-mzml -i <input_path -o <project_path> [-c <config_file>] [-b <blank_samples_dir>] [-ms2]
-```
-- Dereplication: 
-```bash
-halo dereplication -o <project_path> -g <GNPS_folder> -ud <user_database.csv> -udk <formula_column_name>
-```
-- Create training dataset: 
-```sh
-halo create-dataset [project_path]
-```
-- Train model: 
-```sh
-halo create-model [project_path]
-```
-If you need to modify configuration parameters, edit the config file ([download it here](https://github.com/xieyying/DeepHalo/blob/xin-back/DeepHalo/config.toml)) and then override the default settings:
+### Main Functions
+
+- **Analyze mzML file:**
+    ```bash
+    halo detect -i <input_path> -o <project_path> [-c <config_file>] [-b <blank_samples_dir>] [-ob] [-ms2]
+    ```
+- **Dereplication:** 
+    ```bash
+    halo dereplicate -o <project_path> [-g <GNPS_folder>] [-ud <user_database.csv>]
+    ```
+- **Create training dataset:** 
+    ```bash
+    halo create-ds <project_path> [-c <config_file>]
+    ```
+- **Train model:** 
+    ```bash
+    halo train <project_path> [-c <config_file>] [-m search]
+    ```
+
+If you need to modify configuration parameters, edit the config file ([download it here](https://github.com/xieyying/deephalo/config.toml)) and override the default settings by specifying:
 ```bash
 -c [user_config_file]
-```
+
+*See documentation for more applications.*
 
 ## License
 This code repository is licensed under the [MIT License](LICENSE).

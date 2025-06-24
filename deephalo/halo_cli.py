@@ -108,7 +108,7 @@ def dereplicate(
         help="Path to user database file in .csv or .json format"),
 
 ):
-    """Perform dereplication using GNPS output and/or user database"""
+    """Perform dereplication using the GNPS output, a user-provided database, or both."""
     
     if GNPS_folder is None and user_database is None:
         raise ValueError('Missing required GNPS file or user database')

@@ -4,9 +4,9 @@
 
 [FeatureFinding]
 mass_trace_detection = [
-    ["mass_error_ppm", 10.0], # Precursor mass error in ppm (default: 20.0; adjust based on experimental conditions)
-    ["min_trace_length", 3.0], # Minimum trace length (default: 5.0; adjust based on experimental conditions)
-    ["noise_threshold_int", 500.0], # Noise intensity threshold (adjust based on experimental conditions)
+    ["mass_error_ppm", 10.0], # Precursor mass error in ppm (adjust based on experimental conditions)
+    ["min_trace_length", 3.0], # Minimum trace length (adjust based on experimental conditions)
+    ["noise_threshold_int", 1000.0], # Noise intensity threshold (adjust based on experimental conditions)
     ["chrom_peak_snr", 10.0], # Chromatographic peak signal-to-noise ratio (adjust based on experimental conditions)
     ["trace_termination_criterion", "outlier"],
     ["trace_termination_outliers", 5],
@@ -17,7 +17,7 @@ mass_trace_detection = [
 ]
 
 elution_peak_detection = [
-    ["chrom_fwhm", 3.0], # Chromatographic full width at half maximum (default: 5.0)
+    ["chrom_fwhm", 3.0], # Chromatographic full width at half maximum
     ["chrom_peak_snr", 3.0],
     ["width_filtering", "auto"],
     ["min_fwhm", 1.0],
@@ -27,12 +27,12 @@ elution_peak_detection = [
 
 feature_detection = [
     ["local_rt_range", 10.0],
-    ["local_mz_range", 6.5], # Local m/z range (default: 6.5; adjust if necessary — e.g., DeepHalo uses 5 isotope peaks, so you may set to 5.5)
+    ["local_mz_range", 5.5], # Local m/z range (adjust if necessary — e.g., DeepHalo uses 5 isotope peaks, so you may set to 5.5)
     ["chrom_fwhm", 3.0], # Chromatographic full width at half maximum (default: 5.0; adjust based on experimental conditions)
     ["report_summed_ints", "false"],
     ["mz_scoring_13C", "false"],
     ["charge_lower_bound", 1],
-    ["charge_upper_bound", 3],
+    ["charge_upper_bound", 1],
     ["enable_RT_filtering", "true"],
     ["use_smoothed_intensities", "true"],
     ["mz_scoring_by_elements", "true"], # Required for DeepHalo (not default in pyopenms)
@@ -80,7 +80,8 @@ use_mass_difference = ''  # Set to 'none' to disable mass difference correction 
 
 [FeatureFilter]
 H_score_threshold = 0 # Range: 0-1. Higher values indicate higher confidence.
-Anomaly_detection_threshold = 7.015356328085893e-05  # Isotope peak intensity reconstruction error from ADM.
+Anomaly_detection_threshold = 7.015356328085893e-05                                                  # Recommended range: [7.015356328085893e-05, 1].
+    # Isotope peak intensity reconstruction error from ADM.
                                                      # Recommended range: [7.015356328085893e-05, 1].
                                                      # Use 7.015356328085893e-05 to apply filtering, or 1.0 to disable filtering.
 

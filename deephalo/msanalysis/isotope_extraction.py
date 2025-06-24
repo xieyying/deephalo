@@ -273,8 +273,8 @@ def feature_classifier(masstrace_centroid_mz: list,charge:int) -> int:
     md = np.diff(masstrace_centroid_mz[:6])  # Limits to first 6 m/z values
 
     # Define acceptable ranges
-    range1 = (0.9964, 1.0096)
-    range2 = (0.9888, 1.0081)
+    range1 = (0.9964, 1.0096) # M1_M0
+    range2 = (0.9888, 1.0081) # M2_M1
 
     # Class 0
     if range1[0] < md[0] <= range1[1] and range2[0] < md[1] <= range2[1]:
