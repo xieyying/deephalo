@@ -227,14 +227,14 @@ def pipeline_dereplication(para):
         print("--------------------")
         print('The results have been added to the GNPS file ending with "_adding_DeepHalo_results.graphml"')
         print("--------------------")
-    print('Element pattern classifications (0-7):')
+    print('Isotope pattern classifications (0-7):')
     print('0: X-type (mixed/polyhalogenated)')
     print('1: Br-type (Br/Cl₃)')
     print('2: Cl-type (Cl/Cl₂)')
     print('3: Se-type (Selenium compounds)')
     print('4: B-type (Boron compounds)')
     print('5: Fe-type (Iron compounds)')
-    print('6: C-type (CHONFPSNa compounds)')
+    print('6: C-type (compounds containing only C, H, O, N, F, P, S, Na)')
     print('7: artifact-type (artifact isotope patterns)')
 if __file__ == '__main__':
     pass
