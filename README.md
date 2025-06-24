@@ -159,7 +159,7 @@ halo dereplicate --help  # Detailed parameters for the subcommand 'dereplicate'
 If you need to modify configuration parameters, edit the config file ([download it here](https://github.com/xieyying/deephalo/config.toml)) and override the default settings by specifying:
 ```bash
 -c [user_config_file]
-
+ ```
 *See documentation for more applications.*
 
 ## License
