@@ -1,6 +1,6 @@
 # This file is a configuration file used to set parameters for DeepHalo.
 
-# Parameters for the analyze-mzml subcommand.
+# Parameters for the 'detect' subcommand.
 
 [FeatureFinding]
 mass_trace_detection = [
@@ -85,7 +85,7 @@ Anomaly_detection_threshold = 7.015356328085893e-05                             
                                                      # Recommended range: [7.015356328085893e-05, 1].
                                                      # Use 7.015356328085893e-05 to apply filtering, or 1.0 to disable filtering.
 
-# Parameters for the dereplication subcommand
+# Parameters for the 'dereplicate' subcommand
 [Dereplication]
 error_ppm = 10 # Precursor mass tolerance in ppm
 Inty_cosine_score = 0.96 # Minimum cosine score threshold between experimental and theoretical intensities
@@ -97,6 +97,7 @@ paths = [
      ],      
 ]
 
+# Parameters for the 'create-ds' subcommand
 # Database file path
 # type_list = ['base','Fe','B','Se','hydro']
 # type_list = ['base']
@@ -109,9 +110,8 @@ mz_end = 2000           # Ending m/z value
 rate_for_hydro = [0.33, 0.66, 0.99, 1.32, 1.65, 2.3, 5]  # Rates used for simulating hydro
 return_from_max_ints = "True"  # Whether to start returning from the peak with the maximum intensity
 
-# Parameters for the create-model subcommand
+# Parameters for the 'train' subcommand
 [model_data]
-
 # Feature list used for training
 feature_list = [
     "p0_int",
