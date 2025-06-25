@@ -32,7 +32,7 @@ feature_detection = [
     ["report_summed_ints", "false"],
     ["mz_scoring_13C", "false"],
     ["charge_lower_bound", 1],
-    ["charge_upper_bound", 1],
+    ["charge_upper_bound", 3],
     ["enable_RT_filtering", "true"],
     ["use_smoothed_intensities", "true"],
     ["mz_scoring_by_elements", "true"], # Required for DeepHalo (not default in pyopenms)
