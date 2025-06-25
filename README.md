@@ -156,7 +156,7 @@ halo dereplicate --help  # Detailed parameters for the subcommand 'dereplicate'
     halo train <project_path> [-c <config_file>] [-m search]
     ```
 
-If you need to modify configuration parameters, edit the config file ([download it here](https://github.com/xieyying/deephalo/config.toml)) and override the default settings by specifying:
+If you need to modify configuration parameters, edit the config file ([download it here](https://github.com/xieyying/DeepHalo/tree/main/DeepHalo/config.toml)) and override the default settings by specifying:
 ```bash
 -c [user_config_file]
  ```
