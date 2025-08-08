@@ -2,12 +2,33 @@
 
 # Parameters for the 'detect' subcommand.
 
+[FeatureFilter]
+H_score_threshold = 0.4 # Range: 0-1. Higher values indicate higher confidence.
+Anomaly_detection_threshold = 7.015356328085893e-05 # Recommended range: [7.015356328085893e-05, 1].
+    # Isotope peak intensity reconstruction error from ADM.
+    # Recommended range: [7.015356328085893e-05, 1].
+    # Use 7.015356328085893e-05 to apply filtering, or 1.0 to disable filtering.
+
+[FeatureMapProcessor]
+min_num_of_masstraces = 3 # Halogenated compounds should have at least 3 isotope peaks
+min_feature_int = 5000  # Minimum feature intensity for further analysis of halogenated compounds (sum intensity of a candidate feature).
+min_scan_number = 3       # Minimum number of scans required.
+use_mass_difference = ''  # Set to 'none' to disable mass difference correction for isotope patterns, or leave empty ('') to enable it.
+
+# Parameters for the 'dereplicate' subcommand
+[Dereplication]
+error_ppm = 10 # Precursor mass tolerance in ppm
+Inty_cosine_score = 0.96 # Minimum cosine score threshold between experimental and theoretical intensities
+
+## FeatureFinding parameters inherited from pyopenms
+# For details, please refer to pyopenms.
+
 [FeatureFinding]
 mass_trace_detection = [
     ["mass_error_ppm", 10.0], # Precursor mass error in ppm (adjust based on experimental conditions)
     ["min_trace_length", 3.0], # Minimum trace length (adjust based on experimental conditions)
-    ["noise_threshold_int", 1000.0], # Noise intensity threshold (adjust based on experimental conditions)
-    ["chrom_peak_snr", 10.0], # Chromatographic peak signal-to-noise ratio (adjust based on experimental conditions)
+    ["noise_threshold_int", 500.0], # Noise intensity threshold (adjust based on experimental conditions)
+    ["chrom_peak_snr", 6.0], # Chromatographic peak signal-to-noise ratio (adjust based on experimental conditions)
     ["trace_termination_criterion", "outlier"],
     ["trace_termination_outliers", 5],
     ["min_sample_rate", 0.5],
@@ -43,8 +64,6 @@ feature_detection = [
     ["report_convex_hulls", "true"] # Report convex hulls; required for DeepHalo (not default in pyopenms)
 ]
 
-## feature_grouping parameters and comments inherited from pyopenms
-## active in -b is active
 feature_grouping = [['mz_unit', 'ppm'], # Unit of m/z tolerance
                     ['nr_partitions', 1000], # Number of partitions in m/z space
                     ['warp:enabled', 'true'],  # Whether or not to internally warp feature RTs using LOWESS transformation before linking (reported RTs in results will always be the original RTs)
@@ -70,25 +89,7 @@ feature_grouping = [['mz_unit', 'ppm'], # Unit of m/z tolerance
                     ['LOWESS:interpolation_type', 'cspline'], # Method to use for interpolation between datapoints computed by lowess. 'linear': Linear interpolation. 'cspline': Use the cubic spline for interpolation. 'akima': Use an akima spline for interpolation
                     ['LOWESS:extrapolation_type', 'four-point-linear'] # Method to use for extrapolation outside the data range. 'two-point-linear': Uses a line through the first and last point to extrapolate. 'four-point-linear': Uses a line through the first and second point to extrapolate in front and and a line through the last and second-to-last point in the end. 'global-linear': Uses a linear regression to fit a line through all data points and use it for interpolation.
                     ]
-# For details on the above parameters, please refer to pyopenms.
 
-[FeatureMapProcessor]
-min_num_of_masstraces = 3 # Halogenated compounds should have at least 3 isotope peaks
-min_feature_int = 10000  # Minimum feature intensity for further analysis of halogenated compounds (sum intensity of a candidate feature).
-min_scan_number = 3       # Minimum number of scans required.
-use_mass_difference = ''  # Set to 'none' to disable mass difference correction for isotope patterns, or leave empty ('') to enable it.
-
-[FeatureFilter]
-H_score_threshold = 0 # Range: 0-1. Higher values indicate higher confidence.
-Anomaly_detection_threshold = 7.015356328085893e-05                                                  # Recommended range: [7.015356328085893e-05, 1].
-    # Isotope peak intensity reconstruction error from ADM.
-                                                     # Recommended range: [7.015356328085893e-05, 1].
-                                                     # Use 7.015356328085893e-05 to apply filtering, or 1.0 to disable filtering.
-
-# Parameters for the 'dereplicate' subcommand
-[Dereplication]
-error_ppm = 10 # Precursor mass tolerance in ppm
-Inty_cosine_score = 0.96 # Minimum cosine score threshold between experimental and theoretical intensities
 
 # Parameters for the create-dataset subcommand,not active now.
 [datasets]

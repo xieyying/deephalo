@@ -91,21 +91,21 @@ def halo_scoring(df_f_, df_scan_):
         'H_score': [],
         'sub_class': [],
         'r_halo': [],
-        'z_score': [],
-        'f_score': []
+        'zz_score': [],
+        'c_score': []
     }
 
     for i in df_scan['feature_id_flatten'].unique():
         scan_predictions = df_scan[df_scan['feature_id_flatten'] == i]['classification'].tolist()
         feature_prediction = df_f[df_f['feature_id'] == i]['classification'].tolist()[0]
-        h_score, sub_class, r_halo, z_score, f_score = HalogenScorer().calculate_overall_score(scan_predictions, feature_prediction)
+        h_score, sub_class, r_halo, zz_score, c_score = HalogenScorer().calculate_overall_score(scan_predictions, feature_prediction)
      
         results['feature_id_flatten'].append(i)
         results['H_score'].append(h_score)
         results['sub_class'].append(sub_class)
         results['r_halo'].append(r_halo)
-        results['z_score'].append(z_score)
-        results['f_score'].append(f_score)
+        results['zz_score'].append(zz_score)
+        results['c_score'].append(c_score)
 
     # Convert results to DataFrame
     results_df = pd.DataFrame(results)

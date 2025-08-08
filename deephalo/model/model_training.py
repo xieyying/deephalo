@@ -236,7 +236,7 @@ class HyperparameterSearch:
         model: keras.Model, the constructed model.
         """
         # Define the search space for batch size
-        hp.Choice('batch_size', [8, 16, 32, 64, 128], default=8)
+        hp.Choice('batch_size', [4, 16, 64, 128], default=8)
 
         # Input layer
         inputs = layers.Input(shape=(self.input_shape,), name="features1")
@@ -250,18 +250,18 @@ class HyperparameterSearch:
         input2 = layers.GaussianNoise(hp.Choice('noise2', [0.001]))(input2)
 
         # Apply scaling
-        power = hp.Choice('power_num', [0, 5, 10, 15, 20], default=0)
+        power = hp.Choice('power_num', [0, 10, 20], default=0)
         input2 = tf.pow(input2, power)
 
         # Process features
-        x = layers.Dense(hp.Choice("units_0x", [16, 32, 64, 128, 256], default=16), activation="relu")(input1)
-        y = layers.Dense(hp.Choice("units_0y", [8, 16, 32, 64, 128, 256, 512], default=8), activation="relu")(input2)
+        x = layers.Dense(hp.Choice("units_0x", [16, 64, 256], default=16), activation="relu")(input1)
+        y = layers.Dense(hp.Choice("units_0y", [8, 32, 128, 512], default=8), activation="relu")(input2)
         share = layers.concatenate([x, y])
 
         # Define the number of layers in the neural network
         num_layers = hp.Int('num_layers', 1, 5)
         for i in range(num_layers):
-            units = hp.Choice(f'units_{i+1}', [32, 64, 128, 256, 512], default=32)
+            units = hp.Choice(f'units_{i+1}', [32, 128, 512], default=32)
             dropout = hp.Choice(f'dropout_{i+1}', [0.0, 0.3], default=0)
             share = layers.Dense(units, activation="relu")(share)
             share = layers.Dropout(dropout)(share)
