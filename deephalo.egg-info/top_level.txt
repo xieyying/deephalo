@@ -1,4 +1,0 @@
-build
-deephalo
-docs
-tests
