@@ -1,8 +1,9 @@
+
 # DeepHalo
 
 **A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data.**
 ---
-
+![DeepHalo](./logo.png)
 ## Core Features
 
 ### 1. Halogen Prediction
