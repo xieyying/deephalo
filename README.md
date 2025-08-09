@@ -1,6 +1,6 @@
 # DeepHalo
 
-**A Hierarchically Optimized Workflow for High-Confidence and High-throughput Detection of Halogenated Compounds in Complex HRMS Data**
+**A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data.**
 ---
 
 ## Core Features

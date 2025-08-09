@@ -5,6 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "deephalo"
 version = "1.0.0"
+description = "DeepHalo: A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data."
+authors = [
+    {name = "Yunying Xie", email = "xieyy@imb.pumc.edu.cn"},
+    {name = "Xin Qi", email = "xq75@163.com"},
+]
+license = "MIT"
 dependencies = [
         'pandas ==  2.0.3',
         'numpy ==  1.22.0',     
@@ -19,11 +25,13 @@ dependencies = [
         'tomli ==  2.0.1',
         'tomli-w ==  1.0.0',
         'importlib_resources == 6.4.0',
-        'mzml2gnps == 1.0.3',
+        'mzml2gnps == 1.0.3',   
         'networkx == 3.4.2',
         'typer == 0.15.1',
 ]
-
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+]
 readme = "README.md"
 
 [project.scripts]
@@ -37,3 +45,4 @@ exclude = ["deephalo.test"]
 "deephalo" = ["*.toml"]
 # Include all h5 files
 "deephalo.assets.pretrained_models" = ["*.h5"]
+
