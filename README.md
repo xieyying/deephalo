@@ -1,4 +1,4 @@
-# DeepHalo
+![DeepHalo Logo](./logo.png)
 
 **A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data.**
 ---
