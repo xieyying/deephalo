@@ -1,3 +1,30 @@
+Metadata-Version: 2.4
+Name: deephalo
+Version: 1.0.0
+Summary: DeepHalo: A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data.
+Author-email: Yunying Xie <xieyy@imb.pumc.edu.cn>, Xin Qi <xq75@163.com>
+License-Expression: MIT
+Classifier: Programming Language :: Python :: 3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pandas==2.0.3
+Requires-Dist: numpy==1.22.0
+Requires-Dist: molmass==2023.8.30
+Requires-Dist: scikit-learn==1.3.1
+Requires-Dist: tensorflow==2.10.1
+Requires-Dist: keras==2.10.0
+Requires-Dist: keras_tuner==1.4.6
+Requires-Dist: matplotlib==3.8.0
+Requires-Dist: pyopenms==3.1.0
+Requires-Dist: scipy==1.11.4
+Requires-Dist: tomli==2.0.1
+Requires-Dist: tomli-w==1.0.0
+Requires-Dist: importlib_resources==6.4.0
+Requires-Dist: mzml2gnps==1.0.3
+Requires-Dist: networkx==3.4.2
+Requires-Dist: typer==0.15.1
+Dynamic: license-file
+
 # DeepHalo
 
 **A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data.**
