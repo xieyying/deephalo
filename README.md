@@ -71,12 +71,12 @@
 
 ---
 
-*For methodology details and validation datasets, see [Methods](#).*  
+*For methodology details and validation datasets, see [Methods](bioRxiv 2025, 2025.08.11.669588).*  
 
 ## Where to get it？
-The source code is hosted on GitHub at: https://github.com/xieyying/DeepHalo
+The source code is hosted on GitHub at: https://github.com/xieyying/deephalo
 
-Binary installers of DeepHalo are available at the Python Package Index (PyPI).
+Binary installers of deephalo are available at the Python Package Index (PyPI).
 
 ## Dependencies
 - pandas ==  2.0.3
@@ -107,17 +107,17 @@ Python 3.10 is required. Verify your Python version with:
 
 ### Install from PyPI
 ```bash
-pip install DeepHalo
+pip install deephalo
 ``` 
 ### Install from Local Wheel
 ```bash
-pip install path/to/DeepHalo-xxx.whl
+pip install path/to/deephalo-xxx.whl
 ```
 
-### Install from Source
+### Install from Source for developer
 ```bash
-git clone https://github.com/xieyying/DeepHalo.git
-cd DeepHalo
+git clone https://github.com/xieyying/deephalo
+cd deephalo
 pip install -e .
 ```
 
