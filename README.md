@@ -43,7 +43,7 @@
   - Rapid processing (several to dozens of seconds per sample) on standard hardware (Core i9, 16GB RAM)
 
 - **High Accuracy**
-  - >98.3% precision in halogen detection across simulated and experimental LC-MS datasets.
+  - More than 98.3% precision in halogen detection across simulated and experimental LC-MS datasets.
   - Comprehensively validation across both simulated and experimental LC-MS datasets
 
 - **Comprehensive Integration**
@@ -58,7 +58,10 @@
 
 ## Target Applications
 - Natural product discovery  
-- Halogenated metabolite annotation  
+- Halogenated metabolite annotation
+- Pharmacological Research
+- Environmental Monitoring
+- Water Quality Analysis
 
 ---
 
@@ -68,6 +71,7 @@
 3. hierarchical halogen scoring system (H-score) 
 4. Comprehensive dereplication workflow
 5. Enhanced GNPS molecular networking
+6. Automatic and Rapid Processing
 
 ---
 
@@ -134,8 +138,8 @@ halo dereplicate -o /path/to/output_directory -g /path/to/GNPS_results -ud /path
 ### Get help
 ```bash
 halo --help                 # Show all commands
-halo detect --help    # Detailed parameters for the subcommand 'detect'
-halo dereplicate --help  # Detailed parameters for the subcommand 'dereplicate'
+halo detect --help          # Detailed parameters for the subcommand 'detect'
+halo dereplicate --help     # Detailed parameters for the subcommand 'dereplicate'
 ```
 ### Main Functions
 
