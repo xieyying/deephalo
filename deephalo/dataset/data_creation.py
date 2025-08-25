@@ -1,7 +1,7 @@
 from molmass import Formula
 import pandas as pd
 
-from .fake_isotope_generator import FakeIsotopeGenerator, mass_spectrum_calc
+from fake_isotope_generator import FakeIsotopeGenerator, mass_spectrum_calc
 
 
 def create_data(formula, type='base', rate=None) -> pd.DataFrame:
@@ -33,7 +33,7 @@ def create_data(formula, type='base', rate=None) -> pd.DataFrame:
             return pd.DataFrame()
         
     # Simulate mass spectrometry data
-    dict_isos = FakeIsotopeGenerator(formula, type, rate)
+    dict_isos = FakeIsotopeGenerator(formula, type, rate).generate(peak_n=10)
 
     if type == 'Se':
         group = 3

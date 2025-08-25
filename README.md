@@ -80,7 +80,9 @@
 ## Where to get it？
 The source code is hosted on GitHub at: https://github.com/xieyying/deephalo
 
-Binary installers of deephalo are available at the Python Package Index (PyPI).
+Binary installers of deephalo are available at the Python Package Index (PyPI)[deephalo](https://pypi.org/project/deephalo/).
+
+Standalone Executable (Recommended for Windows Users) are available at: [百度网盘](https://pan.baidu.com/s/1RCSnKfOwcrvMKIL7ZH4XQw?pwd=wuti)
 
 ## Dependencies
 - pandas ==  2.0.3
@@ -102,23 +104,26 @@ Binary installers of deephalo are available at the Python Package Index (PyPI).
 
 ## Installation
 
+### For EXE Users:
+- Double click the exe to launch DeepHalo.
 
+### For WHL Users:
 **Note**  
 Python 3.10 is required. Verify your Python version with:  
 ```bash
  python --version
 ```
 
-### Install from PyPI
+#### Install from PyPI
 ```bash
 pip install deephalo
 ``` 
-### Install from Local Wheel
+#### Install from Local Wheel
 ```bash
 pip install path/to/deephalo-xxx.whl
 ```
 
-### Install from Source for developer
+#### Install from Source for developer
 ```bash
 git clone https://github.com/xieyying/deephalo
 cd deephalo
@@ -126,22 +131,28 @@ pip install -e .
 ```
 
 ## Quickstart
-### High-throughput Detection of Halogenated Compounds
+
+### For EXE Users:
+- Double click the exe to launch DeepHalo.
+
+### For WHL Users:
+
+#### High-throughput Detection of Halogenated Compounds
 ```bash
 halo detect -i /path/to/mzml_files -o /path/to/output_directory -ms2
 ```
-### Dereplication
+#### Dereplication
 ```bash
 halo dereplicate -o /path/to/output_directory -g /path/to/GNPS_results -ud /path/to/custom_database.csv
 ```
-## Full Usage Guide
+## Full Usage Guide for WHL Users:
 ### Get help
 ```bash
 halo --help                 # Show all commands
 halo detect --help          # Detailed parameters for the subcommand 'detect'
 halo dereplicate --help     # Detailed parameters for the subcommand 'dereplicate'
 ```
-### Main Functions
+### Main Functions for WHL Users:
 
 - **Analyze mzML file:**
     ```bash

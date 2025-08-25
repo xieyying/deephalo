@@ -15,9 +15,12 @@ class FakeIsotopeGenerator:
         self.type = type
         self.rate = rate
 
-    def generate(self) -> dict:
+    def generate(self, peak_n=7) -> dict:
         """
         Simulate the isotopic distribution based on the formula and type.
+
+        Parameters:
+        peak_n: int, number of peaks to return (default 7)
 
         Returns:
         dict: Simulated isotopic distribution.
@@ -32,25 +35,29 @@ class FakeIsotopeGenerator:
         elif self.type == 'Se':
             fm_isos = self.get_selenium_additive_isotopes().dataframe()
         else:
-            fm_isos = fm.spectrum(min_intensity=0.000001).dataframe()
+            fm_isos = fm.spectrum(min_intensity=0.0001).dataframe()
 
         # Get relative mass and intensity
-        relative_mass = fm_isos['Relative mass'].tolist()[:7]
-        intensity = fm_isos['Intensity %'].tolist()[:7]
+        relative_mass = fm_isos['Relative mass'].tolist()
+        intensity = fm_isos['Intensity %'].tolist()
 
-        # Pad relative_mass and intensity if their length is less than 7
-        while len(relative_mass) < 6:
+        # Pad relative_mass and intensity if their length is less than peak_n
+        while len(relative_mass) < peak_n:
             relative_mass.append(0)
             intensity.append(0)
+        relative_mass = relative_mass[:peak_n]
+        intensity = intensity[:peak_n]
+        
+        intensity = np.array(intensity)
+        if max(intensity) != 0:
+            intensity = intensity / max(intensity)
 
-        intensity = np.array(intensity) / max(intensity)
         # Convert to dictionary
-        dict_isos = {
-            'mz_0': relative_mass[0], 'mz_1': relative_mass[1], 'mz_2': relative_mass[2], 'mz_3': relative_mass[3],
-            'mz_4': relative_mass[4], 'mz_5': relative_mass[5],
-            'p0_int': intensity[0], 'p1_int': intensity[1], 'p2_int': intensity[2], 'p3_int': intensity[3],
-            'p4_int': intensity[4], 'p5_int': intensity[5]
-        }
+        dict_isos = {}
+        for i in range(peak_n):
+            dict_isos[f'mz_{i}'] = relative_mass[i]
+        for i in range(peak_n):
+            dict_isos[f'p{i}_int'] = intensity[i]
         return dict_isos
 
     def get_dehydroisomer_isotopes(self, ratio, min_intensity=0.0001) -> Spectrum:
@@ -147,3 +154,8 @@ def mass_spectrum_calc(dict_features,charge) -> dict:
 
     #以字典的形式返回
     return dict_features
+
+if __name__ == "__main__":
+    formula = "C6H12O6"
+    fig = FakeIsotopeGenerator(formula,type='Fe')
+    print(fig.generate(peak_n=8))
