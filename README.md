@@ -75,14 +75,14 @@
 
 ---
 
-*For methodology details and validation datasets, see [Methods](bioRxiv 2025, 2025.08.11.669588).*  
+*For methodology details and validation datasets, see [Methods](https://www.biorxiv.org/content/10.1101/2025.08.11.669588v1).
 
 ## Where to get it？
 The source code is hosted on GitHub at: https://github.com/xieyying/deephalo
 
-Binary installers of deephalo are available at the Python Package Index (PyPI)[deephalo](https://pypi.org/project/deephalo/).
+Binary installers of deephalo are available at the Python Package Index (PyPI) [deephalo](https://pypi.org/project/deephalo/).
 
-Standalone Executable (Recommended for Windows Users) are available at: [百度网盘](https://pan.baidu.com/s/1RCSnKfOwcrvMKIL7ZH4XQw?pwd=wuti)
+Standalone Executable (Recommended for Windows Users) are available at: [Here](https://github.com/xieyying/deephalo/releases/tag/DeepHalo_V1.0.0) and [百度网盘](https://pan.baidu.com/s/1Bxr1aEGl7GDZ74XHBdA1IA?pwd=tyg1)
 
 ## Dependencies
 - pandas ==  2.0.3
