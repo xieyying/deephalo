@@ -1,0 +1,3 @@
+#SampleID	BarcodeSequence	LinkerPrimerSequence	filename	ATTRIBUTE_GNPSDefaultGroup
+Demo_data_1.mzML	GATACA	GATACA	Demo_data_1.mzML	G1
+Demo_data_2.mzML	GATACA	GATACA	Demo_data_2.mzML	G2

@@ -1,6 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from deephalo.main import pipeline_dataset, pipeline_model, pipeline_ms_analyze, pipeline_dereplication
+from .main import pipeline_dataset, pipeline_model, pipeline_ms_analyze, pipeline_dereplication
 from .parameters import RunParameters
 import typer
 import time
@@ -22,7 +22,7 @@ def timer_decorator(func):
     return wrapper
 
 # CLI interface for DeepHalo with version information
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 app = typer.Typer()
 
@@ -132,8 +132,10 @@ def create_ds(
 ):
     """Create training dataset"""
     para = RunParameters(user_config=user_config)
+
     os.chdir(project_path)
     pipeline_dataset(para)
+    typer.echo("Dataset creation completed successfully.")
 
 @app.command()
 @timer_decorator

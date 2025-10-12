@@ -1,0 +1,576 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d37" for="edge" attr.name="id" attr.type="string" />
+  <key id="d36" for="edge" attr.name="node1" attr.type="string" />
+  <key id="d35" for="edge" attr.name="cosine_score" attr.type="double" />
+  <key id="d34" for="edge" attr.name="EdgeScore" attr.type="double" />
+  <key id="d33" for="edge" attr.name="EdgeType" attr.type="string" />
+  <key id="d32" for="edge" attr.name="node2" attr.type="string" />
+  <key id="d31" for="edge" attr.name="component" attr.type="long" />
+  <key id="d30" for="edge" attr.name="explained_intensity" attr.type="double" />
+  <key id="d29" for="edge" attr.name="property1" attr.type="string" />
+  <key id="d28" for="edge" attr.name="mass_difference" attr.type="string" />
+  <key id="d27" for="edge" attr.name="EdgeAnnotation" attr.type="string" />
+  <key id="d26" for="node" attr.name="classification" attr.type="string" />
+  <key id="d25" for="node" attr.name="Adducts" attr.type="string" />
+  <key id="d24" for="node" attr.name="Smiles" attr.type="string" />
+  <key id="d23" for="node" attr.name="error_ppm" attr.type="string" />
+  <key id="d22" for="node" attr.name="Inty_cosine_score" attr.type="string" />
+  <key id="d21" for="node" attr.name="compound_names" attr.type="string" />
+  <key id="d20" for="node" attr.name="H_scoreMean" attr.type="double" />
+  <key id="d19" for="node" attr.name="charge" attr.type="long" />
+  <key id="d18" for="node" attr.name="GNPSLinkout_Network" attr.type="string" />
+  <key id="d17" for="node" attr.name="AllGroups" attr.type="string" />
+  <key id="d16" for="node" attr.name="G1" attr.type="double" />
+  <key id="d15" for="node" attr.name="number of spectra" attr.type="long" />
+  <key id="d14" for="node" attr.name="sum(precursor intensity)" attr.type="double" />
+  <key id="d13" for="node" attr.name="parent mass" attr.type="double" />
+  <key id="d12" for="node" attr.name="RTMean" attr.type="double" />
+  <key id="d11" for="node" attr.name="G4" attr.type="double" />
+  <key id="d10" for="node" attr.name="G2" attr.type="double" />
+  <key id="d9" for="node" attr.name="precursor mass" attr.type="double" />
+  <key id="d8" for="node" attr.name="componentindex" attr.type="string" />
+  <key id="d7" for="node" attr.name="G3" attr.type="double" />
+  <key id="d6" for="node" attr.name="G5" attr.type="double" />
+  <key id="d5" for="node" attr.name="UniqueFileSources" attr.type="string" />
+  <key id="d4" for="node" attr.name="GNPSLinkout_Cluster" attr.type="string" />
+  <key id="d3" for="node" attr.name="RTConsensus" attr.type="double" />
+  <key id="d2" for="node" attr.name="G6" attr.type="double" />
+  <key id="d1" for="node" attr.name="cluster index" attr.type="long" />
+  <key id="d0" for="node" attr.name="DefaultGroups" attr.type="string" />
+  <graph edgedefault="undirected">
+    <node id="92">
+      <data key="d0">G2</data>
+      <data key="d1">92</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=92&amp;show=true</data>
+      <data key="d5">Demo_data_2.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">529.73</data>
+      <data key="d10">2.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">167.7575</data>
+      <data key="d13">529.73</data>
+      <data key="d14">58140.0</data>
+      <data key="d15">2</data>
+      <data key="d16">0.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26" />
+    </node>
+    <node id="38">
+      <data key="d0">G1</data>
+      <data key="d1">38</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=38&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">445.117</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">267.43899999999996</data>
+      <data key="d13">445.117</data>
+      <data key="d14">23047.0</data>
+      <data key="d15">2</data>
+      <data key="d16">2.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26" />
+    </node>
+    <node id="36">
+      <data key="d0">G1,G2</data>
+      <data key="d1">36</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=36&amp;show=true</data>
+      <data key="d5">Demo_data_2.mzML|Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">445.118</data>
+      <data key="d10">4.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">215.40414285714286</data>
+      <data key="d13">445.118</data>
+      <data key="d14">87902.0</data>
+      <data key="d15">7</data>
+      <data key="d16">3.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26" />
+    </node>
+    <node id="5">
+      <data key="d0">G1</data>
+      <data key="d1">5</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=5&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">1</data>
+      <data key="d9">239.058</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">269.2024285714286</data>
+      <data key="d13">239.058</data>
+      <data key="d14">373656.0</data>
+      <data key="d15">7</data>
+      <data key="d16">7.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">1.0</data>
+      <data key="d21">6-Cl-Trp</data>
+      <data key="d22">0.9989</data>
+      <data key="d23">2.6991</data>
+      <data key="d24">nan</data>
+      <data key="d25">M+H</data>
+      <data key="d26">[2]</data>
+    </node>
+    <node id="54">
+      <data key="d0">G1</data>
+      <data key="d1">54</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=54&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">465.104</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">272.272</data>
+      <data key="d13">465.104</data>
+      <data key="d14">58171.5</data>
+      <data key="d15">2</data>
+      <data key="d16">2.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.95</data>
+      <data key="d21">['4-epi-Demeclocycline', 'Demeclocycline']</data>
+      <data key="d22">[0.9996, 0.9996]</data>
+      <data key="d23">[3.8293, 3.8293]</data>
+      <data key="d24">['None', 'None']</data>
+      <data key="d25">['M+H', 'M+H']</data>
+      <data key="d26">[2]</data>
+    </node>
+    <node id="43">
+      <data key="d0">G2</data>
+      <data key="d1">43</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=43&amp;show=true</data>
+      <data key="d5">Demo_data_2.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">445.118</data>
+      <data key="d10">5.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">178.16920000000002</data>
+      <data key="d13">445.118</data>
+      <data key="d14">66033.0</data>
+      <data key="d15">5</data>
+      <data key="d16">0.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26" />
+    </node>
+    <node id="53">
+      <data key="d0">G1</data>
+      <data key="d1">53</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=53&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">465.104</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">268.64375</data>
+      <data key="d13">465.104</data>
+      <data key="d14">244419.0</data>
+      <data key="d15">4</data>
+      <data key="d16">4.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.95</data>
+      <data key="d21">['4-epi-Demeclocycline', 'Demeclocycline']</data>
+      <data key="d22">[0.9996, 0.9996]</data>
+      <data key="d23">[3.8293, 3.8293]</data>
+      <data key="d24">['None', 'None']</data>
+      <data key="d25">['M+H', 'M+H']</data>
+      <data key="d26">[2]</data>
+    </node>
+    <node id="68">
+      <data key="d0">G2</data>
+      <data key="d1">68</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=68&amp;show=true</data>
+      <data key="d5">Demo_data_2.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">475.859</data>
+      <data key="d10">8.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">171.266</data>
+      <data key="d13">475.859</data>
+      <data key="d14">637569.0</data>
+      <data key="d15">8</data>
+      <data key="d16">0.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26" />
+    </node>
+    <node id="47">
+      <data key="d0">G2</data>
+      <data key="d1">47</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=47&amp;show=true</data>
+      <data key="d5">Demo_data_2.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">-1</data>
+      <data key="d9">445.118</data>
+      <data key="d10">6.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">173.55283333333333</data>
+      <data key="d13">445.118</data>
+      <data key="d14">76819.0</data>
+      <data key="d15">6</data>
+      <data key="d16">0.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=-1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">0.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26" />
+    </node>
+    <node id="6">
+      <data key="d0">G1</data>
+      <data key="d1">6</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=6&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">1</data>
+      <data key="d9">265.981</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">289.87728571428573</data>
+      <data key="d13">265.981</data>
+      <data key="d14">1792920.0</data>
+      <data key="d15">7</data>
+      <data key="d16">7.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">1.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26">[1]</data>
+    </node>
+    <node id="3">
+      <data key="d0">G1</data>
+      <data key="d1">3</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=3&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">1</data>
+      <data key="d9">223.97</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">288.873</data>
+      <data key="d13">223.97</data>
+      <data key="d14">69639.5</data>
+      <data key="d15">3</data>
+      <data key="d16">3.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">1.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26">[1]</data>
+    </node>
+    <node id="1">
+      <data key="d0">G1</data>
+      <data key="d1">1</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=1&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">1</data>
+      <data key="d9">222.032</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">270.4513636363636</data>
+      <data key="d13">222.032</data>
+      <data key="d14">2172620.0</data>
+      <data key="d15">11</data>
+      <data key="d16">11.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">1.0</data>
+      <data key="d21" />
+      <data key="d22" />
+      <data key="d23" />
+      <data key="d24" />
+      <data key="d25" />
+      <data key="d26">[2]</data>
+    </node>
+    <node id="7">
+      <data key="d0">G1</data>
+      <data key="d1">7</data>
+      <data key="d2">0.0</data>
+      <data key="d3">0.0</data>
+      <data key="d4">https://gnps.ucsd.edu//ProteoSAFe/result.jsp?task=90f5f056a68b41c6b7b13dd758932afb&amp;view=cluster_details&amp;protein=7&amp;show=true</data>
+      <data key="d5">Demo_data_1.mzML</data>
+      <data key="d6">0.0</data>
+      <data key="d7">0.0</data>
+      <data key="d8">1</data>
+      <data key="d9">283.007</data>
+      <data key="d10">0.0</data>
+      <data key="d11">0.0</data>
+      <data key="d12">289.37350000000004</data>
+      <data key="d13">283.007</data>
+      <data key="d14">635510.0</data>
+      <data key="d15">4</data>
+      <data key="d16">4.0</data>
+      <data key="d17"> </data>
+      <data key="d18">https://gnps.ucsd.edu/ProteoSAFe/result.jsp?view=network_displayer&amp;componentindex=1&amp;task=90f5f056a68b41c6b7b13dd758932afb&amp;show=true</data>
+      <data key="d19">0</data>
+      <data key="d20">1.0</data>
+      <data key="d21">5-Br-Trp</data>
+      <data key="d22">0.9991</data>
+      <data key="d23">3.8147</data>
+      <data key="d24">nan</data>
+      <data key="d25">M+H</data>
+      <data key="d26">[1]</data>
+    </node>
+    <edge source="92" target="92">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">92</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">92</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="38" target="38">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">38</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">38</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="36" target="36">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">36</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">36</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="5" target="3">
+      <data key="d27" />
+      <data key="d28">-15.088</data>
+      <data key="d29">3</data>
+      <data key="d30">3.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">5</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">0.7136</data>
+      <data key="d35">0.7136</data>
+      <data key="d36">3</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="5" target="1">
+      <data key="d27">adduct_rel_H_NH4 or NH3</data>
+      <data key="d28">-17.026</data>
+      <data key="d29">1</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">5</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">0.7406</data>
+      <data key="d35">0.7406</data>
+      <data key="d36">1</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="54" target="54">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">54</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">54</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="43" target="43">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">43</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">43</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="53" target="53">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">53</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">53</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="68" target="68">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">68</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">68</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="47" target="47">
+      <data key="d27" />
+      <data key="d28">0.0</data>
+      <data key="d29">1.0</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">47</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">1.0</data>
+      <data key="d35">1.0</data>
+      <data key="d36">47</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="6" target="1">
+      <data key="d27" />
+      <data key="d28">-43.949</data>
+      <data key="d29">1</data>
+      <data key="d30">1.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">6</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">0.7707</data>
+      <data key="d35">0.7707</data>
+      <data key="d36">1</data>
+      <data key="d37">Cosine</data>
+    </edge>
+    <edge source="6" target="7">
+      <data key="d27">adduct_rel_H_NH4 or NH3</data>
+      <data key="d28">-17.026</data>
+      <data key="d29">6</data>
+      <data key="d30">6.0</data>
+      <data key="d31">-1</data>
+      <data key="d32">7</data>
+      <data key="d33">Cosine</data>
+      <data key="d34">0.7988</data>
+      <data key="d35">0.7988</data>
+      <data key="d36">6</data>
+      <data key="d37">Cosine</data>
+    </edge>
+  </graph>
+</graphml>

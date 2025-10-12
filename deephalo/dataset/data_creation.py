@@ -1,7 +1,7 @@
 from molmass import Formula
 import pandas as pd
 
-from fake_isotope_generator import FakeIsotopeGenerator, mass_spectrum_calc
+from .fake_isotope_generator import FakeIsotopeGenerator, mass_spectrum_calc
 
 
 def create_data(formula, type='base', rate=None) -> pd.DataFrame:

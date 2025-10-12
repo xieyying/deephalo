@@ -199,8 +199,8 @@ def dereplicationms1(para, dereplication_database):
     os.makedirs(dereplication_folder, exist_ok=True)
     
     if dereplication_database is not None:
-        # Process each file in parallel using ProcessPoolExecutor
-        with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        # Process each file in parallel using ThreadPoolExecutor
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
             futures = [
                 executor.submit(
                     process_dereplication_file,

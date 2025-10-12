@@ -15,6 +15,10 @@ from .dereplication.dereplication2networks import add_deephalo_results_to_graphm
 from .dereplication.dereplication_ms1 import dereplicationms1
 import tomli_w
 
+def resource_path(*paths):
+    """Get the path to a resource file in the deephalo package."""
+    return importlib.resources.files('deephalo').joinpath(*paths)
+
 
 def pipeline_dataset(para) -> None:
     """

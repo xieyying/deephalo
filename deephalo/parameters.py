@@ -51,6 +51,8 @@ class RunParameters:
         self.FeatureMapProcessor_min_scan_number = config['FeatureMapProcessor']['min_scan_number']
         self.FeatureMapProcessor_use_mass_difference = config['FeatureMapProcessor']['use_mass_difference']
         
+        self.FeatureFilter_RT_min = config['FeatureFilter']['RT_min']
+        self.FeatureFilter_RT_max = config['FeatureFilter']['RT_max']
         self.FeatureFilter_H_score_threshold = config['FeatureFilter']['H_score_threshold']
         self.FeatureFilter_Anomaly_detection_threshold = config['FeatureFilter']['Anomaly_detection_threshold']
 

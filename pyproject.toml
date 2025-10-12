@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deephalo"
-version = "1.0.0"
+version = "1.0.1"
 description = "DeepHalo: A deep learning-integrated workflow for high-throughput discovery of halogenated metabolites from HRMS data."
 authors = [
     {name = "Yunying Xie", email = "xieyy@imb.pumc.edu.cn"},
@@ -28,6 +28,7 @@ dependencies = [
         'mzml2gnps == 1.0.3',   
         'networkx == 3.4.2',
         'typer == 0.15.1',
+        'click == 8.1.7',
 ]
 classifiers = [
     "Programming Language :: Python :: 3.10",

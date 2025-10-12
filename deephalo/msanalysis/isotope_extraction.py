@@ -16,9 +16,22 @@ class FeatureDetection:
         self.feature_map = oms.FeatureMap()
         self.chrom_out = []
 
-    def load_file(self):
+    def load_file(self):        
         """Load the mzML file"""
-        oms.MzMLFile().load(self.file, self.exp)
+        original = oms.MSExperiment()
+        oms.MzMLFile().load(self.file, original)
+
+        if not self.pars.FeatureFilter_RT_min and not self.pars.FeatureFilter_RT_max:
+            self.exp = original
+        elif self.pars.FeatureFilter_RT_min and self.pars.FeatureFilter_RT_max:
+            specs = [spec for spec in original if spec.getRT() >= float(self.pars.FeatureFilter_RT_min) and spec.getRT() <= float(self.pars.FeatureFilter_RT_max)]
+            self.exp.setSpectra(specs)
+        elif self.pars.FeatureFilter_RT_min:
+            specs = [spec for spec in original if spec.getRT() >= float(self.pars.FeatureFilter_RT_min)]
+            self.exp.setSpectra(specs)
+        elif self.pars.FeatureFilter_RT_max:
+            specs = [spec for spec in original if spec.getRT() <= float(self.pars.FeatureFilter_RT_max)]
+            self.exp.setSpectra(specs)
 
     def get_dataframes(self):
         """Get the ion dataframes and filter them"""

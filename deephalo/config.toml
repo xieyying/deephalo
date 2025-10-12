@@ -3,15 +3,17 @@
 # Parameters for the 'detect' subcommand.
 
 [FeatureFilter]
+RT_min = '' # Minimum RT (in seconds) to keep MS data. Leave empty ('') to keep all data (no RT filter). 
+RT_max = '' # Maximum RT (in seconds) to keep MS data. Leave empty ('') to keep all data (no RT filter).
 H_score_threshold = 0.4 # Range: 0-1. Higher values indicate higher confidence.
 Anomaly_detection_threshold = 7.015356328085893e-05 # Recommended range: [7.015356328085893e-05, 1].
-    # Isotope peak intensity reconstruction error from ADM.
-    # Recommended range: [7.015356328085893e-05, 1].
-    # Use 7.015356328085893e-05 to apply filtering, or 1.0 to disable filtering.
+                                # Isotope peak intensity reconstruction error from ADM.
+                                # Recommended range: [7.015356328085893e-05, 1].
+                                # Use 7.015356328085893e-05 to apply filtering, or 1.0 to disable filtering.
 
 [FeatureMapProcessor]
 min_num_of_masstraces = 3 # Halogenated compounds should have at least 3 isotope peaks
-min_feature_int = 5000  # Minimum feature intensity for further analysis of halogenated compounds (sum intensity of a candidate feature).
+min_feature_int = 5000   # Minimum feature intensity for further analysis of halogenated compounds (sum intensity of a candidate feature).
 min_scan_number = 3       # Minimum number of scans required.
 use_mass_difference = ''  # Set to 'none' to disable mass difference correction for isotope patterns, or leave empty ('') to enable it.
 
@@ -27,7 +29,7 @@ Inty_cosine_score = 0.96 # Minimum cosine score threshold between experimental a
 mass_trace_detection = [
     ["mass_error_ppm", 10.0], # Precursor mass error in ppm (adjust based on experimental conditions)
     ["min_trace_length", 3.0], # Minimum trace length (adjust based on experimental conditions)
-    ["noise_threshold_int", 500.0], # Noise intensity threshold (adjust based on experimental conditions)
+    ["noise_threshold_int", 1000.0], # Noise intensity threshold (adjust based on experimental conditions)
     ["chrom_peak_snr", 6.0], # Chromatographic peak signal-to-noise ratio (adjust based on experimental conditions)
     ["trace_termination_criterion", "outlier"],
     ["trace_termination_outliers", 5],
@@ -94,15 +96,17 @@ feature_grouping = [['mz_unit', 'ppm'], # Unit of m/z tolerance
 # Parameters for the create-dataset subcommand,not active now.
 [datasets]
 paths = [
-        ["", #Custom database file (CSV/JSON)
-     ],      
+      ["D:/workissues/manuscript/halo_mining/HaloAnalyzer/datasets/training_validation_dataset/for_Fe_Se/hydro.csv", 
+        #Custom database file (CSV/JSON)
+     "formula",
+     ],     
 ]
 
 # Parameters for the 'create-ds' subcommand
 # Database file path
 # type_list = ['base','Fe','B','Se','hydro']
-# type_list = ['base']
-type_list = ['Fe','B','Se','hydro']
+#type_list = ['base']
+type_list = ['hydro']
 
 element_list = ['C','H','O','N','F', 'P', 'S', 'Cl', 'Br','I','Na','B', 'Fe', 'Se']
 # element_list = ['C','H','O','N']  # Elements included in the training set
@@ -125,10 +129,10 @@ feature_list = [
 ]
 
 # Datasets used for training
-use_add_fe_data = "True"
-use_add_b_data = "True"
-use_add_se_data = "True"
-use_hydroisomer_data = "True"
+use_add_fe_data = "False"
+use_add_b_data = "False"
+use_add_se_data = "False"
+use_hydroisomer_data = "False"
 
 # Model training parameters
 [model_construct]
