@@ -83,7 +83,8 @@ The source code is hosted on GitHub at: https://github.com/xieyying/deephalo
 Binary installers of deephalo are available at the Python Package Index (PyPI) [deephalo](https://pypi.org/project/deephalo/).
 
 Standalone Executable (Recommended for Windows Users) are available at: [Here](https://github.com/xieyying/deephalo/releases/tag/DeepHalo_V1.0.1) and [百度网盘](https://pan.baidu.com/s/1KV5IFEBx-4BX-CDsd9dCsA?pwd=deep)
-![QR Code - Scan to download](./image.jpg){: width="200" height="200"}
+<img src="./image.jpg" alt="QR Code - Scan to download" width="100" height="100">
+*Scan QR code to download*
 
 ## Dependencies
 - pandas ==  2.0.3
