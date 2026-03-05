@@ -183,3 +183,8 @@ If you need to modify configuration parameters, edit the config file ([download 
 
 ## License
 This code repository is licensed under the [MIT License](LICENSE).
+
+## Citation
+If you use DeepHalo in your work, please cite:
+
+Chang, S.; Qi, X.; Wang, M.; Huang, X.; He, N.; Chen, M.; Lv, Q.; Wang, J.; Du, Y.; Wang, S.; et al. DeepHalo: Deep learning-powered exploration of halogenated metabolites uncovering antibacterial depsipeptides. Acta Pharmaceutica Sinica B 2026. DOI: https://doi.org/10.1016/j.apsb.2026.02.010.
